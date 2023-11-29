@@ -1,0 +1,16 @@
+{
+  "query": {
+    "bool": {
+      "filter": [
+        {
+          "term": {
+            "foo": {
+              "value": "bar"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "size": 100
+}

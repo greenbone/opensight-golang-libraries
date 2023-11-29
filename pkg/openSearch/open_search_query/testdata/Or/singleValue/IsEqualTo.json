@@ -1,0 +1,17 @@
+{
+  "query": {
+    "bool": {
+      "minimum_should_match": 1,
+      "should": [
+        {
+          "term": {
+            "testName": {
+              "value": "test"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "size": 100
+}

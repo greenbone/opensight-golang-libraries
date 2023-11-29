@@ -1,0 +1,29 @@
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "bool": {
+            "must_not": [
+              {
+                "prefix": {
+                  "testName.keyword": {
+                    "value": "5"
+                  }
+                }
+              },
+              {
+                "prefix": {
+                  "testName.keyword": {
+                    "value": "6"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "size": 100
+}

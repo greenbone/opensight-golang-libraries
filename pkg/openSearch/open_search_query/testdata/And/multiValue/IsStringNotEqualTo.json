@@ -1,0 +1,17 @@
+{
+  "query": {
+    "bool": {
+      "must_not": [
+        {
+          "terms": {
+            "testName.keyword": [
+              5,
+              6
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "size": 100
+}

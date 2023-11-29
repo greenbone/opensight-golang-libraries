@@ -1,0 +1,14 @@
+run:
+  timeout: 2m
+  tests: false
+
+linters: 
+  enable:
+    - goimports
+    - gosec
+    - errorlint
+    - interfacebloat
+    - ineffassign
+    - dupword
+    - misspell
+    - govet

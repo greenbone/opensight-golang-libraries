@@ -1,0 +1,16 @@
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "range": {
+            "testName": {
+              "gte": 5
+            }
+          }
+        }
+      ]
+    }
+  },
+  "size": 100
+}

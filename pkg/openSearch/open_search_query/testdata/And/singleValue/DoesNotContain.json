@@ -1,0 +1,16 @@
+{
+  "query": {
+    "bool": {
+      "must_not": [
+        {
+          "wildcard": {
+            "testName.keyword": {
+              "value": "*test*"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "size": 100
+}

@@ -1,0 +1,17 @@
+{
+  "query": {
+    "bool": {
+      "minimum_should_match": 1,
+      "should": [
+        {
+          "prefix": {
+            "testName.keyword": {
+              "value": "5"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "size": 100
+}

@@ -1,0 +1,17 @@
+{
+  "query": {
+    "bool": {
+      "minimum_should_match": 1,
+      "should": [
+        {
+          "range": {
+            "testName": {
+              "gte": 5
+            }
+          }
+        }
+      ]
+    }
+  },
+  "size": 100
+}
