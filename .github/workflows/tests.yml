@@ -33,7 +33,6 @@ jobs:
     # Jobs to monitor
     needs:
       - test
-      - service-test
       - check-version
     if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
     uses: greenbone/workflows/.github/workflows/notify-mattermost-3rd-gen-ci.yml@main
