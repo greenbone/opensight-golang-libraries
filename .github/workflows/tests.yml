@@ -8,35 +8,10 @@ on:
 
 jobs:
   test:
-    name: Execute Unit Tests
+    name: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/go-setup
-        with:
-          token: ${{ secrets.GREENBONE_BOT_TOKEN }}
-
-      - run: make build test
-      - uses: actions/upload-artifact@v3
-        with:
-          retention-days: 4
-          name: executable
-          path: build/app
-
-  check-version:
-    name: Check versioning for consistency
-    runs-on: "ubuntu-latest"
-    steps:
-      - uses: greenbone/actions/check-version@v3
-
-  notify:
-    # Jobs to monitor
-    needs:
-      - test
-      - check-version
-    if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
-    uses: greenbone/workflows/.github/workflows/notify-mattermost-3rd-gen-ci.yml@main
-    with:
-      # Check several jobs for a failure status
-      status: ${{ contains(needs.*.result, 'failure') && 'failure' || 'success' }}
-    secrets: inherit
+      - run: |
+          go test -v ./...

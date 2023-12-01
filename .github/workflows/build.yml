@@ -8,12 +8,10 @@ on:
 
 jobs:
   build:
-    name: Build
+    name: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/go-setup
-        with:
-          token: ${{ secrets.GREENBONE_BOT_TOKEN }}
-
-      - run: make build
+      - run: |
+          go build ./...
