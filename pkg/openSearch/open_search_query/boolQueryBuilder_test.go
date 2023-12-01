@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
-	"github.com/greenbone/opensight-golang-libraries/pkg/test_folder"
+	"github.com/greenbone/opensight-golang-libraries/pkg/testFolder"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -16,15 +16,15 @@ import (
 // TODO free from JSON generation for easier testing?
 func TestBoolQueryBuilder(t *testing.T) {
 	var (
-		query      *BoolQueryBuilder
-		testFolder test_folder.TestFolder
+		query  *BoolQueryBuilder
+		folder testFolder.TestFolder
 	)
 
 	prepareFilterFieldMapping()
 
 	setup := func(t *testing.T) {
 		query = NewBoolQueryBuilder()
-		testFolder = test_folder.NewTestFolder()
+		folder = testFolder.NewTestFolder()
 	}
 
 	t.Run("shouldReturnJsonForFilterTerm", func(t *testing.T) {
@@ -34,7 +34,7 @@ func TestBoolQueryBuilder(t *testing.T) {
 
 		json, err := query.ToJson()
 		require.NoError(t, err)
-		assert.JSONEq(t, testFolder.GetContent(t, "testdata/filterTerm.json"), json)
+		assert.JSONEq(t, folder.GetContent(t, "testdata/filterTerm.json"), json)
 	})
 
 	t.Run("should work with empty filter request", func(t *testing.T) {
@@ -72,7 +72,7 @@ func TestBoolQueryBuilder(t *testing.T) {
 
 		json, err := query.ToJson()
 		require.NoError(t, err)
-		assert.JSONEq(t, testFolder.GetContent(t, "testdata/filterTermWithFilterRequest.json"), json)
+		assert.JSONEq(t, folder.GetContent(t, "testdata/filterTermWithFilterRequest.json"), json)
 	})
 }
 
@@ -179,7 +179,7 @@ func TestFilterQueryOperatorAnd(t *testing.T) {
 			json, err := query.ToJson()
 			require.NoError(t, err)
 
-			expectedJson := test_folder.NewTestFolder().
+			expectedJson := testFolder.NewTestFolder().
 				GetContent(t, tc.file)
 			assert.JSONEq(t, expectedJson, json)
 		})
@@ -223,7 +223,7 @@ func TestFilterQueryOperatorAnd(t *testing.T) {
 			json, err := query.ToJson()
 			require.NoError(t, err)
 
-			assert.JSONEq(t, test_folder.NewTestFolder().
+			assert.JSONEq(t, testFolder.NewTestFolder().
 				GetContent(t, tc.file), json)
 		})
 	}
@@ -339,7 +339,7 @@ func TestFilterQueryOperatorOr(t *testing.T) {
 			json, err := query.ToJson()
 			require.NoError(t, err)
 
-			assert.JSONEq(t, test_folder.NewTestFolder().
+			assert.JSONEq(t, testFolder.NewTestFolder().
 				GetContent(t, tc.file), json)
 		})
 	}
@@ -382,7 +382,7 @@ func TestFilterQueryOperatorOr(t *testing.T) {
 			json, err := query.ToJson()
 			require.NoError(t, err)
 
-			assert.JSONEq(t, test_folder.NewTestFolder().
+			assert.JSONEq(t, testFolder.NewTestFolder().
 				GetContent(t, tc.file), json)
 		})
 	}

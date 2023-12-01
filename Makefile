@@ -1,6 +1,5 @@
 PROJECT := opensight-golang-libraries
 REGISTRY := docker-gps.greenbone.net
-DOCKER_DEFAULT_PLATFORM=linux/amd64
 # Define submodules
 SUBMODULES := configReader jobQueue openSearch/escomposite postgres/dbcrypt query/basicResponse
 PKG_DIR := pkg
@@ -13,7 +12,6 @@ help: ## show this help.
 
 .EXPORT_ALL_VARIABLES:
 GOPRIVATE=github.com/greenbone
-DOCKER_BUILDKIT=1
 
 GOIMPORTS       = go run golang.org/x/tools/cmd/goimports@latest
 GOFUMPT			= go run mvdan.cc/gofumpt@latest
@@ -23,9 +21,6 @@ GO-MOD-UPGRADE  = go run github.com/oligot/go-mod-upgrade@latest
 SWAG            = github.com/swaggo/swag/cmd/swag@v1.8.12
 
 INSTALL_MOCKERY	= go install github.com/vektra/mockery/v2@v2.28.2
-
-DOCKER_COMPOSE_DEPS := docker compose -p $(PROJECT) -f docker-compose-dependencies.yml
-DOCKER_COMPOSE_ALL := docker compose -p $(PROJECT) -f docker-compose-dependencies.yml -f docker-compose.yml
 
 OS="$(shell go env var GOOS | xargs)"
 

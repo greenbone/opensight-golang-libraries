@@ -1,7 +1,7 @@
 package basicResponse
 
 import (
-	"github.com/greenbone/opensight-golang-libraries/pkg/query/basicSelector"
+	"github.com/greenbone/opensight-golang-libraries/pkg/basicSelector"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/paging"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/sorting"
