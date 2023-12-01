@@ -1,7 +1,6 @@
-package basicResponse
+package query
 
 import (
-	"github.com/greenbone/opensight-golang-libraries/pkg/basicSelector"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/paging"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/sorting"
@@ -24,7 +23,7 @@ type Metadata struct {
 	Sorting *sorting.Request `json:"sorting,omitempty"`
 }
 
-func NewMetadata(resultSelector basicSelector.ResultSelector, totalRowCount uint64) Metadata {
+func NewMetadata(resultSelector ResultSelector, totalRowCount uint64) Metadata {
 	for i, field := range resultSelector.Filter.Fields {
 		if field.Keys == nil {
 			resultSelector.Filter.Fields[i].Keys = []string{}
