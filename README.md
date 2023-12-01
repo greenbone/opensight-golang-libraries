@@ -2,7 +2,7 @@
 
 # Opensight golang libraries
 
-[![GitHub releases](https://img.shields.io/github/release/greenbone/asset-management-backend.svg)](https://github.com/greenbone/asset-management-backend/releases)
+[![GitHub releases](https://img.shields.io/github/release/greenbone/opensight-golang-libraries.svg)](https://github.com/greenbone/opensight-golang-libraries/releases)
 
 ## About
 
@@ -22,9 +22,9 @@ This project is maintained by [Greenbone AG][Greenbone AG]
 ## Contributing
 
 Your contributions are highly appreciated. Please
-[create a pull request](https://github.com/greenbone/asset-management-backend/pulls)
+[create a pull request](https://github.com/greenbone/opensight-golang-libraries/pulls)
 on GitHub. Bigger changes need to be discussed with the development team via the
-[issues section at GitHub](https://github.com/greenbone/asset-management-backend/issues)
+[issues section at GitHub](https://github.com/greenbone/opensight-golang-libraries/issues)
 first.
 
 ## License
