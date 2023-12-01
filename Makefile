@@ -1,7 +1,6 @@
 PROJECT := opensight-golang-libraries
 REGISTRY := docker-gps.greenbone.net
 # Define submodules
-SUBMODULES := configReader jobQueue openSearch/escomposite postgres/dbcrypt query/basicResponse
 PKG_DIR := pkg
 
 all: build test
@@ -26,25 +25,9 @@ OS="$(shell go env var GOOS | xargs)"
 
 ALL_GO_DIRS := $(shell find $(PKG_DIR) -name '*.go' -exec dirname {} \; | sort -u)
 
-# Build each submodule
-build: $(SUBMODULES)
-
-$(SUBMODULES):
-	@echo "Building $(PKG_DIR)/$@"
-	@cd $(PKG_DIR)/$@ && go build
-
-# Test each submodule
-test:
-	@for module in $(SUBMODULES); do \
-		echo "Testing $(PKG_DIR)/$$module"; \
-		cd $(PKG_DIR)/$$module && go test && cd -; \
-	done
-
 # Clean up
 clean:
-	@for module in $(SUBMODULES); do \
-		cd $(PKG_DIR)/$$module && go clean && cd -; \
-	done
+	go clean -i ./...
 
 .PHONY: go-version
 go-version: ## prints the golang version used
@@ -55,13 +38,6 @@ go-mod-cleanup: ## cleans up the Go modules
 	go mod tidy && go mod download
 	go mod verify
 
-.PHONY: clean
-clean: ## removes object files from package source directories
-	go clean
-	@for dir in $(ALL_GO_DIRS); do \
-		cd $$dir && go clean && cd -; \
-	done
-
 .PHONY: format
 format: ## format and tidy
 	@echo "\033[36m  Format code  \033[0m"
@@ -71,7 +47,6 @@ format: ## format and tidy
 
 .PHONY: lint
 lint: format ## lint go code
-	@echo "\033[36m  Lint code  \033[0m"
 	$(GOLANGCI-LINT) run
 
 .PHONY: build-common
@@ -79,15 +54,10 @@ build-common: go-version clean go-mod-cleanup lint ## execute common build tasks
 
 .PHONY: build
 build: build-common ## build go library packages
-	@for dir in $(ALL_GO_DIRS); do \
-		echo "Building $$dir"; \
-		cd $$dir && go build && cd -; \
-		echo "Built $$dir"; \
-	done
+	go build -trimpath ./...
 
 .PHONY: test
 test: ## run all tests
-	@echo "\033[36m  Run tests  \033[0m"
 	go test -test.short ./...
 
-.PHONY: all build test clean $(SUBMODULES)
+.PHONY: all build test clean
