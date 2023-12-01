@@ -1,8 +1,5 @@
 # default reviewers
 *                   @greenbone/asset
 
-
-# github actions & settings
-.github/            @greenbone/devops @greenbone/asset
-charts/             @greenbone/devops @greenbone/asset
-Dockerfile          @greenbone/devops @greenbone/asset
+# .github
+.github/        @greenbone/asset @greenbone/devops
