@@ -1,28 +1,16 @@
 name: 'Go setup'
-description: 'Setup go and cache, setup private repo access and go download mods'
-
-inputs:
-  token:
-    description: 'A Github PAT'
-    required: true
+description: 'Setup go and cache and go download mods'
 
 runs:
   using: "composite"
   steps:
+    - uses: actions/checkout@v4
     - uses: actions/setup-go@v4
       with:
-        go-version-file: './go.mod'
         cache: true
         cache-dependency-path: go.sum
-        #go-version-file: go.mod
-
-    - run: git config --global url.https://$GITHUB_TOKEN@github.com/.insteadOf https://github.com/
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ inputs.token }}
-
+        go-version-file: go.mod
     - run: go mod download
       shell: bash
       env:
         GOPRIVATE: github.com/greenbone
-      
