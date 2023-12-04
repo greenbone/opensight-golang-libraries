@@ -15,13 +15,14 @@ type (
 	CompareOperatorHandler func(fieldName string, fieldKeys []string, fieldValue any) esquery.Mappable
 )
 
-type BoolQuerySettings struct {
+type QuerySettings struct {
 	WildcardArrays              map[string]bool
 	IsEqualToKeywordFields      map[string]bool
 	UseNestedMatchQueryFields   map[string]bool
 	UseMatchPhrase              map[string]bool
 	CompareOperators            []CompareOperator
 	NestedQueryFieldDefinitions []NestedQueryFieldDefinition
+	FilterFieldMapping          map[string]string
 }
 
 type NestedQueryFieldDefinition struct {
@@ -36,9 +37,9 @@ type CompareOperator struct {
 	MustCondition bool
 }
 
-var actualBoolQuerySettings BoolQuerySettings
+var actualBoolQuerySettings QuerySettings
 
-func SetBoolQuerySettings(settings BoolQuerySettings) {
+func SetQuerySettings(settings QuerySettings) {
 	actualBoolQuerySettings = settings
 }
 
