@@ -1,19 +1,19 @@
 ![Greenbone Logo](https://www.greenbone.net/wp-content/uploads/gb_new-logo_horizontal_rgb_small.png)
 
-# Opensight golang libraries
+# OpenSight GoLang libraries
 
-[![GitHub releases](https://img.shields.io/github/release/greenbone/asset-management-backend.svg)](https://github.com/greenbone/asset-management-backend/releases)
+[![GitHub releases](https://img.shields.io/github/release/greenbone/opensight-golang-libraries.svg)](https://github.com/greenbone/opensight-golang-libraries/releases)
 
 ## About
 
-The code maintained in this repo is to be used by the Greenbone Backends using golang.
+The code maintained in this repository is used by the Greenbone OpenSight Backend Components using GoLang.
 
 This includes
-* configReader - reads the configuration based on environment variables with predefined defaults
-* query - provides basic selector and response objects, including filter, paging and sorting
-* jobQueue - a simple job queue
-* openSearch - extensions funcs to query openSearch with the help of the query package
-* postgres - provides a encryption / decryption package for saving data
+* `configReader` - reads the configuration based on environment variables with predefined defaults
+* `query` - provides basic selector and response objects, including filter, paging and sorting
+* `jobQueue` - a simple job queue
+* `openSearch` - extensions funcs to query openSearch with the help of the query package
+* `postgres` - provides a encryption / decryption package for saving data
 
 ## Maintainer
 
