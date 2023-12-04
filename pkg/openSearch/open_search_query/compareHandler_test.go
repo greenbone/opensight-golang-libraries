@@ -8,7 +8,7 @@ import (
 )
 
 func TestHandleCompareOperator(t *testing.T) {
-	SetBoolQuerySettings(BoolQuerySettings{
+	SetQuerySettings(QuerySettings{
 		WildcardArrays: map[string]bool{
 			"asset.ips":          true,
 			"asset.macAddresses": true,

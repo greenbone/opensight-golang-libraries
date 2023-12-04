@@ -20,8 +20,6 @@ func TestBoolQueryBuilder(t *testing.T) {
 		folder testFolder.TestFolder
 	)
 
-	prepareFilterFieldMapping()
-
 	setup := func(t *testing.T) {
 		query = NewBoolQueryBuilder()
 		folder = testFolder.NewTestFolder()
@@ -48,13 +46,14 @@ func TestBoolQueryBuilder(t *testing.T) {
 	t.Run("shouldReturnJsonForFilterTermWithFilterRequest", func(t *testing.T) {
 		setup(t)
 
-		SetBoolQuerySettings(BoolQuerySettings{
+		SetQuerySettings(QuerySettings{
 			CompareOperators: []CompareOperator{
 				{
 					Operator: filter.CompareOperatorBeginsWith,
 					Handler:  HandleCompareOperatorBeginsWith, MustCondition: true,
 				},
 			},
+			FilterFieldMapping: map[string]string{"testName": "testName"},
 		})
 
 		query.AddTermFilter("foo", "bar")
@@ -77,9 +76,7 @@ func TestBoolQueryBuilder(t *testing.T) {
 }
 
 func TestFilterQueryOperatorAnd(t *testing.T) {
-	prepareFilterFieldMapping()
-
-	SetBoolQuerySettings(BoolQuerySettings{
+	SetQuerySettings(QuerySettings{
 		CompareOperators: []CompareOperator{
 			{
 				Operator: filter.CompareOperatorIsStringEqualTo,
@@ -107,6 +104,7 @@ func TestFilterQueryOperatorAnd(t *testing.T) {
 			{Operator: filter.CompareOperatorIsGreaterThan, Handler: HandleCompareOperatorIsGreaterThan, MustCondition: true},
 			{Operator: filter.CompareOperatorIsLessThan, Handler: HandleCompareOperatorIsLessThan, MustCondition: true},
 		},
+		FilterFieldMapping: map[string]string{"testName": "testName"},
 	})
 
 	mixedTests := map[string]struct {
@@ -230,9 +228,7 @@ func TestFilterQueryOperatorAnd(t *testing.T) {
 }
 
 func TestFilterQueryOperatorOr(t *testing.T) {
-	prepareFilterFieldMapping()
-
-	SetBoolQuerySettings(BoolQuerySettings{
+	SetQuerySettings(QuerySettings{
 		CompareOperators: []CompareOperator{
 			{Operator: filter.CompareOperatorIsEqualTo, Handler: HandleCompareOperatorIsEqualTo, MustCondition: true},
 			{Operator: filter.CompareOperatorIsNotEqualTo, Handler: HandleCompareOperatorIsEqualTo, MustCondition: false},
@@ -262,6 +258,7 @@ func TestFilterQueryOperatorOr(t *testing.T) {
 			{Operator: filter.CompareOperatorIsGreaterThan, Handler: HandleCompareOperatorIsGreaterThan, MustCondition: true},
 			{Operator: filter.CompareOperatorIsLessThan, Handler: HandleCompareOperatorIsLessThan, MustCondition: true},
 		},
+		FilterFieldMapping: map[string]string{"testName": "testName"},
 	})
 
 	mixedTests := map[string]struct {
@@ -386,8 +383,4 @@ func TestFilterQueryOperatorOr(t *testing.T) {
 				GetContent(t, tc.file), json)
 		})
 	}
-}
-
-func prepareFilterFieldMapping() {
-	filterFieldMapping = map[string]string{"testName": "testName"}
 }
