@@ -20,8 +20,6 @@ func TestBoolQueryBuilder(t *testing.T) {
 		folder testFolder.TestFolder
 	)
 
-	prepareFilterFieldMapping()
-
 	setup := func(t *testing.T) {
 		query = NewBoolQueryBuilder()
 		folder = testFolder.NewTestFolder()
@@ -78,8 +76,6 @@ func TestBoolQueryBuilder(t *testing.T) {
 }
 
 func TestFilterQueryOperatorAnd(t *testing.T) {
-	prepareFilterFieldMapping()
-
 	SetQuerySettings(QuerySettings{
 		CompareOperators: []CompareOperator{
 			{
@@ -232,8 +228,6 @@ func TestFilterQueryOperatorAnd(t *testing.T) {
 }
 
 func TestFilterQueryOperatorOr(t *testing.T) {
-	prepareFilterFieldMapping()
-
 	SetQuerySettings(QuerySettings{
 		CompareOperators: []CompareOperator{
 			{Operator: filter.CompareOperatorIsEqualTo, Handler: HandleCompareOperatorIsEqualTo, MustCondition: true},
@@ -389,10 +383,4 @@ func TestFilterQueryOperatorOr(t *testing.T) {
 				GetContent(t, tc.file), json)
 		})
 	}
-}
-
-func prepareFilterFieldMapping() {
-	SetQuerySettings(QuerySettings{
-		FilterFieldMapping: map[string]string{"testName": "testName"},
-	})
 }
