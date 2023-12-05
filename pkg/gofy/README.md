@@ -19,6 +19,16 @@ elements []T: The slice to search through.
 filterFunction func(element T) bool: The filter function used to test each element in the slice.
 Return Value
 Returns true if any element in the slice satisfies the filter function, otherwise returns false.
+
+###  Examples Usage
+
+```go
+numbers := []int{1, 2, 3, 4, 5}
+isEven := func(n int) bool { return n%2 == 0 }
+fmt.Println(ContainsLambda(numbers, isEven)) // Output: true
+```
+
+
 ### 2. Contains
 The `Contains` function checks if a slice contains a specific value. It works with any comparable type.
 
@@ -33,16 +43,8 @@ value T: The value to search for in the slice.
 Return Value
 Returns true if the value is present in the slice, otherwise returns false.
 
-### Usage Examples
 
-#### Using ContainsLambda
-```go
-numbers := []int{1, 2, 3, 4, 5}
-isEven := func(n int) bool { return n%2 == 0 }
-fmt.Println(ContainsLambda(numbers, isEven)) // Output: true
-```
-
-#### Using Contains
+###  Examples Usage
 ```go
 names := []string{"Alice", "Bob", "Charlie"}
 fmt.Println(Contains(names, "Bob")) // Output: true
@@ -55,9 +57,15 @@ Contains provides a simpler and more direct way to check for the presence of a s
 These functions are generic and can work with slices of any type, but Contains requires the type to be comparable.
 
 
-# MustParseTime(value string) time.Time
+# 3. MustParseTime
 
-This function takes in a string value and returns a time.Time struct. It uses the time.Parse function to parse the input string value into a time.Time struct. If the parsing fails, it will panic with the error. This function is intended to be used in situations where the input string value is known to be a valid RFC3339 formatted date time string, and panicking is preferable to returning an error.
+### Signature
+```go
+func MustParseTime(value string) time.Time
+```
+
+The `MustParseTime` function takes in a string value and returns a time.Time struct. It uses the time.Parse function to parse the input string value into a time.Time struct. If the parsing fails, it 
+will panic with the error. This function is intended to be used in situations where the input string value is known to be a valid RFC3339 formatted date time string, and panicking is preferable to returning an error.
 
 ## Example Usage
 
