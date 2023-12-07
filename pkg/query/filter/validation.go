@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/greenbone/opensight-golang-libraries/pkg/gofy"
+	"github.com/greenbone/opensight-golang-libraries/pkg/slices"
 	"github.com/pkg/errors"
 )
 
@@ -28,7 +28,7 @@ func ValidateFilter(request *Request, requestOptions []RequestOption) error {
 				fieldNameIsValid = true
 
 				// validate field operator
-				fieldCanHaveOperator := gofy.ContainsLambda(requestOption.Operators, func(
+				fieldCanHaveOperator := slices.ContainsLambda(requestOption.Operators, func(
 					operator ReadableValue[CompareOperator],
 				) bool {
 					return field.Operator == operator.Value
@@ -112,7 +112,7 @@ func validateFieldValueType(requestOption RequestOption, fieldName string, field
 		}
 
 		if requestOption.Control.Type == ControlTypeEnum {
-			fieldCanHaveValue := gofy.Contains(requestOption.Values, fieldValue.(string))
+			fieldCanHaveValue := slices.Contains(requestOption.Values, fieldValue.(string))
 			if !fieldCanHaveValue {
 				return NewValidationErrorWithStack("field '%s' can not have the value '%s'", fieldName, fieldValue)
 			}

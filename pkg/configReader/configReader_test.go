@@ -9,6 +9,7 @@ import (
 )
 
 func TestOKReadEnvVarsIntoStruct(t *testing.T) {
+	// given:
 	type Test struct {
 		Field1 string `viperEnv:"THE_VAR_1" default:"a string"`
 		Field2 int    `viperEnv:"THE_VAR_2"`
@@ -20,27 +21,23 @@ func TestOKReadEnvVarsIntoStruct(t *testing.T) {
 	}
 
 	err := os.Setenv("THE_VAR_2", "42")
-	if err != nil {
-		assert.FailNow(t, err.Error())
-	}
-	err = os.Setenv("THE_VAR_4", "Stringdafsf")
-	if err != nil {
-		assert.FailNow(t, err.Error())
-	}
-	err = os.Setenv("THE_VAR_3", "true")
-	if err != nil {
-		assert.FailNow(t, err.Error())
-	}
+	assert.NoError(t, err)
 
+	err = os.Setenv("THE_VAR_4", "Stringdafsf")
+	assert.NoError(t, err)
+
+	err = os.Setenv("THE_VAR_3", "true")
+	assert.NoError(t, err)
+
+	// when:
 	var test Test
 	_, err = ReadEnvVarsIntoStruct(&test)
-	if err != nil {
-		panic(err)
-	}
 
+	// then
+	assert.NoError(t, err)
 	assert.Equal(t, "a string", test.Field1)
 	assert.Equal(t, 42, test.Field2)
 	assert.Equal(t, true, test.Nested.Field3)
 	assert.Equal(t, "Stringdafsf", test.Nested.Field4)
-	assert.Equal(t, time.Second, test.Nested.Filed5)
+	assert.Equal(t, 1*time.Second, test.Nested.Filed5)
 }
