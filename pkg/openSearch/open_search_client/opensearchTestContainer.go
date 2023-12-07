@@ -12,13 +12,13 @@ import (
 )
 
 // Container represents the opensearch container type used in the module
-type OpenSearchTestContainer struct {
+type OpensearchTestContainer struct {
 	testcontainers.Container
 }
 
 const openSearchTestDefaultHttpPort = "9200/tcp"
 
-func StartOpenSearchTestContainer(ctx context.Context) (testcontainers.Container, error) {
+func StartOpensearchTestContainer(ctx context.Context) (testcontainers.Container, error) {
 	req := testcontainers.ContainerRequest{
 		Image:        "opensearchproject/opensearch:2.11.0",
 		ExposedPorts: []string{openSearchTestDefaultHttpPort, "9300/tcp"},
@@ -28,7 +28,7 @@ func StartOpenSearchTestContainer(ctx context.Context) (testcontainers.Container
 			"discovery.type":          "single-node",
 		},
 	}
-	openSearchContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+	opensearchContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          true,
 	})
@@ -36,13 +36,13 @@ func StartOpenSearchTestContainer(ctx context.Context) (testcontainers.Container
 		log.Debug().Msgf("failed to create container: %s", err.Error())
 	}
 
-	host, _ := openSearchContainer.Host(ctx)
-	localPort, _ := openSearchContainer.MappedPort(ctx, openSearchTestDefaultHttpPort)
+	host, _ := opensearchContainer.Host(ctx)
+	localPort, _ := opensearchContainer.MappedPort(ctx, openSearchTestDefaultHttpPort)
 
 	_ = os.Setenv("ELASTIC_HOST", host)
 	_ = os.Setenv("ELASTIC_API_PORT", localPort.Port())
 
-	return openSearchContainer, nil
+	return opensearchContainer, nil
 }
 
 func createWaitStrategyFor() wait.Strategy {
