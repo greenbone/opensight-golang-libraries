@@ -16,7 +16,7 @@ import (
 	"github.com/opensearch-project/opensearch-go/opensearchapi"
 )
 
-func NewSearchEngine(ctx context.Context) (*opensearch.Client, error) {
+func NewOpensearchProjectClient(ctx context.Context) (*opensearch.Client, error) {
 	config, confErr := config.ReadSearchEngineConfig()
 	if confErr != nil {
 		return nil, confErr

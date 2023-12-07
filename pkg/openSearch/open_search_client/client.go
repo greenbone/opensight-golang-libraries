@@ -7,11 +7,12 @@ package open_search_client
 import (
 	"bytes"
 	"fmt"
-	jsoniter "github.com/json-iterator/go"
 	"io"
 	"net/http"
 	"strings"
 	"time"
+
+	jsoniter "github.com/json-iterator/go"
 
 	"github.com/opensearch-project/opensearch-go"
 	"github.com/pkg/errors"
