@@ -6,7 +6,11 @@ package open_search_client
 
 import (
 	"bytes"
+	"fmt"
+	jsoniter "github.com/json-iterator/go"
 	"io"
+	"net/http"
+	"strings"
 	"time"
 
 	"github.com/opensearch-project/opensearch-go"
@@ -80,6 +84,70 @@ func (c *simpleClient) deleteByQuery(indexName string, requestBody []byte, isAsy
 	}
 
 	return GetResponseError(deleteResponse.StatusCode, resultString, indexName)
+}
+
+func (c *simpleClient) SaveToIndex(indexName string, documents [][]byte) error {
+	if len(documents) == 0 {
+		return nil
+	}
+
+	var body strings.Builder
+	body.Reset()
+
+	for _, document := range documents {
+		body.WriteString(fmt.Sprintf(`{"index": { "_index" : "%s"}}`,
+			indexName) + "\n")
+		body.WriteString(string(document) + "\n")
+	}
+
+	insertResponse, err := c.client.Bulk(
+		strings.NewReader(body.String()),
+		c.client.Bulk.WithIndex(indexName),
+		c.client.Bulk.WithRefresh("true"),
+	)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	resultString, err := io.ReadAll(insertResponse.Body)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return GetResponseError(insertResponse.StatusCode, resultString, indexName)
+}
+
+func GetResponseError(statusCode int, responseString []byte, indexName string) error {
+	if statusCode >= 200 && statusCode < 300 {
+		errorResponse := &BulkResponse{}
+		err := jsoniter.Unmarshal(responseString, errorResponse)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		if errorResponse.HasError {
+			return errors.Errorf("request error %v", errorResponse)
+		}
+
+		return nil
+	}
+
+	if statusCode == http.StatusBadRequest {
+		openSearchErrorResponse := &OpenSearchErrorResponse{}
+		err := jsoniter.Unmarshal(responseString, openSearchErrorResponse)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		if openSearchErrorResponse.Error.Type == "resource_already_exists_exception" {
+			return NewOpenSearchResourceAlreadyExistsWithStack(
+				fmt.Sprintf("Resource '%s' already exists", indexName))
+		} else {
+			return NewOpenSearchErrorWithStack(openSearchErrorResponse.Error.Reason)
+		}
+	} else {
+		return NewOpenSearchErrorWithStack(string(responseString))
+	}
 }
 
 func (c *simpleClient) Close() {
