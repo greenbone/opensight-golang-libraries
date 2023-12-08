@@ -8,7 +8,7 @@ import (
 )
 
 func TestHandleCompareOperator(t *testing.T) {
-	SetQuerySettings(QuerySettings{
+	querySettings := QuerySettings{
 		WildcardArrays: map[string]bool{
 			"asset.ips":          true,
 			"asset.macAddresses": true,
@@ -23,11 +23,11 @@ func TestHandleCompareOperator(t *testing.T) {
 				FieldValueName: "asset.tags.tagvalue",
 			},
 		},
-	})
+	}
 
 	tests := []struct {
 		name     string
-		handler  func(string, []string, any) esquery.Mappable
+		handler  CompareOperatorHandler
 		field    string
 		keys     []string
 		value    any
@@ -96,7 +96,7 @@ func TestHandleCompareOperator(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.expected, tt.handler(tt.field, tt.keys, tt.value))
+			assert.Equal(t, tt.expected, tt.handler(tt.field, tt.keys, tt.value, &querySettings))
 		})
 	}
 }
