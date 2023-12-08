@@ -87,9 +87,9 @@ func (c *client) deleteByQuery(indexName string, requestBody []byte, isAsync boo
 	return GetResponseError(deleteResponse.StatusCode, resultString, indexName)
 }
 
-func (c *client) SaveToIndex(indexName string, documents [][]byte) error {
+func SerializeDocumentsForBulkUpdate[T Identifiable](indexName string, documents []T) ([]byte, error) {
 	if len(documents) == 0 {
-		return nil
+		return nil, fmt.Errorf("no documents to serialize")
 	}
 
 	var body strings.Builder
@@ -98,11 +98,18 @@ func (c *client) SaveToIndex(indexName string, documents [][]byte) error {
 	for _, document := range documents {
 		body.WriteString(fmt.Sprintf(`{"index": { "_index" : "%s"}}`,
 			indexName) + "\n")
-		body.WriteString(string(document) + "\n")
+		documentJson, err := jsoniter.Marshal(document)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		body.WriteString(string(documentJson) + "\n")
 	}
+	return []byte(body.String()), nil
+}
 
+func (c *client) BulkUpdate(indexName string, requestBody []byte) error {
 	insertResponse, err := c.opensearchProjectClient.Bulk(
-		strings.NewReader(body.String()),
+		bytes.NewReader(requestBody),
 		c.opensearchProjectClient.Bulk.WithIndex(indexName),
 		c.opensearchProjectClient.Bulk.WithRefresh("true"),
 	)
