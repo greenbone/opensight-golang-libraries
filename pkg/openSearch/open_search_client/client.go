@@ -19,24 +19,24 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type simpleClient struct {
-	client *opensearch.Client
-	queue  *requestQueue
+type client struct {
+	opensearchProjectClient *opensearch.Client
+	queue                   *requestQueue
 }
 
-func NewSimpleClient(client *opensearch.Client, updateMaxRetries int, updateRetryDelay time.Duration) *simpleClient {
-	c := &simpleClient{
-		client: client,
+func NewClient(opensearchProjectClient *opensearch.Client, updateMaxRetries int, updateRetryDelay time.Duration) *client {
+	c := &client{
+		opensearchProjectClient: opensearchProjectClient,
 	}
-	c.queue = NewRequestQueue(client, updateMaxRetries, updateRetryDelay)
+	c.queue = NewRequestQueue(opensearchProjectClient, updateMaxRetries, updateRetryDelay)
 	return c
 }
 
-func (c *simpleClient) Search(indexName string, requestBody []byte) (responseBody []byte, err error) {
+func (c *client) Search(indexName string, requestBody []byte) (responseBody []byte, err error) {
 	log.Debug().Msgf("search requestBody: %s", string(requestBody))
-	searchResponse, err := c.client.Search(
-		c.client.Search.WithIndex(indexName),
-		c.client.Search.WithBody(bytes.NewReader(requestBody)),
+	searchResponse, err := c.opensearchProjectClient.Search(
+		c.opensearchProjectClient.Search.WithIndex(indexName),
+		c.opensearchProjectClient.Search.WithBody(bytes.NewReader(requestBody)),
 	)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -56,24 +56,24 @@ func (c *simpleClient) Search(indexName string, requestBody []byte) (responseBod
 	return result, nil
 }
 
-func (c *simpleClient) Update(indexName string, requestBody []byte) (responseBody []byte, err error) {
+func (c *client) Update(indexName string, requestBody []byte) (responseBody []byte, err error) {
 	return c.queue.Update(indexName, requestBody)
 }
 
-func (c *simpleClient) AsyncDeleteByQuery(indexName string, requestBody []byte) error {
+func (c *client) AsyncDeleteByQuery(indexName string, requestBody []byte) error {
 	return c.deleteByQuery(indexName, requestBody, true)
 }
 
-func (c *simpleClient) DeleteByQuery(indexName string, requestBody []byte) error {
+func (c *client) DeleteByQuery(indexName string, requestBody []byte) error {
 	return c.deleteByQuery(indexName, requestBody, false)
 }
 
 // deleteByQuery deletes documents by a query
-func (c *simpleClient) deleteByQuery(indexName string, requestBody []byte, isAsync bool) error {
-	deleteResponse, err := c.client.DeleteByQuery(
+func (c *client) deleteByQuery(indexName string, requestBody []byte, isAsync bool) error {
+	deleteResponse, err := c.opensearchProjectClient.DeleteByQuery(
 		[]string{indexName},
 		bytes.NewReader(requestBody),
-		c.client.DeleteByQuery.WithWaitForCompletion(!isAsync),
+		c.opensearchProjectClient.DeleteByQuery.WithWaitForCompletion(!isAsync),
 	)
 	if err != nil {
 		return errors.WithStack(err)
@@ -87,7 +87,7 @@ func (c *simpleClient) deleteByQuery(indexName string, requestBody []byte, isAsy
 	return GetResponseError(deleteResponse.StatusCode, resultString, indexName)
 }
 
-func (c *simpleClient) SaveToIndex(indexName string, documents [][]byte) error {
+func (c *client) SaveToIndex(indexName string, documents [][]byte) error {
 	if len(documents) == 0 {
 		return nil
 	}
@@ -101,10 +101,10 @@ func (c *simpleClient) SaveToIndex(indexName string, documents [][]byte) error {
 		body.WriteString(string(document) + "\n")
 	}
 
-	insertResponse, err := c.client.Bulk(
+	insertResponse, err := c.opensearchProjectClient.Bulk(
 		strings.NewReader(body.String()),
-		c.client.Bulk.WithIndex(indexName),
-		c.client.Bulk.WithRefresh("true"),
+		c.opensearchProjectClient.Bulk.WithIndex(indexName),
+		c.opensearchProjectClient.Bulk.WithRefresh("true"),
 	)
 	if err != nil {
 		return errors.WithStack(err)
@@ -151,6 +151,6 @@ func GetResponseError(statusCode int, responseString []byte, indexName string) e
 	}
 }
 
-func (c *simpleClient) Close() {
+func (c *client) Close() {
 	c.queue.Stop()
 }
