@@ -16,7 +16,7 @@ import (
 	"github.com/opensearch-project/opensearch-go/opensearchapi"
 )
 
-func NewOpensearchProjectClient(config config.SearchEngineConfig, ctx context.Context) (*opensearch.Client, error) {
+func NewOpensearchProjectClient(ctx context.Context, config config.OpensearchClientConfig) (*opensearch.Client, error) {
 	protocol := "http"
 	if config.Https {
 		protocol = "https"

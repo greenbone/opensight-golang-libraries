@@ -2,8 +2,8 @@ package open_search_client
 
 import (
 	"context"
+	"github.com/greenbone/opensight-golang-libraries/pkg/openSearch/open_search_client/config"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -18,7 +18,7 @@ type OpensearchTestContainer struct {
 
 const openSearchTestDefaultHttpPort = "9200/tcp"
 
-func StartOpensearchTestContainer(ctx context.Context) (testcontainers.Container, error) {
+func StartOpensearchTestContainer(ctx context.Context) (testcontainers.Container, config.OpensearchClientConfig, error) {
 	req := testcontainers.ContainerRequest{
 		Image:        "opensearchproject/opensearch:2.11.0",
 		ExposedPorts: []string{openSearchTestDefaultHttpPort, "9300/tcp"},
@@ -39,10 +39,13 @@ func StartOpensearchTestContainer(ctx context.Context) (testcontainers.Container
 	host, _ := opensearchContainer.Host(ctx)
 	localPort, _ := opensearchContainer.MappedPort(ctx, openSearchTestDefaultHttpPort)
 
-	_ = os.Setenv("ELASTIC_HOST", host)
-	_ = os.Setenv("ELASTIC_API_PORT", localPort.Port())
+	conf := config.OpensearchClientConfig{
+		Host:  host,
+		Port:  localPort.Int(),
+		Https: false,
+	}
 
-	return opensearchContainer, nil
+	return opensearchContainer, conf, nil
 }
 
 func createWaitStrategyFor() wait.Strategy {
