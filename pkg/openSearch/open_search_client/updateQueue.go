@@ -26,21 +26,21 @@ type Request struct {
 }
 
 type requestQueue struct {
-	client           *opensearch.Client
-	queue            chan *Request
-	stop             chan bool
-	wg               sync.WaitGroup
-	updateMaxRetries int
-	updateRetryDelay time.Duration
+	opensearchProjectClient *opensearch.Client
+	queue                   chan *Request
+	stop                    chan bool
+	wg                      sync.WaitGroup
+	updateMaxRetries        int
+	updateRetryDelay        time.Duration
 }
 
-func NewRequestQueue(client *opensearch.Client, updateMaxRetries int, updateRetryDelay time.Duration) *requestQueue {
+func NewRequestQueue(opensearchProjectClient *opensearch.Client, updateMaxRetries int, updateRetryDelay time.Duration) *requestQueue {
 	rQueue := &requestQueue{
-		client:           client,
-		queue:            make(chan *Request, 10),
-		stop:             make(chan bool),
-		updateMaxRetries: updateMaxRetries,
-		updateRetryDelay: updateRetryDelay,
+		opensearchProjectClient: opensearchProjectClient,
+		queue:                   make(chan *Request, 10),
+		stop:                    make(chan bool),
+		updateMaxRetries:        updateMaxRetries,
+		updateRetryDelay:        updateRetryDelay,
 	}
 	rQueue.start()
 	return rQueue
@@ -120,7 +120,7 @@ func (q *requestQueue) update(indexName string, requestBody []byte) ([]byte, err
 			Pretty: true,
 		}
 
-		updateResponse, err = req.Do(context.Background(), q.client)
+		updateResponse, err = req.Do(context.Background(), q.opensearchProjectClient)
 		if err != nil {
 			log.Info().Err(err).Msgf("Attempt %d: Error in req.Do", i+1)
 			time.Sleep(q.updateRetryDelay)
