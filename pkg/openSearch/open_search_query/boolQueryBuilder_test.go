@@ -16,12 +16,15 @@ import (
 // TODO free from JSON generation for easier testing?
 func TestBoolQueryBuilder(t *testing.T) {
 	var (
-		query  *BoolQueryBuilder
+		query  *boolQueryBuilder
 		folder testFolder.TestFolder
 	)
 
 	setup := func(t *testing.T) {
-		query = NewBoolQueryBuilder()
+		querySettings := QuerySettings{
+			FilterFieldMapping: map[string]string{"testName": "testName"},
+		}
+		query = NewBoolQueryBuilder(&querySettings)
 		folder = testFolder.NewTestFolder()
 	}
 
@@ -46,16 +49,6 @@ func TestBoolQueryBuilder(t *testing.T) {
 	t.Run("shouldReturnJsonForFilterTermWithFilterRequest", func(t *testing.T) {
 		setup(t)
 
-		SetQuerySettings(QuerySettings{
-			CompareOperators: []CompareOperator{
-				{
-					Operator: filter.CompareOperatorBeginsWith,
-					Handler:  HandleCompareOperatorBeginsWith, MustCondition: true,
-				},
-			},
-			FilterFieldMapping: map[string]string{"testName": "testName"},
-		})
-
 		query.AddTermFilter("foo", "bar")
 		err := query.AddFilterRequest(&filter.Request{
 			Operator: filter.LogicOperatorAnd,
@@ -76,36 +69,9 @@ func TestBoolQueryBuilder(t *testing.T) {
 }
 
 func TestFilterQueryOperatorAnd(t *testing.T) {
-	SetQuerySettings(QuerySettings{
-		CompareOperators: []CompareOperator{
-			{
-				Operator: filter.CompareOperatorIsStringEqualTo,
-				Handler:  HandleCompareOperatorIsKeywordEqualTo, MustCondition: true,
-			},
-			{
-				Operator: filter.CompareOperatorIsStringNotEqualTo,
-				Handler:  HandleCompareOperatorIsKeywordEqualTo, MustCondition: false,
-			},
-			{Operator: filter.CompareOperatorContains, Handler: HandleCompareOperatorContains, MustCondition: true},
-			{Operator: filter.CompareOperatorDoesNotContain, Handler: HandleCompareOperatorContains, MustCondition: false},
-			{Operator: filter.CompareOperatorBeginsWith, Handler: HandleCompareOperatorBeginsWith, MustCondition: true},
-			{
-				Operator: filter.CompareOperatorDoesNotBeginWith,
-				Handler:  HandleCompareOperatorNotBeginsWith, MustCondition: true,
-			},
-			{
-				Operator: filter.CompareOperatorIsLessThanOrEqualTo,
-				Handler:  HandleCompareOperatorIsLessThanOrEqualTo, MustCondition: true,
-			},
-			{
-				Operator: filter.CompareOperatorIsGreaterThanOrEqualTo,
-				Handler:  HandleCompareOperatorIsGreaterThanOrEqualTo, MustCondition: true,
-			},
-			{Operator: filter.CompareOperatorIsGreaterThan, Handler: HandleCompareOperatorIsGreaterThan, MustCondition: true},
-			{Operator: filter.CompareOperatorIsLessThan, Handler: HandleCompareOperatorIsLessThan, MustCondition: true},
-		},
+	querySettings := QuerySettings{
 		FilterFieldMapping: map[string]string{"testName": "testName"},
-	})
+	}
 
 	mixedTests := map[string]struct {
 		file     string
@@ -162,7 +128,7 @@ func TestFilterQueryOperatorAnd(t *testing.T) {
 	}
 	for name, tc := range mixedTests {
 		t.Run(name, func(t *testing.T) {
-			query := NewBoolQueryBuilder()
+			query := NewBoolQueryBuilder(&querySettings)
 			err := query.AddFilterRequest(&filter.Request{
 				Operator: filter.LogicOperatorAnd,
 				Fields: []filter.RequestField{
@@ -206,7 +172,7 @@ func TestFilterQueryOperatorAnd(t *testing.T) {
 	}
 	for name, tc := range singleValueTests {
 		t.Run(name, func(t *testing.T) {
-			query := NewBoolQueryBuilder()
+			query := NewBoolQueryBuilder(&querySettings)
 			err := query.AddFilterRequest(&filter.Request{
 				Operator: filter.LogicOperatorAnd,
 				Fields: []filter.RequestField{
@@ -228,38 +194,9 @@ func TestFilterQueryOperatorAnd(t *testing.T) {
 }
 
 func TestFilterQueryOperatorOr(t *testing.T) {
-	SetQuerySettings(QuerySettings{
-		CompareOperators: []CompareOperator{
-			{Operator: filter.CompareOperatorIsEqualTo, Handler: HandleCompareOperatorIsEqualTo, MustCondition: true},
-			{Operator: filter.CompareOperatorIsNotEqualTo, Handler: HandleCompareOperatorIsEqualTo, MustCondition: false},
-			{
-				Operator: filter.CompareOperatorIsStringEqualTo,
-				Handler:  HandleCompareOperatorIsKeywordEqualTo, MustCondition: true,
-			},
-			{
-				Operator: filter.CompareOperatorIsStringNotEqualTo,
-				Handler:  HandleCompareOperatorIsKeywordEqualTo, MustCondition: false,
-			},
-			{Operator: filter.CompareOperatorContains, Handler: HandleCompareOperatorContains, MustCondition: true},
-			{Operator: filter.CompareOperatorDoesNotContain, Handler: HandleCompareOperatorContains, MustCondition: false},
-			{Operator: filter.CompareOperatorBeginsWith, Handler: HandleCompareOperatorBeginsWith, MustCondition: true},
-			{
-				Operator: filter.CompareOperatorDoesNotBeginWith,
-				Handler:  HandleCompareOperatorNotBeginsWith, MustCondition: true,
-			},
-			{
-				Operator: filter.CompareOperatorIsLessThanOrEqualTo,
-				Handler:  HandleCompareOperatorIsLessThanOrEqualTo, MustCondition: true,
-			},
-			{
-				Operator: filter.CompareOperatorIsGreaterThanOrEqualTo,
-				Handler:  HandleCompareOperatorIsGreaterThanOrEqualTo, MustCondition: true,
-			},
-			{Operator: filter.CompareOperatorIsGreaterThan, Handler: HandleCompareOperatorIsGreaterThan, MustCondition: true},
-			{Operator: filter.CompareOperatorIsLessThan, Handler: HandleCompareOperatorIsLessThan, MustCondition: true},
-		},
+	querySettings := QuerySettings{
 		FilterFieldMapping: map[string]string{"testName": "testName"},
-	})
+	}
 
 	mixedTests := map[string]struct {
 		file     string
@@ -321,7 +258,7 @@ func TestFilterQueryOperatorOr(t *testing.T) {
 	}
 	for name, tc := range mixedTests {
 		t.Run(name, func(t *testing.T) {
-			query := NewBoolQueryBuilder()
+			query := NewBoolQueryBuilder(&querySettings)
 			err := query.AddFilterRequest(&filter.Request{
 				Operator: filter.LogicOperatorOr,
 				Fields: []filter.RequestField{
@@ -364,7 +301,7 @@ func TestFilterQueryOperatorOr(t *testing.T) {
 	}
 	for name, tc := range singleValueTests {
 		t.Run(name, func(t *testing.T) {
-			query := NewBoolQueryBuilder()
+			query := NewBoolQueryBuilder(&querySettings)
 			err := query.AddFilterRequest(&filter.Request{
 				Operator: filter.LogicOperatorAnd,
 				Fields: []filter.RequestField{

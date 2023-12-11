@@ -20,6 +20,14 @@ type SearchResponseHits[T Identifiable] struct {
 	SearchHits []SearchResponseHit[T] `json:"hits"`
 }
 
+type KeepJsonAsString []byte
+
+func (k *KeepJsonAsString) UnmarshalJSON(data []byte) error {
+	*k = data
+
+	return nil
+}
+
 type DynamicAggregationHits struct {
 	Total      SearchResponseHitsTotal `json:"total"`
 	SearchHits KeepJsonAsString        `json:"hits"`
