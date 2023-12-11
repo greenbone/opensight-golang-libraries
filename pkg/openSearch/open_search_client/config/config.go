@@ -9,14 +9,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type SearchEngineConfig struct {
+type OpensearchClientConfig struct {
 	Host  string `validate:"required" viperEnv:"ELASTIC_HOST"`
 	Port  int    `validate:"required,min=1,max=65535" viperEnv:"ELASTIC_API_PORT"`
 	Https bool   `viperEnv:"ELASTIC_HTTPS"`
 }
 
-func ReadSearchEngineConfig() (SearchEngineConfig, error) {
-	config := &SearchEngineConfig{}
+func ReadOpensearchClientConfig() (OpensearchClientConfig, error) {
+	config := &OpensearchClientConfig{}
 	_, err := configReader.ReadEnvVarsIntoStruct(config)
 	if err != nil {
 		return *config, err

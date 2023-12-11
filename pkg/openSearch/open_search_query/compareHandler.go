@@ -13,25 +13,25 @@ import (
 )
 
 // HandleCompareOperatorIsEqualTo handles is equal to
-func HandleCompareOperatorIsEqualTo(fieldName string, fieldKeys []string, fieldValue any) esquery.Mappable {
-	return createTermQuery(fieldName, fieldValue, fieldKeys)
+func HandleCompareOperatorIsEqualTo(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
+	return createTermQuery(fieldName, fieldValue, fieldKeys, querySettings)
 }
 
 // HandleCompareOperatorIsKeywordEqualTo handles is keyword field equal to
-func HandleCompareOperatorIsKeywordEqualTo(fieldName string, fieldKeys []string, fieldValue any) esquery.Mappable {
-	return createTermQuery(fieldName+".keyword", fieldValue, fieldKeys)
+func HandleCompareOperatorIsKeywordEqualTo(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
+	return createTermQuery(fieldName+".keyword", fieldValue, fieldKeys, querySettings)
 }
 
 // HandleCompareOperatorContains handles contains
-func HandleCompareOperatorContains(fieldName string, fieldKeys []string, fieldValue any) esquery.Mappable {
-	if actualBoolQuerySettings.UseNestedMatchQueryFields != nil &&
-		actualBoolQuerySettings.UseNestedMatchQueryFields[fieldName] {
-		return nestedHandleCompareOperatorContains(fieldName, fieldKeys, fieldValue)
+func HandleCompareOperatorContains(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
+	if querySettings.UseNestedMatchQueryFields != nil &&
+		querySettings.UseNestedMatchQueryFields[fieldName] {
+		return nestedHandleCompareOperatorContains(fieldName, fieldKeys, fieldValue, querySettings)
 	}
 	// for list of values
-	if actualBoolQuerySettings.WildcardArrays != nil &&
-		actualBoolQuerySettings.WildcardArrays[fieldName] {
-		return handleCompareOperatorContainsDifferent(fieldName, nil, fieldValue)
+	if querySettings.WildcardArrays != nil &&
+		querySettings.WildcardArrays[fieldName] {
+		return handleCompareOperatorContainsDifferent(fieldName, nil, fieldValue, querySettings)
 	} else {
 		if values, ok := fieldValue.([]interface{}); ok {
 			return esquery.Bool().
@@ -47,9 +47,9 @@ func HandleCompareOperatorContains(fieldName string, fieldKeys []string, fieldVa
 	}
 }
 
-func nestedHandleCompareOperatorContains(fieldName string, fieldKeys []string, fieldValue any) esquery.Mappable {
+func nestedHandleCompareOperatorContains(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
 	// Special case as now for one input we need to queries to be set (for name and value)
-	nestedFieldSetting := findNestedFieldByName(fieldName)
+	nestedFieldSetting := findNestedFieldByName(fieldName, querySettings)
 	if nestedFieldSetting != nil && len(fieldKeys) == 1 {
 		query1 := Nested(nestedFieldSetting.FieldKeyName, *esquery.Bool().
 			Must(
@@ -60,7 +60,7 @@ func nestedHandleCompareOperatorContains(fieldName string, fieldKeys []string, f
 	return nil
 }
 
-func handleCompareOperatorContainsDifferent(fieldName string, fieldKeys []string, fieldValue any) esquery.Mappable {
+func handleCompareOperatorContainsDifferent(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
 	if values, ok := fieldValue.([]interface{}); ok {
 		return esquery.Bool().
 			Should(
@@ -75,7 +75,7 @@ func handleCompareOperatorContainsDifferent(fieldName string, fieldKeys []string
 }
 
 // HandleCompareOperatorBeginsWith handles begins with
-func HandleCompareOperatorBeginsWith(fieldName string, fieldKeys []string, fieldValue any) esquery.Mappable {
+func HandleCompareOperatorBeginsWith(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
 	// for list of values
 	if values, ok := fieldValue.([]interface{}); ok {
 		return esquery.Bool().
@@ -90,7 +90,7 @@ func HandleCompareOperatorBeginsWith(fieldName string, fieldKeys []string, field
 	}
 }
 
-func HandleCompareOperatorNotBeginsWith(fieldName string, fieldKeys []string, fieldValue any) esquery.Mappable {
+func HandleCompareOperatorNotBeginsWith(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
 	// for list of values
 	if values, ok := fieldValue.([]interface{}); ok {
 		return esquery.Bool().
@@ -105,32 +105,34 @@ func HandleCompareOperatorNotBeginsWith(fieldName string, fieldKeys []string, fi
 }
 
 // HandleCompareOperatorIsLessThanOrEqualTo handles is less than or equal to
-func HandleCompareOperatorIsLessThanOrEqualTo(fieldName string, fieldKeys []string, fieldValue any) esquery.Mappable {
+func HandleCompareOperatorIsLessThanOrEqualTo(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
 	return esquery.Range(fieldName).
 		Lte(fieldValue)
 }
 
 // HandleCompareOperatorIsGreaterThanOrEqualTo handles is greater than or equal to
-func HandleCompareOperatorIsGreaterThanOrEqualTo(fieldName string, fieldKeys []string, fieldValue any) esquery.Mappable {
+func HandleCompareOperatorIsGreaterThanOrEqualTo(fieldName string, fieldKeys []string,
+	fieldValue any, querySettings *QuerySettings,
+) esquery.Mappable {
 	return esquery.Range(fieldName).
 		Gte(fieldValue)
 }
 
 // HandleCompareOperatorIsGreaterThan handles is greater than
-func HandleCompareOperatorIsGreaterThan(fieldName string, fieldKeys []string, fieldValue any) esquery.Mappable {
+func HandleCompareOperatorIsGreaterThan(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
 	return esquery.Range(fieldName).
 		Gt(fieldValue)
 }
 
 // HandleCompareOperatorIsLessThan handles is less than
-func HandleCompareOperatorIsLessThan(fieldName string, fieldKeys []string, fieldValue any) esquery.Mappable {
+func HandleCompareOperatorIsLessThan(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
 	return esquery.Range(fieldName).
 		Lt(fieldValue)
 }
 
-func simpleNestedMatchQuery(fieldName string, fieldKeys []string, fieldValue any) esquery.Mappable {
+func simpleNestedMatchQuery(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
 	// Special case as now for one input we need to queries to be set (for name and value)
-	nestedFieldSetting := findNestedFieldByName(fieldName)
+	nestedFieldSetting := findNestedFieldByName(fieldName, querySettings)
 	if nestedFieldSetting != nil && len(fieldKeys) == 1 {
 		query1 := Nested(nestedFieldSetting.FieldName, *esquery.Bool().Must(
 			esquery.Match(nestedFieldSetting.FieldKeyName, fieldKeys[0]),
@@ -140,10 +142,10 @@ func simpleNestedMatchQuery(fieldName string, fieldKeys []string, fieldValue any
 	return nil
 }
 
-func createTermQuery(fieldName string, fieldValue any, fieldKeys []string) esquery.Mappable {
-	if actualBoolQuerySettings.UseNestedMatchQueryFields != nil &&
-		actualBoolQuerySettings.UseNestedMatchQueryFields[fieldName] {
-		return simpleNestedMatchQuery(fieldName, fieldKeys, fieldValue)
+func createTermQuery(fieldName string, fieldValue any, fieldKeys []string, querySettings *QuerySettings) esquery.Mappable {
+	if querySettings.UseNestedMatchQueryFields != nil &&
+		querySettings.UseNestedMatchQueryFields[fieldName] {
+		return simpleNestedMatchQuery(fieldName, fieldKeys, fieldValue, querySettings)
 	}
 	// for list of values
 	if values, ok := fieldValue.([]interface{}); ok {
@@ -151,18 +153,18 @@ func createTermQuery(fieldName string, fieldValue any, fieldKeys []string) esque
 			return nil
 		}
 
-		if actualBoolQuerySettings.IsEqualToKeywordFields != nil &&
-			actualBoolQuerySettings.IsEqualToKeywordFields[fieldName] {
+		if querySettings.IsEqualToKeywordFields != nil &&
+			querySettings.IsEqualToKeywordFields[fieldName] {
 			fieldName = fieldName + ".keyword"
 		}
-		if actualBoolQuerySettings.UseMatchPhrase != nil &&
-			actualBoolQuerySettings.UseMatchPhrase[fieldName] {
+		if querySettings.UseMatchPhrase != nil &&
+			querySettings.UseMatchPhrase[fieldName] {
 			return esquery.MatchPhrase(fieldName, values...)
 		}
 		return esquery.Terms(fieldName, values...)
 	} else { // for single values
-		if actualBoolQuerySettings.UseMatchPhrase != nil &&
-			actualBoolQuerySettings.UseMatchPhrase[fieldName] {
+		if querySettings.UseMatchPhrase != nil &&
+			querySettings.UseMatchPhrase[fieldName] {
 			return esquery.MatchPhrase(fieldName, fieldValue)
 		}
 		return esquery.Term(fieldName, fieldValue)
@@ -184,11 +186,11 @@ func valueToString(value interface{}) string {
 	}
 }
 
-func findNestedFieldByName(name string) *NestedQueryFieldDefinition {
-	if actualBoolQuerySettings.NestedQueryFieldDefinitions == nil {
+func findNestedFieldByName(name string, querySettings *QuerySettings) *NestedQueryFieldDefinition {
+	if querySettings.NestedQueryFieldDefinitions == nil {
 		return nil
 	}
-	for _, field := range actualBoolQuerySettings.NestedQueryFieldDefinitions {
+	for _, field := range querySettings.NestedQueryFieldDefinitions {
 		if field.FieldName == name {
 			return &field // Gibt die Adresse des gefundenen Feldes zurück
 		}
