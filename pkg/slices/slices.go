@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-package gofy
+package slices
 
 func ContainsLambda[T any](elements []T, filterFunction func(element T) bool) bool {
 	for _, element := range elements {
