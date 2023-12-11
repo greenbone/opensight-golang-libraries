@@ -4,31 +4,31 @@
 
 package open_search_query
 
-import "github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
+import queryFilter "github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
 
-func EffectiveFilterFields(filterRequest filter.Request) (filter.Request, error) {
-	var filterFields []filter.RequestField
+func EffectiveFilterFields(filterRequest queryFilter.Request, fieldMapping map[string]string) (queryFilter.Request, error) {
+	var filterFields []queryFilter.RequestField
 	for _, field := range filterRequest.Fields {
-		mappedField, err := createMappedField(field)
+		mappedField, err := createMappedField(field, fieldMapping)
 		if err != nil {
-			return filter.Request{}, err
+			return queryFilter.Request{}, err
 		}
 		filterFields = append(filterFields, mappedField)
 	}
-	return filter.Request{
+	return queryFilter.Request{
 		Operator: filterRequest.Operator,
 		Fields:   filterFields,
 	}, nil
 }
 
-func createMappedField(dtoField filter.RequestField) (filter.RequestField, error) {
-	entityName, ok := actualBoolQuerySettings.FilterFieldMapping[dtoField.Name]
+func createMappedField(dtoField queryFilter.RequestField, fieldMapping map[string]string) (queryFilter.RequestField, error) {
+	entityName, ok := fieldMapping[dtoField.Name]
 	if !ok {
-		return filter.RequestField{}, filter.NewInvalidFilterFieldError(
+		return queryFilter.RequestField{}, queryFilter.NewInvalidFilterFieldError(
 			"Mapping for filter field '%s' is currently not implemented.", dtoField.Name)
 	}
 
-	return filter.RequestField{
+	return queryFilter.RequestField{
 		Operator: dtoField.Operator,
 		Keys:     dtoField.Keys,
 		Name:     entityName,

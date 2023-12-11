@@ -54,7 +54,7 @@ func TestSorting(t *testing.T) {
 
 	for name := range testCases {
 		t.Run(name, func(t *testing.T) {
-			q := NewBoolQueryBuilder()
+			q := NewBoolQueryBuilder(&QuerySettings{})
 			subAggs := []esquery.Aggregation{}
 			subAggs, err := AddMaxAggForSorting(subAggs, testCases[name].SortingRequest)
 			if testCases[name].ExpectedErrorMessage != "" {
