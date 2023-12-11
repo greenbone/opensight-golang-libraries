@@ -13,7 +13,7 @@ import (
 
 func TestAggregation(t *testing.T) {
 	t.Run("shouldCreateJsonForNestedAggregations", func(t *testing.T) {
-		query := NewBoolQueryBuilder()
+		query := NewBoolQueryBuilder(&QuerySettings{})
 		query.AddAggregation(
 			TermsAgg("aggNameOne", "hostname").
 				Aggs(
