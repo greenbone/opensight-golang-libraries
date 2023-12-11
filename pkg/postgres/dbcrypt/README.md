@@ -48,5 +48,5 @@ func (a *MyTable) AfterFind(tx *gorm.DB) (err error) {
 
 ```
 
-In this example, a Person struct is created and encrypted using the DBCrypt struct. The encrypted struct is then saved to the database, and finally, the struct is decrypted when the gorm hook is 
+In this example, a Person struct is created and encrypted using the DBCrypt struct. The encrypted struct is then saved to the database. Finally the struct is decrypted when the gorm hook is 
 activated.
