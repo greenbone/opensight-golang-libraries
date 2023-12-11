@@ -19,9 +19,6 @@ func (a *ScriptedSumAggregation) Name() string {
 }
 
 // Map returns a map representation of the ScriptedSumAggregation.
-// The map includes a "sum" key with a corresponding value that contains another map.
-// Inside this inner map, there is a "script" key with a value of another map.
-// This final map has a "source" key with a value equal to the script field of the ScriptedSumAggregation instance.
 func (a *ScriptedSumAggregation) Map() map[string]interface{} {
 	return map[string]interface{}{
 		"sum": map[string]interface{}{
