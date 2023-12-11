@@ -3,15 +3,30 @@ package esextensions
 // ... other imports
 import "github.com/aquasecurity/esquery"
 
+// ScriptedSumAggregation represents an aggregation that calculates the sum using a scripted expression.
 type ScriptedSumAggregation struct {
 	name   string
 	script string
 }
 
+// Name returns the name of the ScriptedSumAggregation.
+//
+// Example Usage:
+//
+//	a := ScriptedSumAgg("testName", "testScript")
+//	name := a.Name()
+//
+// Returns:
+//
+//	The name of the ScriptedSumAggregation.
 func (a *ScriptedSumAggregation) Name() string {
 	return a.name
 }
 
+// Map returns a map representation of the ScriptedSumAggregation.
+// The map includes a "sum" key with a corresponding value that contains another map.
+// Inside this inner map, there is a "script" key with a value of another map.
+// This final map has a "source" key with a value equal to the script field of the ScriptedSumAggregation instance.
 func (a *ScriptedSumAggregation) Map() map[string]interface{} {
 	return map[string]interface{}{
 		"sum": map[string]interface{}{
@@ -22,6 +37,22 @@ func (a *ScriptedSumAggregation) Map() map[string]interface{} {
 	}
 }
 
+// ScriptedSumAgg is a function that creates a new instance of ScriptedSumAggregation.
+// It takes the name and script as parameters and returns a pointer to the ScriptedSumAggregation struct.
+// Example usage:
+//
+//	  a := ScriptedSumAgg("testName", "testScript")
+//	  if a.Name() != "testName" {
+//				t.Errorf("Expected name to be %s, but got %s", "testName", a.Name())
+//	  }
+//
+//	  if !reflect.DeepEqual(a.Map(), expectedMap) {
+//				t.Errorf("Expected map to be %+v, but got %+v", expectedMap, a.Map())
+//	  }
+//
+//	  if a.name != "testName" || a.script != "testScript" {
+//				t.Errorf("Expected name and script to be %s and %s, but got %s and %s", "testName", "testScript", a.name, a.script)
+//	  }
 func ScriptedSumAgg(name string, script string) *ScriptedSumAggregation {
 	return &ScriptedSumAggregation{
 		name:   name,

@@ -9,7 +9,14 @@ type Request struct {
 	PageSize  int `json:"size"`
 }
 
-// AddRequest adds the paging and sorting information to the transaction
+// AddRequest adds pagination to the gorm transaction based on the given request.
+//
+// transaction: The GORM database transaction.
+// request: The request object containing pagination information.
+//   - PageIndex: The index of the page to retrieve (starting from 0).
+//   - PageSize: The number of records to retrieve per page.
+//
+// Returns the modified transaction with the pagination applied.
 func AddRequest(transaction *gorm.DB, request *Request) *gorm.DB {
 	offset := 0
 	if request.PageIndex >= 0 {

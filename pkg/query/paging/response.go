@@ -1,5 +1,6 @@
 package paging
 
+// Response represents a response object containing information about pagination and total count of records.
 type Response struct {
 	PageIndex     int    `json:"index"`
 	PageSize      int    `json:"size"`

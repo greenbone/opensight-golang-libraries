@@ -6,17 +6,25 @@ import (
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/sorting"
 )
 
-// ResponseListWithMetadata represents a list of responses including the filter and paging metadata.
+// ResponseListWithMetadata represents a response containing a list of data with associated metadata.
+//
+// The 'Metadata' field is of type 'Metadata' includes filter, paging, and sorting information used in the query.
+// The 'Data' field is a slice of type 'T' and represents the data retrieved.
 type ResponseListWithMetadata[T any] struct {
 	Metadata Metadata `json:"metadata" binding:"required"`
 	Data     []T      `json:"data" binding:"required"`
 }
 
+// ResponseWithMetadata represents a response with associated metadata.
+// The metadata includes filter, paging, and sorting information.
+// The 'Metadata' field is of type 'Metadata' and is required.
+// The 'Data' field is of type 'T' and is also required.
 type ResponseWithMetadata[T any] struct {
 	Metadata Metadata `json:"metadata" binding:"required"`
 	Data     T        `json:"data" binding:"required"`
 }
 
+// Metadata represents the metadata used in a query.
 type Metadata struct {
 	Filter  *filter.Request  `json:"filter" binding:"required"`
 	Paging  *paging.Response `json:"paging,omitempty"`
