@@ -1,6 +1,6 @@
 # jobQueue
 
-This package provides a job queue that can be used to execute a function in a thread-safe manner. The job queue is designed to be used in situations where multiple requests need to be processed, but only one request can be processed at a time.
+This package provides a job queue that can be used to execute a function in a thread-safe manner. The job queue is designed to be used in situations where multiple requests of the same type need to be processed, but only one request can be processed at a time.
 
 ## Example Usage
 
