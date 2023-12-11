@@ -49,7 +49,7 @@ func (v *Vulnerability) SetId(id string) {
 	v.Id = id
 }
 
-func TestIndexCheck(t *testing.T) {
+func TestClientCheck(t *testing.T) {
 	ctx := context.Background()
 	opensearchContainer, conf, err := StartOpensearchTestContainer(ctx)
 	assert.Nil(t, err)
