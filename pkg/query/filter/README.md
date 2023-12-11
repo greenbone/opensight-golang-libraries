@@ -622,18 +622,6 @@ Value implements the driver Valuer interface.
 
 ReadableValue is a generic type that represents a human\-readable value with a corresponding backend value. It has two fields: \`Label\` \(the human\-readable form of the value\) and \`Value\` \(the value for the backend\).
 
-Usage example:
-
-```
-type RequestOption struct {
-    Name        ReadableValue[string]
-    Control     RequestOptionType
-    Operators   []ReadableValue[CompareOperator]
-    Values      []string
-    MultiSelect bool
-}
-```
-
 ```go
 type ReadableValue[T any] struct {
     // Label is the human-readable form of the value
@@ -646,7 +634,7 @@ type ReadableValue[T any] struct {
 <a name="Request"></a>
 ## type Request
 
-Request is a struct representing a filter request. Operator is the logic operator used for the request. Fields is a slice of RequestField, representing the fields to be validated in the request.
+Request is a struct representing a filter request. Operator is the logic operator used for the request. Fields is a slice of RequestField, representing the fields to be used for the filtering.
 
 ```
 type Request struct {
@@ -665,15 +653,7 @@ type Request struct {
 <a name="RequestField"></a>
 ## type RequestField
 
-RequestField represents a field in a request
-
-Field Name: The name of the field
-
-Field Keys: Collection of keys
-
-Field Operator: The comparison operator for the field
-
-Field Value: The value of the field, which can be a list of values or a single value
+RequestField represents a field in a request Field Name: The name of the field Field Keys: Sequence of keys of a nested key structure \- only used for fields with a nested structure. Example: Tag \-\> Name: ABC \(which would be represented as \[\]string\{"Tag", "Name: ABC"\} \) Field Operator: The comparison operator for the field Field Value: The value of the field, which can be a list of values or a single value
 
 ```go
 type RequestField struct {
@@ -705,7 +685,7 @@ type RequestOption struct {
 <a name="RequestOptionType"></a>
 ## type RequestOptionType
 
-RequestOptionType configures the type of control for a field in a request option. It has a \`Type\` field which is of type \`ControlType\`. The \`Type\` field is tagged with \`json:"type"\` and \`enums:"string,float,integer,enum"\`.
+RequestOptionType configures the type of control for a field in a request option.
 
 ```go
 type RequestOptionType struct {

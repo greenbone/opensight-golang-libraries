@@ -101,6 +101,9 @@ ValidateAndApplyPagingRules performs a validation of the original request and ad
 
 Response represents a response object containing information about pagination and total count of records.
 
+- PageIndex: The index of the page \(starting from 0\).
+- PageSize: The number of records per page.
+
 ```go
 type Response struct {
     PageIndex     int    `json:"index"`

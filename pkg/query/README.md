@@ -40,9 +40,7 @@ func NewMetadata(resultSelector ResultSelector, totalRowCount uint64) Metadata
 <a name="ResponseListWithMetadata"></a>
 ## type ResponseListWithMetadata
 
-ResponseListWithMetadata represents a response containing a list of data with associated metadata.
-
-The 'Metadata' field is of type 'Metadata' includes filter, paging, and sorting information used in the query. The 'Data' field is a slice of type 'T' and represents the data retrieved.
+ResponseListWithMetadata represents a response containing a list of data with associated metadata. The 'Metadata' field is of type 'Metadata' includes filter, paging, and sorting information used in the query. The 'Data' field is a slice of type 'T' and represents the data retrieved.
 
 ```go
 type ResponseListWithMetadata[T any] struct {
@@ -54,7 +52,7 @@ type ResponseListWithMetadata[T any] struct {
 <a name="ResponseWithMetadata"></a>
 ## type ResponseWithMetadata
 
-ResponseWithMetadata represents a response with associated metadata. The metadata includes filter, paging, and sorting information. The 'Metadata' field is of type 'Metadata' and is required. The 'Data' field is of type 'T' and is also required.
+ResponseWithMetadata represents a response with associated metadata. The metadata includes filter, paging, and sorting information. The 'Metadata' field is of type 'Metadata' includes filter, paging, and sorting information used in the query. The 'Data' field is of any type and represents the data retrieved by the query.
 
 ```go
 type ResponseWithMetadata[T any] struct {
