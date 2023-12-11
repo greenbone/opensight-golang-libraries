@@ -16,8 +16,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const dateFormatLayout = "20060102"
-
 type indexFunction struct {
 	client *opensearch.Client
 }
