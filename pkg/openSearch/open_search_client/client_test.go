@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
 
@@ -141,15 +142,21 @@ func hasNumberOfHits(t *testing.T, reference string, hits int) bool {
 }
 
 func isEqualIgnoreTookTimeForEventually(t *testing.T, reference string, data string) bool {
-	var dat1 map[string]interface{}
-	err := json.Unmarshal([]byte(data), &dat1)
+	var dataJSON map[string]interface{}
+	err := json.Unmarshal([]byte(data), &dataJSON)
 	require.NoError(t, err)
 
-	delete(dat1, "took")
-	newResponse, err := json.Marshal(dat1)
+	delete(dataJSON, "took")
+
+	var referenceJSON map[string]interface{}
+	err = json.Unmarshal([]byte(reference), &referenceJSON)
 	require.NoError(t, err)
 
-	return assert.JSONEq(t, string(newResponse), reference)
+	if reflect.DeepEqual(dataJSON, referenceJSON) {
+		return true
+	} else {
+		return false
+	}
 }
 
 func isEqualIgnoreTookTime(t *testing.T, reference string, data string) {
