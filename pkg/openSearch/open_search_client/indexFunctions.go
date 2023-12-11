@@ -5,11 +5,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/opensearch-project/opensearch-go"
 	"io"
 	"net/http"
 	"sort"
 	"strings"
+
+	"github.com/opensearch-project/opensearch-go"
 
 	"github.com/opensearch-project/opensearch-go/opensearchapi"
 	"github.com/pkg/errors"

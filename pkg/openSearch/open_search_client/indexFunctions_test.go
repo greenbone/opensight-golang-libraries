@@ -62,67 +62,66 @@ func TestIndexCheck(t *testing.T) {
 	err = iFunc.CreateIndex("testindex", []byte(testIndex))
 	assert.NoError(t, err)
 
-	//Alias does not exist
+	// Alias does not exist
 	exists, err := iFunc.AliasExists("aliasName")
 	assert.NoError(t, err)
 	assert.False(t, exists)
 
-	//Now add the alias
+	// Now add the alias
 	err = iFunc.CreateOrPutAlias("aliasName", "testindex")
 	assert.NoError(t, err)
 
-	//Check if it now exists
+	// Check if it now exists
 	exists, err = iFunc.AliasExists("aliasName")
 	assert.NoError(t, err)
 	assert.True(t, exists)
 
-	//Now delete the alias
+	// Now delete the alias
 	err = iFunc.DeleteAliasFromIndex("testindex", "aliasName")
 	assert.NoError(t, err)
 
-	//Now check if the alias is still there
+	// Now check if the alias is still there
 	exists, err = iFunc.AliasExists("aliasName")
 	assert.NoError(t, err)
 	assert.False(t, exists)
 
-	//Now add a second index and add it to the alias
+	// Now add a second index and add it to the alias
 	err = iFunc.CreateIndex("testindex2", []byte(testIndex))
 	assert.NoError(t, err)
 
 	err = iFunc.CreateOrPutAlias("aliasName", "testindex", "testindex2")
 	assert.NoError(t, err)
 
-	//Now check if the indexes are removed from the alias
+	// Now check if the indexes are removed from the alias
 	indexes, err := iFunc.GetIndexesForAlias("aliasName")
 	assert.NoError(t, err)
 	assert.True(t, len(indexes) == 2)
 
-	//Now get the indexes by pattern
+	// Now get the indexes by pattern
 	getIndexes, err := iFunc.GetIndexes("testinde*")
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"testindex", "testindex2"}, getIndexes)
 
-	//Now remove the indexes from the alias
+	// Now remove the indexes from the alias
 	err = iFunc.RemoveIndexesFromAlias([]string{"testindex", "testindex2"}, "aliasName")
 	assert.NoError(t, err)
 
-	//Now check if the indexes are removed from the alias
+	// Now check if the indexes are removed from the alias
 	indexes, err = iFunc.GetIndexesForAlias("aliasName")
 	assert.NoError(t, err)
 	assert.True(t, len(indexes) == 0)
 
-	//Now delete the indexes
+	// Now delete the indexes
 	err = iFunc.DeleteIndex("testindex")
 	assert.NoError(t, err)
 
 	err = iFunc.DeleteIndex("testindex2")
 	assert.NoError(t, err)
 
-	//Now check if the indexes are deleted
+	// Now check if the indexes are deleted
 	doesNotExists, _ = iFunc.IndexExists("testindex")
 	assert.Equal(t, false, doesNotExists)
 
 	doesNotExists, _ = iFunc.IndexExists("testindex2")
 	assert.Equal(t, false, doesNotExists)
-
 }
