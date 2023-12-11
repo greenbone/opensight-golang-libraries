@@ -17,10 +17,7 @@ import (
 // It takes a *testing.T object and a string path as parameters.
 // It returns the content of the file as a string.
 type TestFolder interface {
-	// GetContent get content
 	GetContent(t *testing.T, path string) string
-
-	// GetReader get content reader
 	GetReader(t *testing.T, path string) io.Reader
 }
 
@@ -31,8 +28,10 @@ type testFolder struct{}
 // It reads the file using `os.ReadFile` and returns the content as a string.
 // If any error occurs during file reading, it fails the test and throws an error.
 // The `t` parameter is a testing.T instance used for error reporting and test assertion.
-// Example usage: content := testFolder.GetContent(t, "file.txt")
-// where `testFolder` is an instance of the `testFolder` type and `file.txt` is the name of the file to read.
+// Example usage:
+// testFolder := NewTestFolder()
+// content := testFolder.GetContent(t, "file.txt")
+// where `file.txt` is the name of the file to read.
 func (f *testFolder) GetContent(t *testing.T, filename string) string {
 	t.Helper()
 

@@ -7,7 +7,6 @@ import (
 )
 
 // ResponseListWithMetadata represents a response containing a list of data with associated metadata.
-//
 // The 'Metadata' field is of type 'Metadata' includes filter, paging, and sorting information used in the query.
 // The 'Data' field is a slice of type 'T' and represents the data retrieved.
 type ResponseListWithMetadata[T any] struct {
@@ -17,8 +16,8 @@ type ResponseListWithMetadata[T any] struct {
 
 // ResponseWithMetadata represents a response with associated metadata.
 // The metadata includes filter, paging, and sorting information.
-// The 'Metadata' field is of type 'Metadata' and is required.
-// The 'Data' field is of type 'T' and is also required.
+// The 'Metadata' field is of type 'Metadata' includes filter, paging, and sorting information used in the query.
+// The 'Data' field is of any type and represents the data retrieved by the query.
 type ResponseWithMetadata[T any] struct {
 	Metadata Metadata `json:"metadata" binding:"required"`
 	Data     T        `json:"data" binding:"required"`

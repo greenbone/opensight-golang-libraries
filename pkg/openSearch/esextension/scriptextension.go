@@ -14,11 +14,6 @@ type ScriptedSumAggregation struct {
 // Example Usage:
 //
 //	a := ScriptedSumAgg("testName", "testScript")
-//	name := a.Name()
-//
-// Returns:
-//
-//	The name of the ScriptedSumAggregation.
 func (a *ScriptedSumAggregation) Name() string {
 	return a.name
 }
@@ -41,18 +36,7 @@ func (a *ScriptedSumAggregation) Map() map[string]interface{} {
 // It takes the name and script as parameters and returns a pointer to the ScriptedSumAggregation struct.
 // Example usage:
 //
-//	  a := ScriptedSumAgg("testName", "testScript")
-//	  if a.Name() != "testName" {
-//				t.Errorf("Expected name to be %s, but got %s", "testName", a.Name())
-//	  }
-//
-//	  if !reflect.DeepEqual(a.Map(), expectedMap) {
-//				t.Errorf("Expected map to be %+v, but got %+v", expectedMap, a.Map())
-//	  }
-//
-//	  if a.name != "testName" || a.script != "testScript" {
-//				t.Errorf("Expected name and script to be %s and %s, but got %s and %s", "testName", "testScript", a.name, a.script)
-//	  }
+//	a := ScriptedSumAgg("testName", "testScript")
 func ScriptedSumAgg(name string, script string) *ScriptedSumAggregation {
 	return &ScriptedSumAggregation{
 		name:   name,
