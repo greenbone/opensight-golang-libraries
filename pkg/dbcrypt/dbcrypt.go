@@ -6,9 +6,10 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"github.com/greenbone/opensight-golang-libraries/pkg/dbcrypt/config"
 	"io"
 	"reflect"
+
+	"github.com/greenbone/opensight-golang-libraries/pkg/dbcrypt/config"
 )
 
 type DBCrypt[T any] struct {

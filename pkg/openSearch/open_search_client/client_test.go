@@ -106,7 +106,7 @@ func TestIndexCheck(t *testing.T) {
 	})
 
 	t.Run("TestDeleteByQuery", func(t *testing.T) {
-		//Add and check if its there
+		// Add and check if its there
 		err = client.BulkUpdate(indexName, []byte(bulkRequest))
 		require.NoError(t, err)
 
@@ -116,18 +116,17 @@ func TestIndexCheck(t *testing.T) {
 			return isEqualIgnoreTookTimeForEventually(t, bulkResponse, string(responseBody))
 		}, 10*time.Second, 500*time.Millisecond)
 
-		//Now delete it
+		// Now delete it
 		deleteQuery := `{"query":{"bool":{"filter":[{"term":{"oid":{"value":"1.3.6.1.4.1.25623.1.0.117842"}}}]}}}`
 		err := client.AsyncDeleteByQuery(indexName, []byte(deleteQuery))
 		require.NoError(t, err)
 
-		//And now check if the delete is sucessfull
+		// And now check if the delete is sucessfull
 		require.Eventually(t, func() bool {
 			responseBody, err := client.Search(indexName, []byte(``))
 			assert.NoError(t, err)
 			return hasNumberOfHits(t, string(responseBody), 0)
 		}, 10*time.Second, 500*time.Millisecond, "It did not delete")
-
 	})
 }
 
