@@ -2,6 +2,7 @@ package sorting
 
 import "fmt"
 
+// ValidateSortingRequest validates a sorting request.
 func ValidateSortingRequest(req *Request) error {
 	if req == nil {
 		return &Error{Msg: "sorting request is nil"}
