@@ -25,7 +25,11 @@ type Person struct {
 func (a *MyTable) encrypt(tx *gorm.DB) (err error) {
 	err = cryptor.EncryptStruct(a)
 	if err != nil {
-        	return err
+        	err := tx.AddError(fmt.Errorf("unable to encrypt password %w", err))
+		if err != nil {
+			return err
+		}
+		return err
 	}
 	return nil
 }
@@ -37,7 +41,7 @@ func (a *MyTable) BeforeCreate(tx *gorm.DB) (err error) {
 func (a *MyTable) AfterFind(tx *gorm.DB) (err error) {
 	err = cryptor.DecryptStruct(a)
 	if err != nil {
-		err := tx.AddError(fmt.Errorf("Unable to decrypt password %v", err))
+		err := tx.AddError(fmt.Errorf("Unable to decrypt password %w", err))
 		if err != nil {
 			return err
 		}
