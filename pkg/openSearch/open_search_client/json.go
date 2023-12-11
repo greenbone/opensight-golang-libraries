@@ -82,15 +82,6 @@ func UnmarshalWithoutValidation(data []byte, v any) error {
 	return nil
 }
 
-func Marshal(v any) ([]byte, error) {
-	marshal, err := jsoniter.Marshal(v)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-
-	return marshal, nil
-}
-
 func StructFields(value any) []string {
 	typ := reflect.TypeOf(value)
 	if typ.Kind() == reflect.Pointer {
