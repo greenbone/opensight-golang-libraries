@@ -23,10 +23,6 @@ func ReadEnvVarsIntoStruct(s any) (any, error) {
 		fieldType := field.Type()
 		fieldTag := structType.Field(i).Tag.Get("viperEnv")
 		defaultTag := structType.Field(i).Tag.Get("default")
-		/*
-		 if fieldTag == "" {
-		 continue // skip fields without the "viperEnv" tag
-		 }*/
 
 		envValue := viper.GetString(fieldTag)
 		if envValue == "" && fieldType.Kind() != reflect.Struct && fieldType.Kind() != reflect.Ptr {
