@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-package gofy
+package slices
 
 // ContainsLambda checks if an element in the given slice satisfies the provided filter function.
 // It returns true if at least one element satisfies the filter function, otherwise it returns false.
