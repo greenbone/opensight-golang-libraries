@@ -66,6 +66,3 @@ Copyright (C) 2022-2023 [Greenbone AG][Greenbone AG]
 Licensed under the [GNU General Public License v3.0 or later](LICENSE).
 
 [Greenbone AG]: https://www.greenbone.net/
-[poetry]: https://python-poetry.org/
-[pip]: https://pip.pypa.io/
-[autohooks]: https://github.com/greenbone/autohooks
