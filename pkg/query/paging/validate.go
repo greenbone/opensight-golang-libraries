@@ -1,5 +1,6 @@
 package paging
 
+// validatePagingRequest validates a paging request.
 func validatePagingRequest(req *Request) error {
 	if req == nil {
 		return &Error{Msg: "request is nil"}
