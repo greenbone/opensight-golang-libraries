@@ -9,15 +9,3 @@ type Identifiable interface {
 
 	SetId(id string)
 }
-
-type Json interface {
-	ToJson() (string, error)
-}
-
-type KeepJsonAsString []byte
-
-func (k *KeepJsonAsString) UnmarshalJSON(data []byte) error {
-	*k = data
-
-	return nil
-}
