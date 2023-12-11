@@ -13,6 +13,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// ValidateFilter validates the filter in the request
 func ValidateFilter(request *Request, requestOptions []RequestOption) error {
 	for i, field := range request.Fields {
 		fieldNameIsValid := false
