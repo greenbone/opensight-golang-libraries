@@ -25,7 +25,7 @@ type Person struct {
 func (a *MyTable) encrypt(tx *gorm.DB) (err error) {
 	err = cryptor.EncryptStruct(a)
 	if err != nil {
-        return err
+        	return err
 	}
 	return nil
 }
