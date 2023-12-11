@@ -6,10 +6,9 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"github.com/greenbone/opensight-golang-libraries/pkg/dbcrypt/config"
 	"io"
 	"reflect"
-
-	"github.com/greenbone/opensight-golang-libraries/pkg/postgres/dbcrypt/config"
 )
 
 type DBCrypt[T any] struct {
@@ -54,12 +53,6 @@ func (d *DBCrypt[T]) DecryptStruct(data *T) error {
 		field := value.Field(i)
 		fieldType := valueType.Field(i)
 		if encrypt, ok := fieldType.Tag.Lookup("encrypt"); ok && encrypt == "true" {
-			/*
-				ciphertext, err := hex.DecodeString(field.String()[4:])
-				if err != nil {
-					return err
-				}*/
-
 			plaintext, err := d.decrypt(field.String())
 			if err != nil {
 				return err
@@ -132,57 +125,3 @@ func (d *DBCrypt[T]) decrypt(encrypted string) (string, error) {
 
 	return string(plaintext), nil
 }
-
-/*
-// This function encrypts a value using AES encryption with the derived key
-func (d *DBCrypt[T]) encryptValue(value string) ([]byte, error) {
-	key, genKeyErr := d.deriveEncryptionKey()
-	if genKeyErr != nil {
-		return nil, genKeyErr
-	}
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
-	}
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return nil, err
-	}
-	nonce := make([]byte, gcm.NonceSize())
-	if _, err := rand.Read(nonce); err != nil {
-		return nil, err
-	}
-	ciphertext := gcm.Seal(nonce, nonce, []byte(value), nil)
-	return ciphertext, nil
-}
-
-// This function decrypts a value using AES decryption with the derived key
-func (d *DBCrypt[T]) decryptValue(ciphertext []byte) (string, error) {
-	key, genKeyErr := d.deriveEncryptionKey()
-	if genKeyErr != nil {
-		return "", genKeyErr
-	}
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return "", err
-	}
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return "", err
-	}
-	nonceSize := gcm.NonceSize()
-	if len(ciphertext) < nonceSize {
-		return "", errors.New("ciphertext too short")
-	}
-	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
-	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
-	if err != nil {
-		return "", err
-	}
-	return string(plaintext), nil
-}
-
-*/
-
-// TODO test without DB
-// TODO Test DB beforeUpdate ...

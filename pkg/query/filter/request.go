@@ -7,11 +7,6 @@ package filter
 // Request is a struct representing a filter request.
 // Operator is the logic operator used for the request.
 // Fields is a slice of RequestField, representing the fields to be used for the filtering.
-//
-//	type Request struct {
-//		Operator LogicOperator  `json:"operator" binding:"required"`
-//		Fields   []RequestField `json:"fields" binding:"dive"`
-//	}
 type Request struct {
 	Operator LogicOperator  `json:"operator" binding:"required"`
 	Fields   []RequestField `json:"fields" binding:"dive"`
