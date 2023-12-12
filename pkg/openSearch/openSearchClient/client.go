@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-package open_search_client
+package openSearchClient
 
 import (
 	"bytes"
@@ -20,23 +20,23 @@ import (
 )
 
 type client struct {
-	opensearchProjectClient *opensearch.Client
+	openSearchProjectClient *opensearch.Client
 	queue                   *requestQueue
 }
 
-func NewClient(opensearchProjectClient *opensearch.Client, updateMaxRetries int, updateRetryDelay time.Duration) *client {
+func NewClient(openSearchProjectClient *opensearch.Client, updateMaxRetries int, updateRetryDelay time.Duration) *client {
 	c := &client{
-		opensearchProjectClient: opensearchProjectClient,
+		openSearchProjectClient: openSearchProjectClient,
 	}
-	c.queue = NewRequestQueue(opensearchProjectClient, updateMaxRetries, updateRetryDelay)
+	c.queue = NewRequestQueue(openSearchProjectClient, updateMaxRetries, updateRetryDelay)
 	return c
 }
 
 func (c *client) Search(indexName string, requestBody []byte) (responseBody []byte, err error) {
 	log.Debug().Msgf("search requestBody: %s", string(requestBody))
-	searchResponse, err := c.opensearchProjectClient.Search(
-		c.opensearchProjectClient.Search.WithIndex(indexName),
-		c.opensearchProjectClient.Search.WithBody(bytes.NewReader(requestBody)),
+	searchResponse, err := c.openSearchProjectClient.Search(
+		c.openSearchProjectClient.Search.WithIndex(indexName),
+		c.openSearchProjectClient.Search.WithBody(bytes.NewReader(requestBody)),
 	)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -70,10 +70,10 @@ func (c *client) DeleteByQuery(indexName string, requestBody []byte) error {
 
 // deleteByQuery deletes documents by a query
 func (c *client) deleteByQuery(indexName string, requestBody []byte, isAsync bool) error {
-	deleteResponse, err := c.opensearchProjectClient.DeleteByQuery(
+	deleteResponse, err := c.openSearchProjectClient.DeleteByQuery(
 		[]string{indexName},
 		bytes.NewReader(requestBody),
-		c.opensearchProjectClient.DeleteByQuery.WithWaitForCompletion(!isAsync),
+		c.openSearchProjectClient.DeleteByQuery.WithWaitForCompletion(!isAsync),
 	)
 	if err != nil {
 		return errors.WithStack(err)
@@ -108,10 +108,10 @@ func SerializeDocumentsForBulkUpdate[T Identifiable](indexName string, documents
 }
 
 func (c *client) BulkUpdate(indexName string, requestBody []byte) error {
-	insertResponse, err := c.opensearchProjectClient.Bulk(
+	insertResponse, err := c.openSearchProjectClient.Bulk(
 		bytes.NewReader(requestBody),
-		c.opensearchProjectClient.Bulk.WithIndex(indexName),
-		c.opensearchProjectClient.Bulk.WithRefresh("true"),
+		c.openSearchProjectClient.Bulk.WithIndex(indexName),
+		c.openSearchProjectClient.Bulk.WithRefresh("true"),
 	)
 	if err != nil {
 		return errors.WithStack(err)

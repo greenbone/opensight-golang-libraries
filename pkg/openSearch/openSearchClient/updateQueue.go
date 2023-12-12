@@ -1,4 +1,4 @@
-package open_search_client
+package openSearchClient
 
 import (
 	"bytes"
@@ -26,7 +26,7 @@ type Request struct {
 }
 
 type requestQueue struct {
-	opensearchProjectClient *opensearch.Client
+	openSearchProjectClient *opensearch.Client
 	queue                   chan *Request
 	stop                    chan bool
 	wg                      sync.WaitGroup
@@ -34,9 +34,9 @@ type requestQueue struct {
 	updateRetryDelay        time.Duration
 }
 
-func NewRequestQueue(opensearchProjectClient *opensearch.Client, updateMaxRetries int, updateRetryDelay time.Duration) *requestQueue {
+func NewRequestQueue(openSearchProjectClient *opensearch.Client, updateMaxRetries int, updateRetryDelay time.Duration) *requestQueue {
 	rQueue := &requestQueue{
-		opensearchProjectClient: opensearchProjectClient,
+		openSearchProjectClient: openSearchProjectClient,
 		queue:                   make(chan *Request, 10),
 		stop:                    make(chan bool),
 		updateMaxRetries:        updateMaxRetries,
@@ -56,6 +56,16 @@ func (q *requestQueue) Stop() {
 	q.wg.Wait()
 }
 
+// Update queues and update for an index and returns the response body or an error
+//
+// Is called from pkg/openSearch/open_search_client/client.go:
+// func (c *client) Update(indexName string, requestBody []byte) (responseBody []byte, err error)
+// and tested in pkg/openSearch/open_search_client/client_test.go
+//
+// indexName: The name of the index to update
+// requestBody: The request body to send to the index
+//
+// Returns: The response body or an error
 func (q *requestQueue) Update(indexName string, requestBody []byte) ([]byte, error) {
 	request := &Request{
 		IndexName:   indexName,
@@ -120,7 +130,7 @@ func (q *requestQueue) update(indexName string, requestBody []byte) ([]byte, err
 			Pretty: true,
 		}
 
-		updateResponse, err = req.Do(context.Background(), q.opensearchProjectClient)
+		updateResponse, err = req.Do(context.Background(), q.openSearchProjectClient)
 		if err != nil {
 			log.Info().Err(err).Msgf("Attempt %d: Error in req.Do", i+1)
 			time.Sleep(q.updateRetryDelay)

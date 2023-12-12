@@ -1,4 +1,4 @@
-package open_search_client
+package openSearchClient
 
 import (
 	"bytes"
@@ -18,11 +18,11 @@ import (
 )
 
 type indexFunction struct {
-	client *opensearch.Client
+	openSearchProjectClient *opensearch.Client
 }
 
-func NewIndexFunction(client *opensearch.Client) *indexFunction {
-	return &indexFunction{client: client}
+func NewIndexFunction(openSearchProjectClient *opensearch.Client) *indexFunction {
+	return &indexFunction{openSearchProjectClient: openSearchProjectClient}
 }
 
 // CreateIndex creates an index
@@ -31,7 +31,7 @@ func (i *indexFunction) CreateIndex(indexName string, indexSchema []byte) error 
 		Index: indexName,
 		Body:  bytes.NewReader(indexSchema),
 	}
-	searchResponse, err := res.Do(context.Background(), i.client)
+	searchResponse, err := res.Do(context.Background(), i.openSearchProjectClient)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -50,7 +50,7 @@ func (i *indexFunction) GetIndexes(pattern string) ([]string, error) {
 		ExpandWildcards: "open",
 	}
 
-	response, err := request.Do(context.Background(), i.client)
+	response, err := request.Do(context.Background(), i.openSearchProjectClient)
 	if err != nil {
 		log.Debug().Msgf("Error while checking if index exists: %s", err)
 		return nil, errors.WithStack(err)
@@ -93,7 +93,7 @@ func (i *indexFunction) IndexExists(indexName string) (bool, error) {
 		AllowNoIndices: &includeAlias,
 	}
 
-	response, err := request.Do(context.Background(), i.client)
+	response, err := request.Do(context.Background(), i.openSearchProjectClient)
 	if err != nil {
 		log.Debug().Msgf("Error while checking if index exists: %s", err)
 		return false, errors.WithStack(err)
@@ -111,7 +111,7 @@ func (i *indexFunction) DeleteIndex(indexName string) error {
 		Index: []string{indexName},
 	}
 
-	response, err := request.Do(context.Background(), i.client)
+	response, err := request.Do(context.Background(), i.openSearchProjectClient)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -130,7 +130,7 @@ func (i *indexFunction) CreateOrPutAlias(aliasName string, indexNames ...string)
 		Name:  aliasName,
 	}
 
-	_, err := request.Do(context.Background(), i.client)
+	_, err := request.Do(context.Background(), i.openSearchProjectClient)
 	if err != nil {
 		log.Debug().Msgf("Error while creating and putting alias: %s", err)
 		return errors.WithStack(err)
@@ -145,7 +145,7 @@ func (i *indexFunction) DeleteAliasFromIndex(indexName string, aliasName string)
 		Name:  []string{aliasName},
 	}
 
-	response, err := request.Do(context.Background(), i.client)
+	response, err := request.Do(context.Background(), i.openSearchProjectClient)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -163,7 +163,7 @@ func (i *indexFunction) AliasExists(aliasName string) (bool, error) {
 		Name: []string{aliasName},
 	}
 
-	response, err := request.Do(context.Background(), i.client)
+	response, err := request.Do(context.Background(), i.openSearchProjectClient)
 	if err != nil {
 		return false, errors.WithStack(err)
 	}
@@ -185,7 +185,7 @@ func (i *indexFunction) GetIndexesForAlias(aliasName string) ([]string, error) {
 		Name: []string{aliasName},
 	}
 
-	response, err := request.Do(context.Background(), i.client)
+	response, err := request.Do(context.Background(), i.openSearchProjectClient)
 	if err != nil {
 		return []string{""}, err
 	}
@@ -223,7 +223,7 @@ func (i *indexFunction) RemoveIndexesFromAlias(indexesToRemove []string, aliasNa
 			return fmt.Errorf("error marshaling actions: %w", err)
 		}
 
-		res, err := i.client.Indices.UpdateAliases(bytes.NewReader(actionsBytes))
+		res, err := i.openSearchProjectClient.Indices.UpdateAliases(bytes.NewReader(actionsBytes))
 		if err != nil {
 			return fmt.Errorf("error updating alias: %w", err)
 		}

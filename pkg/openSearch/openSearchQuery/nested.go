@@ -1,4 +1,4 @@
-package open_search_query
+package openSearchQuery
 
 import (
 	"strings"

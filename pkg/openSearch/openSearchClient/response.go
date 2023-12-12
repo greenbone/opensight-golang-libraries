@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-package open_search_client
+package openSearchClient
 
 import (
 	jsoniter "github.com/json-iterator/go"
@@ -33,8 +33,8 @@ type DynamicAggregationHits struct {
 	SearchHits KeepJsonAsString        `json:"hits"`
 }
 
-func UnmarshalToSearchResponseHit[T Identifiable](data KeepJsonAsString) (*[]SearchResponseHit[T], error) {
-	var results []SearchResponseHit[T]
+func UnmarshalSearchResponse[T Identifiable](data []byte) (*SearchResponse[T], error) {
+	var results SearchResponse[T]
 
 	if err := jsoniter.Unmarshal(data, &results); err != nil {
 		return nil, errors.WithStack(err)

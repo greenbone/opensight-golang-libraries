@@ -1,11 +1,11 @@
-package open_search_client
+package openSearchClient
 
 import (
 	"context"
 	"net/http"
 	"time"
 
-	"github.com/greenbone/opensight-golang-libraries/pkg/openSearch/open_search_client/config"
+	"github.com/greenbone/opensight-golang-libraries/pkg/openSearch/openSearchClient/config"
 
 	"github.com/rs/zerolog/log"
 	"github.com/testcontainers/testcontainers-go"
