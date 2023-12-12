@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-package open_search_client
+package openSearchClient
 
 import (
 	jsoniter "github.com/json-iterator/go"

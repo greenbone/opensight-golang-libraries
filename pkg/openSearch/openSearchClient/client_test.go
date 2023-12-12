@@ -1,4 +1,4 @@
-package open_search_client
+package openSearchClient
 
 import (
 	"context"
@@ -158,7 +158,7 @@ func TestClient(t *testing.T) {
 		opensearchContainer.Terminate(ctx)
 	}()
 
-	opensearchProjectClient, err := NewOpensearchProjectClient(context.Background(), conf)
+	opensearchProjectClient, err := NewOpenSearchProjectClient(context.Background(), conf)
 	require.NoError(t, err)
 	require.NotNil(t, opensearchProjectClient)
 

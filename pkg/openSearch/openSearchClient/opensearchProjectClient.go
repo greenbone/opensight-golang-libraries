@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-package open_search_client
+package openSearchClient
 
 import (
 	"context"
@@ -11,12 +11,12 @@ import (
 	"net/http"
 
 	"github.com/avast/retry-go/v4"
-	"github.com/greenbone/opensight-golang-libraries/pkg/openSearch/open_search_client/config"
+	"github.com/greenbone/opensight-golang-libraries/pkg/openSearch/openSearchClient/config"
 	"github.com/opensearch-project/opensearch-go"
 	"github.com/opensearch-project/opensearch-go/opensearchapi"
 )
 
-func NewOpensearchProjectClient(ctx context.Context, config config.OpensearchClientConfig) (*opensearch.Client, error) {
+func NewOpenSearchProjectClient(ctx context.Context, config config.OpensearchClientConfig) (*opensearch.Client, error) {
 	protocol := "http"
 	if config.Https {
 		protocol = "https"
