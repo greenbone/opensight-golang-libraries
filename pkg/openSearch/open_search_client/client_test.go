@@ -2,9 +2,10 @@ package open_search_client
 
 import (
 	"context"
-	"github.com/rs/zerolog/log"
 	"testing"
 	"time"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/testFolder"
 	"github.com/stretchr/testify/require"
