@@ -9,9 +9,9 @@ package slices
 //
 // Example
 //
-//     numbers := []int{1, 2, 3, 4, 5}
-//     isEven := func(n int) bool { return n%2 == 0 }
-//     fmt.Println(ContainsLambda(numbers, isEven)) // Output: true
+//	numbers := []int{1, 2, 3, 4, 5}
+//	isEven := func(n int) bool { return n%2 == 0 }
+//	fmt.Println(ContainsLambda(numbers, isEven)) // Output: true
 func ContainsLambda[T any](elements []T, filterFunction func(element T) bool) bool {
 	for _, element := range elements {
 		if filterFunction(element) {
@@ -26,8 +26,8 @@ func ContainsLambda[T any](elements []T, filterFunction func(element T) bool) bo
 //
 // Example
 //
-//     names := []string{"Alice", "Bob", "Charlie"}
-//     fmt.Println(Contains(names, "Bob")) // Output: true
+//	names := []string{"Alice", "Bob", "Charlie"}
+//	fmt.Println(Contains(names, "Bob")) // Output: true
 func Contains[T comparable](elements []T, value T) bool {
 	for _, element := range elements {
 		if element == value {
