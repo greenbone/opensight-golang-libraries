@@ -33,8 +33,8 @@ type DynamicAggregationHits struct {
 	SearchHits KeepJsonAsString        `json:"hits"`
 }
 
-func UnmarshalToSearchResponseHit[T Identifiable](data KeepJsonAsString) (*[]SearchResponseHit[T], error) {
-	var results []SearchResponseHit[T]
+func UnmarshalSearchResponse[T Identifiable](data []byte) (*SearchResponse[T], error) {
+	var results SearchResponse[T]
 
 	if err := jsoniter.Unmarshal(data, &results); err != nil {
 		return nil, errors.WithStack(err)
