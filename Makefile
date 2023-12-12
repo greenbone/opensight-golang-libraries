@@ -19,6 +19,7 @@ GO-MOD-OUTDATED = go run github.com/psampaz/go-mod-outdated@latest
 GO-MOD-UPGRADE  = go run github.com/oligot/go-mod-upgrade@latest
 SWAG            = github.com/swaggo/swag/cmd/swag@v1.8.12
 
+INSTALL_GOMARKDOC = go install github.com/princjef/gomarkdoc/cmd/gomarkdoc@latest
 INSTALL_MOCKERY	= go install github.com/vektra/mockery/v2@v2.28.2
 
 OS="$(shell go env var GOOS | xargs)"
@@ -61,3 +62,13 @@ test: ## run all tests
 	go test -test.short ./...
 
 .PHONY: all build test clean
+
+SUBDIRS = pkg/query/filter	pkg/query/paging	pkg/query/sorting	pkg/slices
+.PHONY: generate_docs $(SUBDIRS)
+generate_docs: check_tools $(SUBDIRS)
+$(SUBDIRS):
+	@cd $@; if [ -f README.md ]; then rm README.md; fi; gomarkdoc --output README.md .
+	@echo "Generated documentation in $@"
+
+check_tools:
+	@command -v gomarkdoc >/dev/null || $(INSTALL_GOMARKDOC)
