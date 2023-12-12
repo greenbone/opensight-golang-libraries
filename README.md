@@ -8,12 +8,14 @@
 
 The code maintained in this repository is used by the Greenbone OpenSight Backend Components using GoLang.
 
-This includes
-* `configReader` - reads the configuration based on environment variables with predefined defaults
-* `query` - provides basic selector and response objects, including filter, paging and sorting
-* `jobQueue` - a simple job queue
-* `openSearch` - extensions funcs to query openSearch with the help of the query package
-* `postgres` - provides a encryption / decryption package for saving data
+The following funtionalities are provided:
+* [configReader](pkg/configReader/README.md) - reads the configuration based on environment variables with predefined defaults
+* [dbcrypt](pkg/dbcrypt/README.md) - provides a encryption / decryption package for saving data
+* [jobQueue](pkg/jobQueue/README.md) - a simple job queue
+* [openSearch](pkg/openSearch) - extensions funcs to query openSearch with the help of the query package
+* [query](pkg/query/README.md) - provides basic selector and response objects, including filter, paging and sorting
+* [slices](pkg/query/README.md) - utility functions for slices
+* [testFolder](pkg/testFolder) - access to test data from the file system
 
 ## Maintainer
 
