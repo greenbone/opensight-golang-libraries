@@ -56,6 +56,16 @@ func (q *requestQueue) Stop() {
 	q.wg.Wait()
 }
 
+// Update queues and update for an index and returns the response body or an error
+//
+// Is called from pkg/openSearch/open_search_client/client.go:
+// func (c *client) Update(indexName string, requestBody []byte) (responseBody []byte, err error)
+// and tested in pkg/openSearch/open_search_client/client_test.go
+//
+// indexName: The name of the index to update
+// requestBody: The request body to send to the index
+//
+// Returns: The response body or an error
 func (q *requestQueue) Update(indexName string, requestBody []byte) ([]byte, error) {
 	request := &Request{
 		IndexName:   indexName,
