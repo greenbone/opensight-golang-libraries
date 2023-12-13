@@ -20,7 +20,7 @@ import "github.com/greenbone/opensight-golang-libraries/pkg/query/paging"
 
 
 <a name="AddRequest"></a>
-## func AddRequest
+## func [AddRequest](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/request.go#L20>)
 
 ```go
 func AddRequest(transaction *gorm.DB, request *Request) *gorm.DB
@@ -36,7 +36,7 @@ transaction: The GORM database transaction. request: The request object containi
 Returns the modified transaction with the pagination applied.
 
 <a name="NewPagingError"></a>
-## func NewPagingError
+## func [NewPagingError](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/error.go#L17>)
 
 ```go
 func NewPagingError(format string, value ...any) error
@@ -45,7 +45,7 @@ func NewPagingError(format string, value ...any) error
 
 
 <a name="Error"></a>
-## type Error
+## type [Error](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/error.go#L9-L11>)
 
 
 
@@ -56,7 +56,7 @@ type Error struct {
 ```
 
 <a name="Error.Error"></a>
-### func \(\*Error\) Error
+### func \(\*Error\) [Error](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/error.go#L13>)
 
 ```go
 func (e *Error) Error() string
@@ -65,7 +65,7 @@ func (e *Error) Error() string
 
 
 <a name="PagingSettingsInterface"></a>
-## type PagingSettingsInterface
+## type [PagingSettingsInterface](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/pagingInterface.go#L3-L5>)
 
 
 
@@ -76,7 +76,7 @@ type PagingSettingsInterface interface {
 ```
 
 <a name="Request"></a>
-## type Request
+## type [Request](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/request.go#L7-L10>)
 
 
 
@@ -88,7 +88,7 @@ type Request struct {
 ```
 
 <a name="ValidateAndApplyPagingRules"></a>
-### func ValidateAndApplyPagingRules
+### func [ValidateAndApplyPagingRules](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/paging.go#L4>)
 
 ```go
 func ValidateAndApplyPagingRules(model PagingSettingsInterface, request *Request) (*Request, error)
@@ -97,7 +97,7 @@ func ValidateAndApplyPagingRules(model PagingSettingsInterface, request *Request
 ValidateAndApplyPagingRules performs a validation of the original request and adds correct the correct values \(defaults\) if needed
 
 <a name="Response"></a>
-## type Response
+## type [Response](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/response.go#L6-L10>)
 
 Response represents a response object containing information about pagination and total count of records.
 
@@ -113,7 +113,7 @@ type Response struct {
 ```
 
 <a name="NewResponse"></a>
-### func NewResponse
+### func [NewResponse](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/response.go#L12>)
 
 ```go
 func NewResponse(request *Request, totalRowCount uint64) *Response

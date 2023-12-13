@@ -58,7 +58,7 @@ const (
 ```
 
 <a name="AddRequest"></a>
-## func AddRequest
+## func [AddRequest](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/sorting/sorting.go#L31>)
 
 ```go
 func AddRequest(transaction *gorm.DB, params Params) *gorm.DB
@@ -67,7 +67,7 @@ func AddRequest(transaction *gorm.DB, params Params) *gorm.DB
 
 
 <a name="NewSortingError"></a>
-## func NewSortingError
+## func [NewSortingError](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/sorting/error.go#L17>)
 
 ```go
 func NewSortingError(format string, value ...any) error
@@ -76,7 +76,7 @@ func NewSortingError(format string, value ...any) error
 
 
 <a name="ValidateSortingRequest"></a>
-## func ValidateSortingRequest
+## func [ValidateSortingRequest](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/sorting/validate.go#L6>)
 
 ```go
 func ValidateSortingRequest(req *Request) error
@@ -85,7 +85,7 @@ func ValidateSortingRequest(req *Request) error
 ValidateSortingRequest validates a sorting request.
 
 <a name="Error"></a>
-## type Error
+## type [Error](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/sorting/error.go#L9-L11>)
 
 
 
@@ -96,7 +96,7 @@ type Error struct {
 ```
 
 <a name="Error.Error"></a>
-### func \(\*Error\) Error
+### func \(\*Error\) [Error](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/sorting/error.go#L13>)
 
 ```go
 func (e *Error) Error() string
@@ -105,7 +105,7 @@ func (e *Error) Error() string
 
 
 <a name="Params"></a>
-## type Params
+## type [Params](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/sorting/params.go#L3-L7>)
 
 
 
@@ -118,7 +118,7 @@ type Params struct {
 ```
 
 <a name="DetermineEffectiveSortingParams"></a>
-### func DetermineEffectiveSortingParams
+### func [DetermineEffectiveSortingParams](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/sorting/sorting.go#L95>)
 
 ```go
 func DetermineEffectiveSortingParams(model SortingSettingsInterface, sortingReq *Request) (Params, error)
@@ -127,7 +127,7 @@ func DetermineEffectiveSortingParams(model SortingSettingsInterface, sortingReq 
 DetermineEffectiveSortingParams checks the requested sorting and sets the defaults in case of an error. If a SortColumnOverrideTag \(sortColumnOverride\) is given, it's value will be used for sorting instead of SortColumnTag \(sortColumn\). For a detailed explanation see SortColumnOverrideTag
 
 <a name="Request"></a>
-## type Request
+## type [Request](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/sorting/request.go#L8-L11>)
 
 Request represents a sorting request with a specified sort column and sort direction.
 
@@ -141,7 +141,7 @@ type Request struct {
 ```
 
 <a name="Response"></a>
-## type Response
+## type [Response](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/sorting/response.go#L6-L9>)
 
 Response represents the response structure for sorting column and direction. SortingColumn stores the name of the column which was used for sorting. SortingDirection stores the direction which was applied by the sorting.
 
@@ -153,7 +153,7 @@ type Response struct {
 ```
 
 <a name="SortDefault"></a>
-## type SortDefault
+## type [SortDefault](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/sorting/sorting.go#L45-L48>)
 
 SortDefault holds the default for sort direction and sorting field.
 
@@ -165,7 +165,7 @@ type SortDefault struct {
 ```
 
 <a name="GetSortDefaults"></a>
-### func GetSortDefaults
+### func [GetSortDefaults](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/sorting/sorting.go#L51>)
 
 ```go
 func GetSortDefaults(model SortingSettingsInterface) (result SortDefault, err error)
@@ -174,7 +174,7 @@ func GetSortDefaults(model SortingSettingsInterface) (result SortDefault, err er
 GetSortDefaults returns the sortable fields based on the struct provided.
 
 <a name="SortDirection"></a>
-## type SortDirection
+## type [SortDirection](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/sorting/direction.go#L29>)
 
 
 
@@ -193,7 +193,7 @@ const (
 ```
 
 <a name="SortDirectionFromString"></a>
-### func SortDirectionFromString
+### func [SortDirectionFromString](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/sorting/direction.go#L18>)
 
 ```go
 func SortDirectionFromString(str string) SortDirection
@@ -202,7 +202,7 @@ func SortDirectionFromString(str string) SortDirection
 
 
 <a name="SortDirection.String"></a>
-### func \(SortDirection\) String
+### func \(SortDirection\) [String](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/sorting/direction.go#L11>)
 
 ```go
 func (s SortDirection) String() string
@@ -211,7 +211,7 @@ func (s SortDirection) String() string
 
 
 <a name="SortableColumn"></a>
-## type SortableColumn
+## type [SortableColumn](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/sorting/sorting.go#L39-L42>)
 
 SortableColumn is a struct to hold the fields which the paging can sort by.
 
@@ -223,7 +223,7 @@ type SortableColumn struct {
 ```
 
 <a name="GetSortableColumns"></a>
-### func GetSortableColumns
+### func [GetSortableColumns](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/sorting/sorting.go#L56>)
 
 ```go
 func GetSortableColumns(model SortingSettingsInterface) (sortables []SortableColumn)
@@ -232,7 +232,7 @@ func GetSortableColumns(model SortingSettingsInterface) (sortables []SortableCol
 GetSortableColumns returns a list of sortable fields
 
 <a name="SortingSettingsInterface"></a>
-## type SortingSettingsInterface
+## type [SortingSettingsInterface](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/sorting/sortingInterface.go#L3-L7>)
 
 
 

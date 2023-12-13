@@ -1,6 +1,8 @@
 # dbcrypt
 
-This package provides functions for encrypting and decrypting data using the AES algorithm. It uses the GCM mode of operation for encryption, which provides authentication and integrity protection for the encrypted data.
+This package provides functions for encrypting and decrypting fields of entities persisted with GORM
+using the AES algorithm. It uses the GCM mode of operation for encryption, which provides authentication and integrity 
+protection for the encrypted data.
 It can be used to encrypt / decrypt sensitive data using gorm hooks (see example)
 
 ## Example Usage

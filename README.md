@@ -10,7 +10,7 @@ The code maintained in this repository is used by the Greenbone OpenSight Backen
 
 The following funtionalities are provided:
 * [configReader](pkg/configReader/README.md) - reads the configuration based on environment variables with predefined defaults
-* [dbcrypt](pkg/dbcrypt/README.md) - provides a encryption / decryption package for saving data
+* [dbcrypt](pkg/dbcrypt/README.md) - provides encryption / decryption for fields of entities persisted with GORM
 * [jobQueue](pkg/jobQueue/README.md) - a simple job queue
 * [openSearch](pkg/openSearch) - extensions funcs to query openSearch with the help of the query package
 * [query](pkg/query/README.md) - provides basic selector and response objects, including filter, paging and sorting
