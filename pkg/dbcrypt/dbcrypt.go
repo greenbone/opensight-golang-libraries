@@ -26,6 +26,7 @@ func (d *DBCrypt[T]) loadConfig() {
 	}
 }
 
+// EncryptStruct encrypts all fields of a struct that are tagged with `encrypt:"true"`
 func (d *DBCrypt[T]) EncryptStruct(data *T) error {
 	d.loadConfig()
 	value := reflect.ValueOf(data).Elem()
@@ -50,6 +51,7 @@ func (d *DBCrypt[T]) EncryptStruct(data *T) error {
 	return nil
 }
 
+// DecryptStruct decrypts all fields of a struct that are tagged with `encrypt:"true"`
 func (d *DBCrypt[T]) DecryptStruct(data *T) error {
 	d.loadConfig()
 	value := reflect.ValueOf(data).Elem()

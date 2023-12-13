@@ -2,7 +2,7 @@
 
 # configReader Package Documentation
 
-The `configReader` package provides a function `ReadEnvVarsIntoStruct` that can be used to read environment variables or config files into a struct.
+The `configReader` package provides a function `ReadEnvVarsIntoStruct` that can be used to read environment variables with predefined defaults.
 
 ## Usage
 

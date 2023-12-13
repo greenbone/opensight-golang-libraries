@@ -1,3 +1,7 @@
+// Copyright (C) Greenbone Networks GmbH
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 package jobQueue
 
 import (
@@ -10,27 +14,27 @@ import (
 )
 
 type queueTestCase struct {
-	test          func(t *testing.T, q *jobQueue)
+	test          func(t *testing.T, q *JobQueue)
 	expectedCount int
 }
 
 func TestExecutor(t *testing.T) {
 	tests := map[string]queueTestCase{
 		"no request": {
-			test: func(t *testing.T, q *jobQueue) {
+			test: func(t *testing.T, q *JobQueue) {
 				time.Sleep(50 * time.Millisecond)
 			},
 			expectedCount: 0,
 		},
 		"one request": {
-			test: func(t *testing.T, q *jobQueue) {
+			test: func(t *testing.T, q *JobQueue) {
 				q.AddQueueRequest(Request{ID: "1"})
 				time.Sleep(50 * time.Millisecond)
 			},
 			expectedCount: 1,
 		},
 		"two requests in a row": {
-			test: func(t *testing.T, q *jobQueue) {
+			test: func(t *testing.T, q *JobQueue) {
 				q.AddQueueRequest(Request{ID: "1"})
 				q.AddQueueRequest(Request{ID: "2"})
 				time.Sleep(50 * time.Millisecond)
@@ -38,7 +42,7 @@ func TestExecutor(t *testing.T) {
 			expectedCount: 1,
 		},
 		"add several requests while the first one is working": {
-			test: func(t *testing.T, q *jobQueue) {
+			test: func(t *testing.T, q *JobQueue) {
 				q.AddQueueRequest(Request{ID: "1"})
 
 				time.Sleep(50 * time.Millisecond)

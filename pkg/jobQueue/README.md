@@ -2,7 +2,13 @@
 
 # jobQueue Package Documentation
 
-This package provides a job queue that can be used to execute a function in a thread-safe manner. The job queue is designed to be used in situations where multiple requests of the same type need to be processed, but only one request can be processed at a time.
+This package provides a job queue that can be used to execute a function in a thread-safe manner.
+The job queue is designed to be used in situations where multiple requests of the same type need to be processed,
+but only one request can be processed at a time and only the most recent request needs to be processed.
+
+If a request is added to the queue while another request is being processed, the new request will be added to the queue and processed after the current request has finished.
+If there is already a request in the queue, the old request will be considered obsolete and replaced by the new request.
+[jobQueue_test.go](jobQueue_test.go) illustrates this behaviour.
 
 ## Example Usage
 
@@ -12,36 +18,47 @@ Here is an example of how to use the job queue:
 package main
 
 import (
-	"context"
-	"fmt"
-	"time"
-
-	"github.com/greenbone/opensight-golang-libraries/jobQueue"
+"context"
+"fmt"
+"github.com/greenbone/opensight-golang-libraries/pkg/jobQueue"
+"time"
 )
 
 func main() {
 	// Define the function that will be executed for each request
 	execFunc := func() error {
-		fmt.Println("Processing request")
+		time.Sleep(50 * time.Millisecond)
 		return nil
 	}
 
-	// Create a new job queue with the defined function and a context with a 5 second timeout
-	q := jobQueue.NewJobQueue(execFunc, context.WithTimeout(context.Background(), 5*time.Second))
+	// Create a new job queue with the defined function
+	q := jobQueue.NewJobQueue(execFunc, context.Background())
 
 	// Add several requests to the queue
 	for i := 0; i < 10; i++ {
 		req := jobQueue.Request{ID: fmt.Sprintf("Request %d", i)}
+		time.Sleep(1 * time.Millisecond)
 		q.AddQueueRequest(req)
 	}
 
-	// Wait for the queue to finish processing all requests
-	q.Wait()
+	// wait some time for requests to finished, just for the sake to see the output
+	time.Sleep(1000 * time.Millisecond)
 }
 ```
 
-In this example, 10 requests are added to the queue, and the function is executed for each request one after the other. The Wait function is called to wait for all requests to be processed before the 
-program exits.
+Output:
+
+```json
+{"level":"debug","time":"2023-12-13T15:15:36+01:00","message":"Executing queue request ID: Request 0\n"}
+{"level":"debug","time":"2023-12-13T15:15:36+01:00","message":"Finished queue request ID: Request 0\n"}
+{"level":"debug","time":"2023-12-13T15:15:36+01:00","message":"Executing queue request ID: Request 9\n"}
+{"level":"debug","time":"2023-12-13T15:15:36+01:00","message":"Finished queue request ID: Request 9\n"}
+```
+
+In this example, 10 requests are added. The first request is processed immediately. The second
+request is added to the queue.
+All subsequent requests will replace their predecessors in the queue resulting in only the last request being
+processed after the first request.
 
 ---
 
@@ -55,15 +72,53 @@ program exits.
 import "github.com/greenbone/opensight-golang-libraries/pkg/jobQueue"
 ```
 
+Package jobQueue provides a thread\-safe queue of requests to execute a predefined function. When a request is added to an empty queue, it is processed immediately. If there is already a request running, the new request will be executed after the current one. If several requests are waiting, only the last one is processed
+
 ## Index
 
+- [type JobQueue](<#JobQueue>)
+  - [func NewJobQueue\(execFunc func\(\) error, context context.Context\) \*JobQueue](<#NewJobQueue>)
+  - [func \(q \*JobQueue\) AddQueueRequest\(req Request\)](<#JobQueue.AddQueueRequest>)
 - [type Request](<#Request>)
 
+
+<a name="JobQueue"></a>
+## type [JobQueue](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/jobQueue/jobQueue.go#L20-L25>)
+
+JobQueue is a thread\-safe queue of requests to execute a predefined function.
+
+```go
+type JobQueue struct {
+    // contains filtered or unexported fields
+}
+```
+
+<a name="NewJobQueue"></a>
+### func [NewJobQueue](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/jobQueue/jobQueue.go#L30>)
+
+```go
+func NewJobQueue(execFunc func() error, context context.Context) *JobQueue
+```
+
+NewJobQueue creates a new job queue execFunc is the function to be executed for each request that is processed context is the context of the caller
+
+<a name="JobQueue.AddQueueRequest"></a>
+### func \(\*JobQueue\) [AddQueueRequest](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/jobQueue/jobQueue.go#L49>)
+
+```go
+func (q *JobQueue) AddQueueRequest(req Request)
+```
+
+AddQueueRequest adds a request to the queue
+
+The job queue is designed to be used in situations where multiple requests of the same type need to be processed, but only one request can be processed at a time and only the most recent request needs to be processed.
+
+If a request is added to the queue while another request is being processed, the new request will be added to the queue and processed after the current request has finished. If there is already a request in the queue, the old request will be considered obsolete and replaced by the new request. \[jobQueue\_test.go\]\(jobQueue\_test.go\) illustrates this behaviour.
 
 <a name="Request"></a>
 ## type [Request](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/jobQueue/jobQueue.go#L15-L17>)
 
-
+Request is a request to be processed by the queue and allows to provide an ID for identification
 
 ```go
 type Request struct {
