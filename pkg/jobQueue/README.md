@@ -41,7 +41,7 @@ func main() {
 		q.AddQueueRequest(req)
 	}
 
-	// wait some time for requests to finished, just for the sake to see the output
+	// wait some time for requests to finish, just for the sake to see the output
 	time.Sleep(1000 * time.Millisecond)
 }
 ```
