@@ -12,7 +12,7 @@ The following funtionalities are provided:
 * [configReader](pkg/configReader/README.md) - reads the configuration based on environment variables with predefined defaults
 * [dbcrypt](pkg/dbcrypt/README.md) - provides encryption / decryption for fields of entities persisted with GORM
 * [jobQueue](pkg/jobQueue/README.md) - a simple job queue
-* [openSearch](pkg/openSearch) - extensions funcs to query openSearch with the help of the query package
+* [openSearch](pkg/openSearch) - a client and extensions funcs to query openSearch suited for the query package
 * [query](pkg/query/README.md) - provides basic selector and response objects, including filter, paging and sorting
 * [slices](pkg/query/README.md) - utility functions for slices
 * [testFolder](pkg/testFolder) - access to test data from the file system
