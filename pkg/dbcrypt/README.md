@@ -1,4 +1,4 @@
-# dbcrypt
+# dbcrypt Package Documentation
 
 This package provides functions for encrypting and decrypting fields of entities persisted with GORM
 using the AES algorithm. It uses the GCM mode of operation for encryption, which provides authentication and integrity 
@@ -56,3 +56,8 @@ func (a *MyTable) AfterFind(tx *gorm.DB) (err error) {
 
 In this example, a Person struct is created and encrypted using the DBCrypt struct. The encrypted struct is then saved to the database. Finally the struct is decrypted when the gorm hook is 
 activated.
+
+---
+
+<!-- gomarkdoc:embed:start -->
+<!-- gomarkdoc:embed:end -->
