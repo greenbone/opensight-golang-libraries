@@ -1,5 +1,6 @@
-package openSearchQuery
+package esextensions
 
+// MatchQuery represents an OpenSearch match query.
 type MatchQuery struct {
 	Field string
 	Value interface{}
@@ -7,6 +8,8 @@ type MatchQuery struct {
 
 const useSimpleMap = true
 
+// Map returns a map representation of the MatchQuery, thus implementing the esquery.Mappable interface.
+// Used for serialization to JSON.
 func (mq *MatchQuery) Map() map[string]interface{} {
 	if useSimpleMap {
 		return map[string]interface{}{
@@ -25,6 +28,7 @@ func (mq *MatchQuery) Map() map[string]interface{} {
 	}
 }
 
+// Match creates a new MatchQuery.
 func Match(field string, value interface{}) *MatchQuery {
 	return &MatchQuery{
 		Field: field,

@@ -5,6 +5,7 @@
 package openSearchQuery
 
 import (
+	"github.com/greenbone/opensight-golang-libraries/pkg/openSearch/esextensions"
 	"strconv"
 	"time"
 
@@ -51,7 +52,7 @@ func nestedHandleCompareOperatorContains(fieldName string, fieldKeys []string, f
 	// Special case as now for one input we need to queries to be set (for name and value)
 	nestedFieldSetting := findNestedFieldByName(fieldName, querySettings)
 	if nestedFieldSetting != nil && len(fieldKeys) == 1 {
-		query1 := Nested(nestedFieldSetting.FieldKeyName, *esquery.Bool().
+		query1 := esextensions.Nested(nestedFieldSetting.FieldKeyName, *esquery.Bool().
 			Must(
 				esquery.Match(nestedFieldSetting.FieldKeyName, fieldKeys[0]),
 				esquery.Wildcard(nestedFieldSetting.FieldValueName, "*"+valueToString(fieldValue)+"*")))
@@ -90,6 +91,7 @@ func HandleCompareOperatorBeginsWith(fieldName string, fieldKeys []string, field
 	}
 }
 
+// HandleCompareOperatorNotBeginsWith handles not begins with
 func HandleCompareOperatorNotBeginsWith(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
 	// for list of values
 	if values, ok := fieldValue.([]interface{}); ok {
@@ -134,7 +136,7 @@ func simpleNestedMatchQuery(fieldName string, fieldKeys []string, fieldValue any
 	// Special case as now for one input we need to queries to be set (for name and value)
 	nestedFieldSetting := findNestedFieldByName(fieldName, querySettings)
 	if nestedFieldSetting != nil && len(fieldKeys) == 1 {
-		query1 := Nested(nestedFieldSetting.FieldName, *esquery.Bool().Must(
+		query1 := esextensions.Nested(nestedFieldSetting.FieldName, *esquery.Bool().Must(
 			esquery.Match(nestedFieldSetting.FieldKeyName, fieldKeys[0]),
 			esquery.Match(nestedFieldSetting.FieldValueName, fieldValue)))
 		return query1

@@ -1,4 +1,4 @@
-package openSearchQuery
+package esextensions
 
 import (
 	"strings"
@@ -6,11 +6,13 @@ import (
 	"github.com/aquasecurity/esquery"
 )
 
+// NestedQuery represents an OpenSearch nested query.
 type NestedQuery struct {
 	Path  string            `json:"path"`
 	Query esquery.BoolQuery `json:"query"`
 }
 
+// Nested creates a new NestedQuery.
 func Nested(field string, q esquery.BoolQuery) *NestedQuery {
 	return &NestedQuery{
 		Path:  calculatePath(field),
@@ -26,6 +28,8 @@ func calculatePath(field string) string {
 	return parts[0] + "." + parts[1]
 }
 
+// Map returns a map representation of the NestedQuery, thus implementing the esquery.Mappable interface.
+// Used for serialization to JSON.
 func (nq *NestedQuery) Map() map[string]interface{} {
 	return map[string]interface{}{
 		"nested": map[string]interface{}{
