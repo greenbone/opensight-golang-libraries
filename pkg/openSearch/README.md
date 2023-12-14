@@ -2,7 +2,7 @@
 
 # Overview
 
-Package openSearch a client and extensions funcs to query openSearch suited for the query package in the following
+Package openSearch provides a client and extensions funcs to query openSearch suited for the query package in the following
 subpackages:
 
 * [esextensions](esextensions/README.md) - extensions for the esquery library
