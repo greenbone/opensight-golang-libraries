@@ -5,7 +5,7 @@
 package openSearchQuery
 
 import (
-	"github.com/greenbone/opensight-golang-libraries/pkg/openSearch/esextensions"
+	"github.com/greenbone/opensight-golang-libraries/pkg/openSearch/esextension"
 	"strconv"
 	"time"
 
