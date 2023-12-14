@@ -9,13 +9,13 @@ import (
 	"github.com/pkg/errors"
 )
 
-type SearchResponseHit[T Identifiable] struct {
+type SearchResponseHit[T any] struct {
 	Id      string `json:"_id"`
 	Type    string `json:"_type"`
 	Content T      `json:"_source"`
 }
 
-type SearchResponseHits[T Identifiable] struct {
+type SearchResponseHits[T any] struct {
 	Total      SearchResponseHitsTotal
 	SearchHits []SearchResponseHit[T] `json:"hits"`
 }
@@ -33,7 +33,7 @@ type DynamicAggregationHits struct {
 	SearchHits KeepJsonAsString        `json:"hits"`
 }
 
-func UnmarshalSearchResponse[T Identifiable](data []byte) (*SearchResponse[T], error) {
+func UnmarshalSearchResponse[T any](data []byte) (*SearchResponse[T], error) {
 	var results SearchResponse[T]
 
 	if err := jsoniter.Unmarshal(data, &results); err != nil {
@@ -77,7 +77,7 @@ func (bucket *Bucket) UnmarshalJSON(bytes []byte) error {
 	}
 	*bucket = Bucket(unmarshalBucket)
 	bucket.Aggs = make(map[string]DynamicAggregation)
-	ParseUnknownFields(bytes, bucket, addToMapAsDynamicAggregation, bucket.Aggs)
+	parseUnknownFields(bytes, bucket, addToMapAsDynamicAggregation, bucket.Aggs)
 
 	return nil
 }
@@ -100,7 +100,7 @@ type SearchResponseAggregation struct {
 
 type SearchResponseAggregations map[string]SearchResponseAggregation
 
-type SearchResponse[T Identifiable] struct {
+type SearchResponse[T any] struct {
 	Took         uint                       `json:"took"`
 	TimedOut     bool                       `json:"timed_out"`
 	Hits         SearchResponseHits[T]      `json:"hits"`

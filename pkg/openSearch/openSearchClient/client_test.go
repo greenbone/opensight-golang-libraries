@@ -1,3 +1,7 @@
+// Copyright (C) Greenbone Networks GmbH
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 package openSearchClient
 
 import (
@@ -39,10 +43,10 @@ func (v *Vulnerability) SetId(id string) {
 
 func TestClient(t *testing.T) {
 	type testCase struct {
-		testFunc func(t *testing.T, client *client)
+		testFunc func(t *testing.T, client *Client)
 	}
 	tcs := map[string]testCase{
-		"TestBulkUpdate": {func(t *testing.T, client *client) {
+		"TestBulkUpdate": {func(t *testing.T, client *Client) {
 			// given
 			bulkRequest, err := SerializeDocumentsForBulkUpdate(indexName, []*Vulnerability{&aVulnerability})
 			require.NoError(t, err)
@@ -59,7 +63,7 @@ func TestClient(t *testing.T) {
 				assert.Equal(c, aVulnerability, *searchResponse.GetResults()[0])
 			}, 10*time.Second, 500*time.Millisecond)
 		}},
-		"TestUpdate": {func(t *testing.T, client *client) {
+		"TestUpdate": {func(t *testing.T, client *Client) {
 			// given
 			createDataInIndex(t, client, []*Vulnerability{&aVulnerability}, 1)
 			updateRequest := `{
@@ -89,7 +93,7 @@ func TestClient(t *testing.T) {
 				assert.Equal(c, aVulnerability.Oid, searchResponse.GetResults()[0].Oid)
 			}, 10*time.Second, 500*time.Millisecond)
 		}},
-		"TestAsyncDeleteByQuery": {func(t *testing.T, client *client) {
+		"TestAsyncDeleteByQuery": {func(t *testing.T, client *Client) {
 			// given
 			createDataInIndex(t, client, []*Vulnerability{&aVulnerability}, 1)
 
@@ -105,7 +109,7 @@ func TestClient(t *testing.T) {
 				assert.Equal(c, 0, len(searchResponse.GetResults()))
 			}, 10*time.Second, 500*time.Millisecond)
 		}},
-		"TestDeleteByQuery": {func(t *testing.T, client *client) {
+		"TestDeleteByQuery": {func(t *testing.T, client *Client) {
 			// given
 			createDataInIndex(t, client, []*Vulnerability{&aVulnerability}, 1)
 
@@ -121,7 +125,7 @@ func TestClient(t *testing.T) {
 				assert.Equal(c, 0, len(searchResponse.GetResults()))
 			}, 10*time.Second, 500*time.Millisecond)
 		}},
-		"TestSearch": {func(t *testing.T, client *client) {
+		"TestSearch": {func(t *testing.T, client *Client) {
 			// given
 			createDataInIndex(t, client, []*Vulnerability{&aVulnerability}, 1)
 
@@ -191,7 +195,7 @@ func TestSerializeDocumentsForBulkUpdate(t *testing.T) {
 	assert.Equal(t, expectedString, string(bulkUpdate))
 }
 
-func createDataInIndex(t *testing.T, client *client, vulnerabilities []*Vulnerability, expectedDocumentCount uint) {
+func createDataInIndex(t *testing.T, client *Client, vulnerabilities []*Vulnerability, expectedDocumentCount uint) {
 	bulkRequest, err := SerializeDocumentsForBulkUpdate(indexName, vulnerabilities)
 	require.NoError(t, err)
 
@@ -205,7 +209,7 @@ func createDataInIndex(t *testing.T, client *client, vulnerabilities []*Vulnerab
 	}, 10*time.Second, 500*time.Millisecond)
 }
 
-func searchAllVulnerabilities(c *assert.CollectT, client *client) *SearchResponse[*Vulnerability] {
+func searchAllVulnerabilities(c *assert.CollectT, client *Client) *SearchResponse[*Vulnerability] {
 	responseBody, err := client.Search(indexName, []byte(``))
 	require.NoError(c, err)
 

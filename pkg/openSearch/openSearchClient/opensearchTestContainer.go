@@ -1,3 +1,7 @@
+// Copyright (C) Greenbone Networks GmbH
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 package openSearchClient
 
 import (
@@ -12,13 +16,18 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-// Container represents the opensearch container type used in the module
+// OpensearchTestContainer represents the opensearch container
 type OpensearchTestContainer struct {
 	testcontainers.Container
 }
 
 const openSearchTestDefaultHttpPort = "9200/tcp"
 
+// StartOpensearchTestContainer starts a test container with opensearch
+// and returns the container and the config for the opensearch client.
+// It returns an error if the container couldn't be created or started.
+//
+// ctx is the context to use for the container.
 func StartOpensearchTestContainer(ctx context.Context) (testcontainers.Container, config.OpensearchClientConfig, error) {
 	req := testcontainers.ContainerRequest{
 		Image:        "opensearchproject/opensearch:2.11.0",

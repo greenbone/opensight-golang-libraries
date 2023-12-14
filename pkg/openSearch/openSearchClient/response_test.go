@@ -41,7 +41,7 @@ func TestSearchResponseUnmarshal(t *testing.T) {
 	  }
 	}`
 
-	var results SearchResponse[Identifiable]
+	var results SearchResponse[any]
 	err := jsoniter.Unmarshal([]byte(json), &results)
 	require.NoError(t, err)
 
