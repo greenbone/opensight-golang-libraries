@@ -4,21 +4,20 @@ package esextensions
 import "github.com/aquasecurity/esquery"
 
 // ScriptedSumAggregation represents an aggregation that calculates the sum using a scripted expression.
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.17/search-aggregations-metrics-sum-aggregation.html#_script_14 .
+// To be used in conjunction with the esquery library https://github.com/aquasecurity/esquery
 type ScriptedSumAggregation struct {
 	name   string
 	script string
 }
 
-// Name returns the name of the ScriptedSumAggregation.
-//
-// Example Usage:
-//
-//	a := ScriptedSumAgg("testName", "testScript")
+// Name returns the name of the ScriptedSumAggregation, needed for the esquery.Aggregation interface.
 func (a *ScriptedSumAggregation) Name() string {
 	return a.name
 }
 
-// Map returns a map representation of the ScriptedSumAggregation.
+// Map returns a map representation of the ScriptedSumAggregation, thus implementing the esquery.Mappable interface.
+// Used for serialization to JSON.
 func (a *ScriptedSumAggregation) Map() map[string]interface{} {
 	return map[string]interface{}{
 		"sum": map[string]interface{}{

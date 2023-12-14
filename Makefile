@@ -63,7 +63,7 @@ test: ## run all tests
 
 .PHONY: all build test clean
 
-SUBDIRS = pkg/configReader	pkg/dbcrypt	pkg/jobQueue	pkg/openSearch/esextension\
+SUBDIRS = pkg/configReader	pkg/dbcrypt	pkg/jobQueue	pkg/openSearch/esextensions\
 	pkg/openSearch/openSearchClient	pkg/openSearch/openSearchQuery	pkg/query/	pkg/query/filter	pkg/query/paging\
 	pkg/query/sorting	pkg/slices	pkg/testFolder
 .PHONY: generate_docs $(SUBDIRS)

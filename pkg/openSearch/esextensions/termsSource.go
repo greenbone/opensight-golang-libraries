@@ -12,6 +12,11 @@ type TermsSource struct {
 	field string
 }
 
+// Terms creates a new TermsSource.
+// Is tested in compositeAgg_test.go.
+//
+// name: The name of the terms TermsSource.
+// field: The name of the field referenced.
 func Terms(name string, field string) *TermsSource {
 	return &TermsSource{
 		name:  name,
@@ -19,6 +24,9 @@ func Terms(name string, field string) *TermsSource {
 	}
 }
 
+// Map returns a map representation of the TermsSource, thus implementing the esquery.Mappable interface.
+// Used for serialization to JSON.
+// Is tested in compositeAgg_test.go.
 func (t *TermsSource) Map() map[string]interface{} {
 	return map[string]interface{}{
 		t.name: map[string]interface{}{
