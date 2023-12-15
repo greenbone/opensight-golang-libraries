@@ -1,7 +1,6 @@
 package esextensions
 
 import (
-	"reflect"
 	"testing"
 )
 
@@ -13,18 +12,19 @@ func TestScriptedSumAggregation_Name(t *testing.T) {
 }
 
 func TestScriptedSumAggregation_Map(t *testing.T) {
-	a := ScriptedSumAgg("testName", "testScript")
-	expectedMap := map[string]interface{}{
-		"sum": map[string]interface{}{
-			"script": map[string]interface{}{
-				"source": "testScript",
+	runMapTests(t, []mapTest{
+		{
+			name:  "ScriptedSumAgg map",
+			given: ScriptedSumAgg("testName", "testScript"),
+			expected: map[string]interface{}{
+				"sum": map[string]interface{}{
+					"script": map[string]interface{}{
+						"source": "testScript",
+					},
+				},
 			},
 		},
-	}
-
-	if !reflect.DeepEqual(a.Map(), expectedMap) {
-		t.Errorf("Expected map to be %+v, but got %+v", expectedMap, a.Map())
-	}
+	})
 }
 
 func TestScriptedSumAgg(t *testing.T) {

@@ -1,30 +1,19 @@
 package esextensions
 
-// MatchQuery represents an OpenSearch match query.
+// MatchQuery represents an OpenSearch match part in an OpenSearch query as described in
+// https://www.elastic.co/guide/en/elasticsearch/reference/7.17/query-filter-context.html#query-filter-context-ex
 type MatchQuery struct {
 	Field string
 	Value interface{}
 }
 
-const useSimpleMap = true
-
 // Map returns a map representation of the MatchQuery, thus implementing the esquery.Mappable interface.
 // Used for serialization to JSON.
 func (mq *MatchQuery) Map() map[string]interface{} {
-	if useSimpleMap {
-		return map[string]interface{}{
-			"match": map[string]interface{}{
-				mq.Field: mq.Value,
-			},
-		}
-	} else {
-		return map[string]interface{}{
-			"match": map[string]interface{}{
-				mq.Field: map[string]interface{}{
-					"query": mq.Value,
-				},
-			},
-		}
+	return map[string]interface{}{
+		"match": map[string]interface{}{
+			mq.Field: mq.Value,
+		},
 	}
 }
 
