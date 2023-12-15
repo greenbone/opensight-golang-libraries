@@ -7,8 +7,8 @@ package esextensions
 import "github.com/aquasecurity/esquery"
 
 // CompositeAgg represents a composite aggregation, as described in
-// https://www.elastic.co/guide/en/elasticsearch/reference/7.17/search-aggregations-bucket-composite-aggregation.html
-// to be used in conjunction with the esquery library https://github.com/aquasecurity/esquery
+// https://www.elastic.co/guide/en/elasticsearch/reference/7.17/search-aggregations-bucket-composite-aggregation.html .
+// To be used in conjunction with the esquery library https://github.com/aquasecurity/esquery
 type CompositeAgg struct {
 	name         string
 	size         uint64
@@ -24,7 +24,7 @@ func Composite(name string) *CompositeAgg {
 	}
 }
 
-// Name returns the name of the aggregation.
+// Name returns the name of the aggregation, needed for the esquery.Aggregation interface.
 func (agg *CompositeAgg) Name() string {
 	return agg.name
 }
@@ -53,8 +53,8 @@ func (agg *CompositeAgg) Aggregations(aggregations ...esquery.Aggregation) *Comp
 	return agg
 }
 
-// Map returns a map representation of the aggregation, thus implementing the
-// Mappable interface.
+// Map returns a map representation of the CompositeAgg, thus implementing the esquery.Mappable interface.
+// Used for serialization to JSON.
 func (agg *CompositeAgg) Map() map[string]interface{} {
 	compositeMap := make(map[string]interface{})
 

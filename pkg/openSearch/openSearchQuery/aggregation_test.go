@@ -14,7 +14,7 @@ import (
 func TestAggregation(t *testing.T) {
 	t.Run("shouldCreateJsonForNestedAggregations", func(t *testing.T) {
 		query := NewBoolQueryBuilder(&QuerySettings{})
-		query.AddAggregation(
+		query.addAggregation(
 			TermsAgg("aggNameOne", "hostname").
 				Aggs(
 					TermsAgg("aggNameTwo", "host").Aggs(
@@ -23,7 +23,7 @@ func TestAggregation(t *testing.T) {
 				),
 		)
 
-		json, err := query.ToJson()
+		json, err := query.toJson()
 		require.NoError(t, err)
 
 		assert.JSONEq(t, `{

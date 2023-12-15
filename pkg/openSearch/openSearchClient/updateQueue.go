@@ -1,3 +1,7 @@
+// Copyright (C) Greenbone Networks GmbH
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 package openSearchClient
 
 import (
@@ -25,7 +29,8 @@ type Request struct {
 	Response    chan Response // Use the new Response type
 }
 
-type requestQueue struct {
+// UpdateQueue is a queue for OpenSearch update requests.
+type UpdateQueue struct {
 	openSearchProjectClient *opensearch.Client
 	queue                   chan *Request
 	stop                    chan bool
@@ -34,8 +39,13 @@ type requestQueue struct {
 	updateRetryDelay        time.Duration
 }
 
-func NewRequestQueue(openSearchProjectClient *opensearch.Client, updateMaxRetries int, updateRetryDelay time.Duration) *requestQueue {
-	rQueue := &requestQueue{
+// NewRequestQueue creates a new update queue.
+//
+// openSearchProjectClient is the official OpenSearch client to wrap. Use NewOpenSearchProjectClient to create it.
+// updateMaxRetries is the number of retries for update requests.
+// updateRetryDelay is the delay between retries.
+func NewRequestQueue(openSearchProjectClient *opensearch.Client, updateMaxRetries int, updateRetryDelay time.Duration) *UpdateQueue {
+	rQueue := &UpdateQueue{
 		openSearchProjectClient: openSearchProjectClient,
 		queue:                   make(chan *Request, 10),
 		stop:                    make(chan bool),
@@ -46,12 +56,12 @@ func NewRequestQueue(openSearchProjectClient *opensearch.Client, updateMaxRetrie
 	return rQueue
 }
 
-func (q *requestQueue) start() {
+func (q *UpdateQueue) start() {
 	q.wg.Add(1)
 	go q.run()
 }
 
-func (q *requestQueue) Stop() {
+func (q *UpdateQueue) Stop() {
 	close(q.stop)
 	q.wg.Wait()
 }
@@ -59,14 +69,14 @@ func (q *requestQueue) Stop() {
 // Update queues and update for an index and returns the response body or an error
 //
 // Is called from pkg/openSearch/open_search_client/client.go:
-// func (c *client) Update(indexName string, requestBody []byte) (responseBody []byte, err error)
+// func (c *Client) Update(indexName string, requestBody []byte) (responseBody []byte, err error)
 // and tested in pkg/openSearch/open_search_client/client_test.go
 //
 // indexName: The name of the index to update
 // requestBody: The request body to send to the index
 //
 // Returns: The response body or an error
-func (q *requestQueue) Update(indexName string, requestBody []byte) ([]byte, error) {
+func (q *UpdateQueue) Update(indexName string, requestBody []byte) ([]byte, error) {
 	request := &Request{
 		IndexName:   indexName,
 		RequestBody: requestBody,
@@ -96,7 +106,7 @@ func (q *requestQueue) Update(indexName string, requestBody []byte) ([]byte, err
 	return response.Body, nil
 }
 
-func (q *requestQueue) run() {
+func (q *UpdateQueue) run() {
 	defer q.wg.Done()
 
 	for {
@@ -116,7 +126,7 @@ func (q *requestQueue) run() {
 	}
 }
 
-func (q *requestQueue) update(indexName string, requestBody []byte) ([]byte, error) {
+func (q *UpdateQueue) update(indexName string, requestBody []byte) ([]byte, error) {
 	log.Debug().Msgf("update requestBody: %s", string(requestBody))
 
 	var updateResponse *esapi.Response

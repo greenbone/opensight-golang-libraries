@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// ReadEnvVarsIntoStruct reads environment variables into a given struct
 func ReadEnvVarsIntoStruct(s any) (any, error) {
 	structValue := reflect.ValueOf(s).Elem()
 	structType := structValue.Type()

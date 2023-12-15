@@ -63,11 +63,13 @@ test: ## run all tests
 
 .PHONY: all build test clean
 
-SUBDIRS = pkg/query/filter	pkg/query/paging	pkg/query/sorting	pkg/slices
+SUBDIRS = pkg/configReader	pkg/dbcrypt	pkg/jobQueue	pkg/openSearch/esextension\
+	pkg/openSearch/openSearchClient	pkg/openSearch/openSearchQuery	pkg/query/	pkg/query/filter	pkg/query/paging\
+	pkg/query/sorting	pkg/slices	pkg/testFolder
 .PHONY: generate_docs $(SUBDIRS)
 generate_docs: check_tools $(SUBDIRS)
 $(SUBDIRS):
-	@cd $@; if [ -f README.md ]; then rm README.md; fi; gomarkdoc --output README.md .
+	@cd $@; gomarkdoc -e --output README.md .
 	@echo "Generated documentation in $@"
 
 check_tools:

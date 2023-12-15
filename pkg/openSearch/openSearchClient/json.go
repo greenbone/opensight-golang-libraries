@@ -49,6 +49,7 @@ func newJsonValidator() *validator.Validate {
 	return validate
 }
 
+// Unmarshal unmarshalls data into v. It returns an error if the data is invalid.
 func Unmarshal(data []byte, v any) error {
 	err := UnmarshalWithoutValidation(data, v)
 	if err != nil {
@@ -74,6 +75,7 @@ func validateStruct(v any) error {
 	return nil
 }
 
+// UnmarshalWithoutValidation unmarshalls data into v. It returns an error if the data can not be parsed.
 func UnmarshalWithoutValidation(data []byte, v any) error {
 	reportUpdatedEvent := v
 	if err := jsoniter.Unmarshal(data, &reportUpdatedEvent); err != nil {
@@ -82,7 +84,7 @@ func UnmarshalWithoutValidation(data []byte, v any) error {
 	return nil
 }
 
-func StructFields(value any) []string {
+func structFields(value any) []string {
 	typ := reflect.TypeOf(value)
 	if typ.Kind() == reflect.Pointer {
 		typ = typ.Elem()
@@ -102,13 +104,13 @@ func StructFields(value any) []string {
 	return fields
 }
 
-func ParseUnknownFields(
+func parseUnknownFields(
 	bytes []byte,
 	structValue any,
 	callback func(iter *jsoniter.Iterator, fieldName string, callbackExtra any),
 	callbackExtra any,
 ) {
-	structFields := StructFields(structValue)
+	structFields := structFields(structValue)
 	iterator := jsoniter.ParseBytes(jsoniter.ConfigDefault, bytes)
 
 	var fieldName string

@@ -16,7 +16,7 @@ import (
 // TODO free from JSON generation for easier testing?
 func TestBoolQueryBuilder(t *testing.T) {
 	var (
-		query  *boolQueryBuilder
+		query  *BoolQueryBuilder
 		folder testFolder.TestFolder
 	)
 
@@ -33,7 +33,7 @@ func TestBoolQueryBuilder(t *testing.T) {
 
 		query.AddTermFilter("foo", "bar")
 
-		json, err := query.ToJson()
+		json, err := query.toJson()
 		require.NoError(t, err)
 		assert.JSONEq(t, folder.GetContent(t, "testdata/filterTerm.json"), json)
 	})
@@ -62,7 +62,7 @@ func TestBoolQueryBuilder(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		json, err := query.ToJson()
+		json, err := query.toJson()
 		require.NoError(t, err)
 		assert.JSONEq(t, folder.GetContent(t, "testdata/filterTermWithFilterRequest.json"), json)
 	})
@@ -140,7 +140,7 @@ func TestFilterQueryOperatorAnd(t *testing.T) {
 				},
 			})
 			require.NoError(t, err)
-			json, err := query.ToJson()
+			json, err := query.toJson()
 			require.NoError(t, err)
 
 			expectedJson := testFolder.NewTestFolder().
@@ -184,7 +184,7 @@ func TestFilterQueryOperatorAnd(t *testing.T) {
 				},
 			})
 			require.NoError(t, err)
-			json, err := query.ToJson()
+			json, err := query.toJson()
 			require.NoError(t, err)
 
 			assert.JSONEq(t, testFolder.NewTestFolder().
@@ -270,7 +270,7 @@ func TestFilterQueryOperatorOr(t *testing.T) {
 				},
 			})
 			require.NoError(t, err)
-			json, err := query.ToJson()
+			json, err := query.toJson()
 			require.NoError(t, err)
 
 			assert.JSONEq(t, testFolder.NewTestFolder().
@@ -313,7 +313,7 @@ func TestFilterQueryOperatorOr(t *testing.T) {
 				},
 			})
 			require.NoError(t, err)
-			json, err := query.ToJson()
+			json, err := query.toJson()
 			require.NoError(t, err)
 
 			assert.JSONEq(t, testFolder.NewTestFolder().

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/aquasecurity/esquery"
+	esextensions "github.com/greenbone/opensight-golang-libraries/pkg/openSearch/esextension"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -63,7 +64,7 @@ func TestHandleCompareOperator(t *testing.T) {
 			"asset.tags",
 			[]string{"name"},
 			"value",
-			Nested("asset.tags.tagname", *esquery.Bool().
+			esextensions.Nested("asset.tags.tagname", *esquery.Bool().
 				Must(
 					esquery.Match("asset.tags.tagname", "name"),
 					esquery.Wildcard("asset.tags.tagvalue", "*value*"),
@@ -76,7 +77,7 @@ func TestHandleCompareOperator(t *testing.T) {
 			"asset.tags",
 			[]string{"name"},
 			"value",
-			Nested("asset.tags.tagname", *esquery.Bool().
+			esextensions.Nested("asset.tags.tagname", *esquery.Bool().
 				Must(
 					esquery.Match("asset.tags.tagname", "name"),
 					esquery.Match("asset.tags.tagvalue", "value"),

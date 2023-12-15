@@ -19,20 +19,32 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type client struct {
+// Client is a client for OpenSearch designed to allow easy mocking in tests.
+// It is a wrapper around the official OpenSearch client github.com/opensearch-project/opensearch-go .
+type Client struct {
 	openSearchProjectClient *opensearch.Client
-	queue                   *requestQueue
+	updateQueue             *UpdateQueue
 }
 
-func NewClient(openSearchProjectClient *opensearch.Client, updateMaxRetries int, updateRetryDelay time.Duration) *client {
-	c := &client{
+// NewClient creates a new OpenSearch client.
+//
+// openSearchProjectClient is the official OpenSearch client to wrap. Use NewOpenSearchProjectClient to create it.
+// updateMaxRetries is the number of retries for update requests.
+// updateRetryDelay is the delay between retries.
+func NewClient(openSearchProjectClient *opensearch.Client, updateMaxRetries int, updateRetryDelay time.Duration) *Client {
+	c := &Client{
 		openSearchProjectClient: openSearchProjectClient,
 	}
-	c.queue = NewRequestQueue(openSearchProjectClient, updateMaxRetries, updateRetryDelay)
+	c.updateQueue = NewRequestQueue(openSearchProjectClient, updateMaxRetries, updateRetryDelay)
 	return c
 }
 
-func (c *client) Search(indexName string, requestBody []byte) (responseBody []byte, err error) {
+// Search searches for documents in the given index.
+//
+// indexName is the name of the index to search in.
+// requestBody is the request body to send to OpenSearch.
+// It returns the response body as or an error in case something went wrong.
+func (c *Client) Search(indexName string, requestBody []byte) (responseBody []byte, err error) {
 	log.Debug().Msgf("search requestBody: %s", string(requestBody))
 	searchResponse, err := c.openSearchProjectClient.Search(
 		c.openSearchProjectClient.Search.WithIndex(indexName),
@@ -56,20 +68,37 @@ func (c *client) Search(indexName string, requestBody []byte) (responseBody []by
 	return result, nil
 }
 
-func (c *client) Update(indexName string, requestBody []byte) (responseBody []byte, err error) {
-	return c.queue.Update(indexName, requestBody)
+// Update updates documents in the given index using UpdateQueue (which is also part of this package).
+// It does not wait for the update to finish before returning.
+// It returns the response body as or an error in case something went wrong.
+//
+// indexName is the name of the index to update.
+// requestBody is the request body to send to OpenSearch specifying the update.
+func (c *Client) Update(indexName string, requestBody []byte) (responseBody []byte, err error) {
+	return c.updateQueue.Update(indexName, requestBody)
 }
 
-func (c *client) AsyncDeleteByQuery(indexName string, requestBody []byte) error {
+// AsyncDeleteByQuery updates documents in the given index asynchronously.
+// It does not wait for the update to finish before returning.
+// It returns an error in case something went wrong.
+//
+// indexName is the name of the index to delete from.
+// requestBody is the request body to send to OpenSearch to identify the documents to be deleted.
+func (c *Client) AsyncDeleteByQuery(indexName string, requestBody []byte) error {
 	return c.deleteByQuery(indexName, requestBody, true)
 }
 
-func (c *client) DeleteByQuery(indexName string, requestBody []byte) error {
+// DeleteByQuery updates documents in the given index.
+// It waits for the update to finish before returning.
+// It returns an error in case something went wrong.
+//
+// indexName is the name of the index to delete from.
+// requestBody is the request body to send to OpenSearch to identify the documents to be deleted.
+func (c *Client) DeleteByQuery(indexName string, requestBody []byte) error {
 	return c.deleteByQuery(indexName, requestBody, false)
 }
 
-// deleteByQuery deletes documents by a query
-func (c *client) deleteByQuery(indexName string, requestBody []byte, isAsync bool) error {
+func (c *Client) deleteByQuery(indexName string, requestBody []byte, isAsync bool) error {
 	deleteResponse, err := c.openSearchProjectClient.DeleteByQuery(
 		[]string{indexName},
 		bytes.NewReader(requestBody),
@@ -87,7 +116,12 @@ func (c *client) deleteByQuery(indexName string, requestBody []byte, isAsync boo
 	return GetResponseError(deleteResponse.StatusCode, resultString, indexName)
 }
 
-func SerializeDocumentsForBulkUpdate[T Identifiable](indexName string, documents []T) ([]byte, error) {
+// SerializeDocumentsForBulkUpdate serializes documents for bulk update. Can be used in conjunction with BulkUpdate.
+// It returns the serialized documents or an error in case something went wrong.
+//
+// indexName is the name of the index to update.
+// documents are the documents to update.
+func SerializeDocumentsForBulkUpdate[T any](indexName string, documents []T) ([]byte, error) {
 	if len(documents) == 0 {
 		return nil, fmt.Errorf("no documents to serialize")
 	}
@@ -107,7 +141,12 @@ func SerializeDocumentsForBulkUpdate[T Identifiable](indexName string, documents
 	return []byte(body.String()), nil
 }
 
-func (c *client) BulkUpdate(indexName string, requestBody []byte) error {
+// BulkUpdate performs a bulk update in the given index.
+// It returns an error in case something went wrong.
+//
+// indexName is the name of the index to update.
+// requestBody is the request body to send to OpenSearch specifying the bulk update.
+func (c *Client) BulkUpdate(indexName string, requestBody []byte) error {
 	insertResponse, err := c.openSearchProjectClient.Bulk(
 		bytes.NewReader(requestBody),
 		c.openSearchProjectClient.Bulk.WithIndex(indexName),
@@ -125,6 +164,7 @@ func (c *client) BulkUpdate(indexName string, requestBody []byte) error {
 	return GetResponseError(insertResponse.StatusCode, resultString, indexName)
 }
 
+// GetResponseError checks if a response from OpenSearch indicated success and returns an error if not.
 func GetResponseError(statusCode int, responseString []byte, indexName string) error {
 	if statusCode >= 200 && statusCode < 300 {
 		errorResponse := &BulkResponse{}
@@ -158,6 +198,7 @@ func GetResponseError(statusCode int, responseString []byte, indexName string) e
 	}
 }
 
-func (c *client) Close() {
-	c.queue.Stop()
+// Close stops the underlying UpdateQueue allowing a graceful shutdown.
+func (c *Client) Close() {
+	c.updateQueue.Stop()
 }
