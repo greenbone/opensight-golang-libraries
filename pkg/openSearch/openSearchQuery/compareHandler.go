@@ -5,9 +5,10 @@
 package openSearchQuery
 
 import (
-	"github.com/greenbone/opensight-golang-libraries/pkg/openSearch/esextension"
 	"strconv"
 	"time"
+
+	esextensions "github.com/greenbone/opensight-golang-libraries/pkg/openSearch/esextension"
 
 	"github.com/aquasecurity/esquery"
 	"github.com/samber/lo"

@@ -1,8 +1,9 @@
 package esextensions
 
 import (
-	"github.com/aquasecurity/esquery"
 	"testing"
+
+	"github.com/aquasecurity/esquery"
 )
 
 func TestNested(t *testing.T) {

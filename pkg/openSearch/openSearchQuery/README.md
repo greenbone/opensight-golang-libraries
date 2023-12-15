@@ -2,6 +2,8 @@
 
 Package openSearchQuery provides a query builder for OpenSearch.
 
+Usage example:
+
 ```go
 q := openSearchQuery.NewBoolQueryBuilder(&openSearchQuery.QuerySettings{ /* ... */ })
 
@@ -23,16 +25,6 @@ responseBody, err := v.openSearchClient.Search(openSearchModels.VulnerabilityInd
 if err != nil {
     return nil, errors.WithStack(err)
 }
-
-var searchResponse openSearchClient.SearchResponse[*openSearchModels.Vulnerability]
-
-err = jsoniter.Unmarshal(responseBody, &searchResponse)
-
-if err != nil {
-    return nil, errors.WithStack(err)
-}
-
-return searchResponse.GetSearchHits()
 ```
 
 ---

@@ -1,10 +1,10 @@
 package openSearchQuery
 
 import (
-	"github.com/greenbone/opensight-golang-libraries/pkg/openSearch/esextension"
 	"testing"
 
 	"github.com/aquasecurity/esquery"
+	esextensions "github.com/greenbone/opensight-golang-libraries/pkg/openSearch/esextension"
 	"github.com/stretchr/testify/assert"
 )
 
