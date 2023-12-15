@@ -1,6 +1,7 @@
 package esextensions
 
-// MatchQuery represents an OpenSearch match query.
+// MatchQuery represents an OpenSearch match part in an OpenSearch query as described in
+// https://www.elastic.co/guide/en/elasticsearch/reference/7.17/query-filter-context.html#query-filter-context-ex
 type MatchQuery struct {
 	Field string
 	Value interface{}
