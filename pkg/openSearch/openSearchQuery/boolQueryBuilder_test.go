@@ -16,7 +16,7 @@ import (
 // TODO free from JSON generation for easier testing?
 func TestBoolQueryBuilder(t *testing.T) {
 	var (
-		query  *BoolQueryBuilder
+		query  testBoolQueryBuilderWrapper
 		folder testFolder.TestFolder
 	)
 
@@ -24,7 +24,8 @@ func TestBoolQueryBuilder(t *testing.T) {
 		querySettings := QuerySettings{
 			FilterFieldMapping: map[string]string{"testName": "testName"},
 		}
-		query = NewBoolQueryBuilder(&querySettings)
+		query = testBoolQueryBuilderWrapper{}
+		query.BoolQueryBuilder = NewBoolQueryBuilder(&querySettings)
 		folder = testFolder.NewTestFolder()
 	}
 
@@ -128,7 +129,8 @@ func TestFilterQueryOperatorAnd(t *testing.T) {
 	}
 	for name, tc := range mixedTests {
 		t.Run(name, func(t *testing.T) {
-			query := NewBoolQueryBuilder(&querySettings)
+			query := testBoolQueryBuilderWrapper{}
+			query.BoolQueryBuilder = NewBoolQueryBuilder(&querySettings)
 			err := query.AddFilterRequest(&filter.Request{
 				Operator: filter.LogicOperatorAnd,
 				Fields: []filter.RequestField{
@@ -172,7 +174,8 @@ func TestFilterQueryOperatorAnd(t *testing.T) {
 	}
 	for name, tc := range singleValueTests {
 		t.Run(name, func(t *testing.T) {
-			query := NewBoolQueryBuilder(&querySettings)
+			query := testBoolQueryBuilderWrapper{}
+			query.BoolQueryBuilder = NewBoolQueryBuilder(&querySettings)
 			err := query.AddFilterRequest(&filter.Request{
 				Operator: filter.LogicOperatorAnd,
 				Fields: []filter.RequestField{
@@ -258,7 +261,8 @@ func TestFilterQueryOperatorOr(t *testing.T) {
 	}
 	for name, tc := range mixedTests {
 		t.Run(name, func(t *testing.T) {
-			query := NewBoolQueryBuilder(&querySettings)
+			query := testBoolQueryBuilderWrapper{}
+			query.BoolQueryBuilder = NewBoolQueryBuilder(&querySettings)
 			err := query.AddFilterRequest(&filter.Request{
 				Operator: filter.LogicOperatorOr,
 				Fields: []filter.RequestField{
@@ -301,7 +305,8 @@ func TestFilterQueryOperatorOr(t *testing.T) {
 	}
 	for name, tc := range singleValueTests {
 		t.Run(name, func(t *testing.T) {
-			query := NewBoolQueryBuilder(&querySettings)
+			query := testBoolQueryBuilderWrapper{}
+			query.BoolQueryBuilder = NewBoolQueryBuilder(&querySettings)
 			err := query.AddFilterRequest(&filter.Request{
 				Operator: filter.LogicOperatorAnd,
 				Fields: []filter.RequestField{
