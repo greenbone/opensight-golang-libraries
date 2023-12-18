@@ -17,11 +17,8 @@ type BoolQueryBuilder struct {
 	compareOperators []CompareOperator
 	size             uint64
 	query            *esquery.BoolQuery
-	// aggregations aggregation of this search request.
-	// Deprecated: Better create custom implementation for more verbosity.
-	aggregations []Aggregation
-	Must         []esquery.Mappable
-	MustNot      []esquery.Mappable
+	Must             []esquery.Mappable
+	MustNot          []esquery.Mappable
 }
 
 type (
@@ -118,16 +115,6 @@ func (q *BoolQueryBuilder) AddTermsFilter(fieldName string, values ...interface{
 // value is the value to filter for.
 func (q *BoolQueryBuilder) AddTermFilter(fieldName string, value interface{}) *BoolQueryBuilder {
 	q.query = q.query.Filter(esquery.Term(fieldName, value))
-	return q
-}
-
-// addAggregation adds an aggregation to this query.
-//
-// Deprecated: Better create custom implementation for more verbosity.
-//
-// aggregation is the aggregation to add.
-func (q *BoolQueryBuilder) addAggregation(aggregation Aggregation) *BoolQueryBuilder {
-	q.aggregations = append(q.aggregations, aggregation)
 	return q
 }
 
@@ -249,42 +236,6 @@ func createMappedField(dtoField filter.RequestField, fieldMapping map[string]str
 // Build returns the built query.
 func (q *BoolQueryBuilder) Build() *esquery.BoolQuery {
 	return q.query
-}
-
-// toJson returns a json representation of the search request
-//
-// Deprecated: do not use due to dubious size setting. Better create custom implementation.
-func (q *BoolQueryBuilder) toJson() (json string, err error) {
-	size := q.size
-	if size == 0 {
-		// TODO: 15.08.2022 stolksdorf - current default size is 100 until we get paging
-		size = 100
-	}
-
-	var jsonByte []byte
-	var err1 error
-
-	if q.aggregations == nil {
-		jsonByte, err1 = esquery.Search().
-			Query(q.query).
-			Size(size).
-			MarshalJSON()
-	} else {
-		var aggregations []esquery.Aggregation
-		for _, aggregation := range q.aggregations {
-			aggregations = append(aggregations, aggregation.ToEsAggregation())
-		}
-		jsonByte, err1 = esquery.Search().
-			Query(q.query).
-			Aggs(aggregations...).
-			Size(size).
-			MarshalJSON()
-	}
-
-	if err1 != nil {
-		return "", errors.WithStack(err1)
-	}
-	return string(jsonByte), nil
 }
 
 func defaultCompareOperators() []CompareOperator {
