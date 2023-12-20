@@ -23,12 +23,30 @@ import "github.com/greenbone/opensight-golang-libraries/pkg/query"
 
 ## Index
 
+- [type FilterOption](<#FilterOption>)
 - [type Metadata](<#Metadata>)
   - [func NewMetadata\(resultSelector ResultSelector, totalRowCount uint64\) Metadata](<#NewMetadata>)
 - [type ResponseListWithMetadata](<#ResponseListWithMetadata>)
 - [type ResponseWithMetadata](<#ResponseWithMetadata>)
 - [type ResultSelector](<#ResultSelector>)
 
+
+<a name="FilterOption"></a>
+## type [FilterOption](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filterOption.go#L16-L22>)
+
+FilterOption hold the information for a filter option. It can be used by a client to determine possible filters.
+
+Name: The name of the option Control: The type of control for the option Operators: The list of comparison operators for the option Values: The possible values for the option MultiSelect: Indicates whether the option supports multiple selections
+
+```go
+type FilterOption struct {
+    Name        filter.ReadableValue[string]                   `json:"name" binding:"required"`
+    Control     filter.RequestOptionType                       `json:"control" binding:"required"`
+    Operators   []filter.ReadableValue[filter.CompareOperator] `json:"operators" binding:"required"`
+    Values      []string                                       `json:"values,omitempty"`
+    MultiSelect bool                                           `json:"multiSelect" binding:"required"`
+}
+```
 
 <a name="Metadata"></a>
 ## type [Metadata](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/responseWithMetadata.go#L27-L31>)

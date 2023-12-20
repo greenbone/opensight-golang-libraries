@@ -110,9 +110,9 @@ func (agg *CompositeAgg) Sources(sources ...esquery.Mappable) *CompositeAgg
 Sources sets the sources for the buckets.
 
 <a name="MatchQuery"></a>
-## type [MatchQuery](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/matchQuery.go#L4-L7>)
+## type [MatchQuery](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/matchQuery.go#L5-L8>)
 
-MatchQuery represents an OpenSearch match query.
+MatchQuery represents an OpenSearch match part in an OpenSearch query as described in https://www.elastic.co/guide/en/elasticsearch/reference/7.17/query-filter-context.html#query-filter-context-ex
 
 ```go
 type MatchQuery struct {
@@ -122,7 +122,7 @@ type MatchQuery struct {
 ```
 
 <a name="Match"></a>
-### func [Match](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/matchQuery.go#L32>)
+### func [Match](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/matchQuery.go#L21>)
 
 ```go
 func Match(field string, value interface{}) *MatchQuery
@@ -131,7 +131,7 @@ func Match(field string, value interface{}) *MatchQuery
 Match creates a new MatchQuery.
 
 <a name="MatchQuery.Map"></a>
-### func \(\*MatchQuery\) [Map](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/matchQuery.go#L13>)
+### func \(\*MatchQuery\) [Map](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/matchQuery.go#L12>)
 
 ```go
 func (mq *MatchQuery) Map() map[string]interface{}
