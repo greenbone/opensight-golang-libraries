@@ -8,9 +8,10 @@
 
 The code maintained in this repository is used by the Greenbone OpenSight Backend Components written in GoLang.
 
-The following funtionalities are provided:
+The following functionalities are provided:
 * [configReader](pkg/configReader/README.md) - reads the configuration based on environment variables with predefined defaults
 * [dbcrypt](pkg/dbcrypt/README.md) - provides encryption / decryption for fields of entities persisted with GORM
+* [errorResponses](pkg/errorResponses/README.md) - rest api models for errors
 * [jobQueue](pkg/jobQueue/README.md) - a simple job queue
 * [openSearch](pkg/openSearch/README.md) - a client and extension functions to query openSearch - suited for the [query](pkg/query/README.md) package
 * [query](pkg/query/README.md) - provides basic selector and response objects for requests, including filter, paging and sorting
