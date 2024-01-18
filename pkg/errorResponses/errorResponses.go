@@ -8,16 +8,10 @@ package errorResponses
 import "fmt"
 
 type ErrorResponse struct {
-	Type    string `json:"type"`
-	Title   string `json:"title"`
-	Details string `json:"details,omitempty"`
-}
-
-type FieldErrorResponse struct {
-	Type    string            `json:"type"` // always `validation-error`
+	Type    string            `json:"type"`
 	Title   string            `json:"title"`
 	Details string            `json:"details,omitempty"`
-	Errors  map[string]string `json:"errors"`
+	Errors  map[string]string `json:"errors,omitempty"`
 }
 
 const errorTypePrefix = "greenbone/"
@@ -40,5 +34,15 @@ func NewErrorGenericResponse(message ...any) ErrorResponse {
 	return ErrorResponse{
 		Type:  ErrorTypeGeneric,
 		Title: fmt.Sprintln(message...),
+	}
+}
+
+// NewErrorValidationResponse returns a [ErrorResponse] of type Validation. `errors` is a mapping from field name to error message for this specific field.
+func NewErrorValidationResponse(title, details string, errors map[string]string) ErrorResponse {
+	return ErrorResponse{
+		Type:    ErrorTypeValidation,
+		Title:   title,
+		Details: details,
+		Errors:  errors,
 	}
 }
