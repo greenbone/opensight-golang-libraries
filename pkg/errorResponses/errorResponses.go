@@ -33,7 +33,7 @@ var ErrorInternalResponse = ErrorResponse{
 func NewErrorGenericResponse(message ...any) ErrorResponse {
 	return ErrorResponse{
 		Type:  ErrorTypeGeneric,
-		Title: fmt.Sprintln(message...),
+		Title: fmt.Sprint(message...),
 	}
 }
 
