@@ -17,7 +17,7 @@ import (
 )
 
 // NewOpenSearchProjectClient creates a new official OpenSearch client (package github.com/opensearch-project/opensearch-go)
-// for usage in NewClient.
+// for usage NewClient.
 // It returns an error if the client couldn't be created or the connection couldn't be established.
 //
 // ctx is the context to use for the connection.
@@ -31,14 +31,19 @@ func NewOpenSearchProjectClient(ctx context.Context, config config.OpensearchCli
 	var client *opensearch.Client
 	if err := retry.Do(
 		func() error {
-			c, err := opensearch.NewClient(opensearch.Config{
+			openSearchApiConf := opensearch.Config{
 				Transport: &http.Transport{
 					TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, //nolint:gosec
 				},
 				Addresses: []string{
 					fmt.Sprintf("%s://%s:%d", protocol, config.Host, config.Port),
 				},
-			})
+			}
+			if config.Username != "" && config.Password != "" {
+				openSearchApiConf.Username = config.Username
+				openSearchApiConf.Password = config.Password
+			}
+			c, err := opensearch.NewClient(openSearchApiConf)
 			if err != nil {
 				return fmt.Errorf("search client couldn't be created: %w", err)
 			}

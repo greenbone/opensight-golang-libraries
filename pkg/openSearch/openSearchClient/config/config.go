@@ -10,9 +10,11 @@ import (
 )
 
 type OpensearchClientConfig struct {
-	Host  string `validate:"required" viperEnv:"ELASTIC_HOST"`
-	Port  int    `validate:"required,min=1,max=65535" viperEnv:"ELASTIC_API_PORT"`
-	Https bool   `viperEnv:"ELASTIC_HTTPS"`
+	Host     string `validate:"required" viperEnv:"ELASTIC_HOST"`
+	Port     int    `validate:"required,min=1,max=65535" viperEnv:"ELASTIC_API_PORT"`
+	Https    bool   `viperEnv:"ELASTIC_HTTPS"`
+	Username string `viperEnv:"ELASTIC_USER"`
+	Password string `viperEnv:"ELASTIC_PASS"`
 }
 
 func ReadOpensearchClientConfig() (OpensearchClientConfig, error) {
