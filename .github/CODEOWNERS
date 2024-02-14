@@ -1,5 +1,5 @@
 # default reviewers
-*                   @greenbone/asset
+*               @greenbone/asset @greenbone/vulnerability-intelligence-maintainers
 
 # .github
-.github/        @greenbone/asset @greenbone/devops
+.github/        @greenbone/asset @greenbone/vulnerability-intelligence-maintainers @greenbone/devops
