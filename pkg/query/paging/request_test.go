@@ -45,7 +45,7 @@ func TestAddPagingRequest(t *testing.T) {
 			PageSize:  10,
 		}
 
-		sqlMock.ExpectQuery(exactMatchRegexp(`SELECT * FROM "test_objects" WHERE "TheString" = 123 LIMIT 10 OFFSET 20`)).WillReturnRows(sqlmock.NewRows([]string{}))
+		sqlMock.ExpectQuery(exactMatchRegexp(`SELECT * FROM "test_objects" WHERE "TheString" = 123 LIMIT $1 OFFSET $2`)).WithArgs(10, 20).WillReturnRows(sqlmock.NewRows([]string{}))
 
 		gormDB = gormDB.Where(`"TheString" = 123`)
 		gormDB = AddRequest(gormDB, request)
