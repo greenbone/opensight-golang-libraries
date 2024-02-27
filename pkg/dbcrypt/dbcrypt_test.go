@@ -70,7 +70,7 @@ func getTestDb(t *testing.T) *gorm.DB {
 
 func TestEncryptDecrypt(t *testing.T) {
 	os.Setenv("TASK_REPORT_CRYPTO_V1_PASSWORD", "my-key-1234567890")
-	os.Setenv("TASK_REPORT_CRYPTO_V1_SALT", "my-salt-0987654321")
+	os.Setenv("TASK_REPORT_CRYPTO_V1_SALT", "my-salt-0987654321-0987654321-09")
 	defer func() {
 		os.Unsetenv("TASK_REPORT_CRYPTO_V1_PASSWORD")
 		os.Unsetenv("TASK_REPORT_CRYPTO_V1_SALT")
@@ -93,7 +93,7 @@ func TestEncryptDecrypt(t *testing.T) {
 
 func TestApplianceEncryption(t *testing.T) {
 	os.Setenv("TASK_REPORT_CRYPTO_V1_PASSWORD", "my-key-1234567890")
-	os.Setenv("TASK_REPORT_CRYPTO_V1_SALT", "my-salt-0987654321")
+	os.Setenv("TASK_REPORT_CRYPTO_V1_SALT", "my-salt-0987654321-0987654321-09")
 	defer func() {
 		os.Unsetenv("TASK_REPORT_CRYPTO_V1_PASSWORD")
 		os.Unsetenv("TASK_REPORT_CRYPTO_V1_SALT")

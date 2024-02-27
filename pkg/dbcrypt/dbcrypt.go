@@ -14,6 +14,8 @@ import (
 	"reflect"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/dbcrypt/config"
+
+	"github.com/rs/zerolog/log"
 )
 
 const prefix = "ENC:"
@@ -25,9 +27,13 @@ type DBCrypt[T any] struct {
 
 func (d *DBCrypt[T]) loadKey() []byte {
 	if d.config == (config.CryptoConfig{}) {
-		d.config = config.Read()
+		conf, err := config.Read()
+		if err != nil {
+			log.Fatal().Err(err).Msg("crypto config is invalid")
+		}
+		d.config = conf
 	}
-	key := []byte(d.config.ReportEncryptionV1Password + d.config.ReportEncryptionV1Salt)[:32] // Truncate or pad key to 32 bytes
+	key := []byte(d.config.ReportEncryptionV1Password + d.config.ReportEncryptionV1Salt)[:32] // Truncate key to 32 bytes
 	return key
 }
 

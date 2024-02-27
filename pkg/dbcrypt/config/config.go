@@ -18,15 +18,14 @@ type CryptoConfig struct {
 	// Contains the password for encrypting user group specific report encryptions using v1 to v2
 	ReportEncryptionV1Password string `validate:"required" viperEnv:"TASK_REPORT_CRYPTO_V1_PASSWORD"`
 	// Contains the salt for encrypting user group specific report encryptions v1 to v2
-	ReportEncryptionV1Salt string `validate:"required" viperEnv:"TASK_REPORT_CRYPTO_V1_SALT"`
+	ReportEncryptionV1Salt string `validate:"required,gte=32" viperEnv:"TASK_REPORT_CRYPTO_V1_SALT"`
 }
 
-func Read() CryptoConfig {
-	config := &CryptoConfig{}
-	_, err := configReader.ReadEnvVarsIntoStruct(config)
+func Read() (config CryptoConfig, err error) {
+	_, err = configReader.ReadEnvVarsIntoStruct(&config)
 	if err != nil {
-		log.Err(err)
+		return config, err
 	}
 	log.Debug().Msgf("CryptoConfig: %+v", config)
-	return *config
+	return config, nil
 }
