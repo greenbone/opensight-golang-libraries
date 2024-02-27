@@ -80,13 +80,15 @@ func TestEncryptDecrypt(t *testing.T) {
 		Field1:   "111111111",
 		PwdField: "ThePassword",
 	}
+	var originalPw string = clearData.PwdField
 
 	cryptor := DBCrypt[MyTable]{}
 	err := cryptor.EncryptStruct(clearData)
 	require.NoError(t, err)
+	require.NotEqual(t, originalPw, clearData.PwdField, "password was not encrypted")
 	err = cryptor.DecryptStruct(clearData)
 	require.NoError(t, err)
-	assert.Equal(t, "ThePassword", clearData.PwdField)
+	assert.Equal(t, originalPw, clearData.PwdField)
 }
 
 func TestApplianceEncryption(t *testing.T) {
