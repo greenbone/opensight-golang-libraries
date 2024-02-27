@@ -16,6 +16,9 @@ import (
 	"github.com/greenbone/opensight-golang-libraries/pkg/dbcrypt/config"
 )
 
+const prefix = "ENC:"
+const prefixLen = len(prefix)
+
 type DBCrypt[T any] struct {
 	config config.CryptoConfig
 }
@@ -36,7 +39,7 @@ func (d *DBCrypt[T]) EncryptStruct(data *T) error {
 		fieldType := valueType.Field(i)
 		if encrypt, ok := fieldType.Tag.Lookup("encrypt"); ok && encrypt == "true" {
 			plaintext := fmt.Sprintf("%v", field.Interface())
-			if len(plaintext) > 4 && plaintext[:4] == "ENC:" {
+			if len(plaintext) > prefixLen && plaintext[:prefixLen] == prefix {
 				// already encrypted goto next field
 				continue
 			}
@@ -91,11 +94,11 @@ func (d *DBCrypt[T]) encrypt(plaintext string) (string, error) {
 	ciphertext := gcm.Seal(nil, iv, []byte(plaintext), nil)
 
 	encoded := hex.EncodeToString(append(iv, ciphertext...))
-	return "ENC:" + encoded, nil
+	return prefix + encoded, nil
 }
 
 func (d *DBCrypt[T]) decrypt(encrypted string) (string, error) {
-	if len(encrypted) < 5 || encrypted[:4] != "ENC:" {
+	if len(encrypted) <= prefixLen || encrypted[:prefixLen] != prefix {
 		return "", fmt.Errorf("invalid encrypted value format")
 	}
 
