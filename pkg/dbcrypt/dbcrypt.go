@@ -14,21 +14,32 @@ import (
 	"reflect"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/dbcrypt/config"
+
+	"github.com/rs/zerolog/log"
 )
+
+const prefix = "ENC:"
+const prefixLen = len(prefix)
 
 type DBCrypt[T any] struct {
 	config config.CryptoConfig
 }
 
-func (d *DBCrypt[T]) loadConfig() {
+func (d *DBCrypt[T]) loadKey() []byte {
 	if d.config == (config.CryptoConfig{}) {
-		d.config = config.Read()
+		conf, err := config.Read()
+		if err != nil {
+			log.Fatal().Err(err).Msg("crypto config is invalid")
+		}
+		d.config = conf
 	}
+	key := []byte(d.config.ReportEncryptionV1Password + d.config.ReportEncryptionV1Salt)[:32] // Truncate key to 32 bytes
+	return key
 }
 
 // EncryptStruct encrypts all fields of a struct that are tagged with `encrypt:"true"`
 func (d *DBCrypt[T]) EncryptStruct(data *T) error {
-	d.loadConfig()
+	key := d.loadKey()
 	value := reflect.ValueOf(data).Elem()
 	valueType := value.Type()
 	for i := 0; i < value.NumField(); i++ {
@@ -36,16 +47,15 @@ func (d *DBCrypt[T]) EncryptStruct(data *T) error {
 		fieldType := valueType.Field(i)
 		if encrypt, ok := fieldType.Tag.Lookup("encrypt"); ok && encrypt == "true" {
 			plaintext := fmt.Sprintf("%v", field.Interface())
-			if len(plaintext) > 4 && plaintext[:4] == "ENC:" {
+			if len(plaintext) > prefixLen && plaintext[:prefixLen] == prefix {
 				// already encrypted goto next field
 				continue
 			}
-			ciphertext, err := d.encrypt(plaintext)
+			ciphertext, err := Encrypt(plaintext, key)
 			if err != nil {
 				return err
 			}
 			field.SetString(ciphertext)
-			// field.SetString("ENC:" + hex.EncodeToString(ciphertext))
 		}
 	}
 	return nil
@@ -53,14 +63,14 @@ func (d *DBCrypt[T]) EncryptStruct(data *T) error {
 
 // DecryptStruct decrypts all fields of a struct that are tagged with `encrypt:"true"`
 func (d *DBCrypt[T]) DecryptStruct(data *T) error {
-	d.loadConfig()
+	key := d.loadKey()
 	value := reflect.ValueOf(data).Elem()
 	valueType := value.Type()
 	for i := 0; i < value.NumField(); i++ {
 		field := value.Field(i)
 		fieldType := valueType.Field(i)
 		if encrypt, ok := fieldType.Tag.Lookup("encrypt"); ok && encrypt == "true" {
-			plaintext, err := d.decrypt(field.String())
+			plaintext, err := Decrypt(field.String(), key)
 			if err != nil {
 				return err
 			}
@@ -70,9 +80,7 @@ func (d *DBCrypt[T]) DecryptStruct(data *T) error {
 	return nil
 }
 
-func (d *DBCrypt[T]) encrypt(plaintext string) (string, error) {
-	key := []byte(d.config.ReportEncryptionV1Password + d.config.ReportEncryptionV1Salt)[:32] // Truncate or pad
-
+func Encrypt(plaintext string, key []byte) (string, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return "", err
@@ -91,11 +99,11 @@ func (d *DBCrypt[T]) encrypt(plaintext string) (string, error) {
 	ciphertext := gcm.Seal(nil, iv, []byte(plaintext), nil)
 
 	encoded := hex.EncodeToString(append(iv, ciphertext...))
-	return "ENC:" + encoded, nil
+	return prefix + encoded, nil
 }
 
-func (d *DBCrypt[T]) decrypt(encrypted string) (string, error) {
-	if len(encrypted) < 5 || encrypted[:4] != "ENC:" {
+func Decrypt(encrypted string, key []byte) (string, error) {
+	if len(encrypted) <= prefixLen || encrypted[:prefixLen] != prefix {
 		return "", fmt.Errorf("invalid encrypted value format")
 	}
 
@@ -109,8 +117,6 @@ func (d *DBCrypt[T]) decrypt(encrypted string) (string, error) {
 	if len(ciphertext) < aes.BlockSize+1 {
 		return "", fmt.Errorf("ciphertext too short")
 	}
-
-	key := []byte(d.config.ReportEncryptionV1Password + d.config.ReportEncryptionV1Salt)[:32] // Truncate or pad key to 32 bytes
 
 	block, err := aes.NewCipher(key)
 	if err != nil {

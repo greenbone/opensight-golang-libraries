@@ -70,7 +70,7 @@ func getTestDb(t *testing.T) *gorm.DB {
 
 func TestEncryptDecrypt(t *testing.T) {
 	os.Setenv("TASK_REPORT_CRYPTO_V1_PASSWORD", "my-key-1234567890")
-	os.Setenv("TASK_REPORT_CRYPTO_V1_SALT", "my-salt-0987654321")
+	os.Setenv("TASK_REPORT_CRYPTO_V1_SALT", "my-salt-0987654321-0987654321-09")
 	defer func() {
 		os.Unsetenv("TASK_REPORT_CRYPTO_V1_PASSWORD")
 		os.Unsetenv("TASK_REPORT_CRYPTO_V1_SALT")
@@ -80,18 +80,20 @@ func TestEncryptDecrypt(t *testing.T) {
 		Field1:   "111111111",
 		PwdField: "ThePassword",
 	}
+	var originalPw string = clearData.PwdField
 
 	cryptor := DBCrypt[MyTable]{}
 	err := cryptor.EncryptStruct(clearData)
 	require.NoError(t, err)
+	require.NotEqual(t, originalPw, clearData.PwdField, "password was not encrypted")
 	err = cryptor.DecryptStruct(clearData)
 	require.NoError(t, err)
-	assert.Equal(t, "ThePassword", clearData.PwdField)
+	assert.Equal(t, originalPw, clearData.PwdField)
 }
 
 func TestApplianceEncryption(t *testing.T) {
 	os.Setenv("TASK_REPORT_CRYPTO_V1_PASSWORD", "my-key-1234567890")
-	os.Setenv("TASK_REPORT_CRYPTO_V1_SALT", "my-salt-0987654321")
+	os.Setenv("TASK_REPORT_CRYPTO_V1_SALT", "my-salt-0987654321-0987654321-09")
 	defer func() {
 		os.Unsetenv("TASK_REPORT_CRYPTO_V1_PASSWORD")
 		os.Unsetenv("TASK_REPORT_CRYPTO_V1_SALT")
