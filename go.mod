@@ -1,6 +1,6 @@
 module github.com/greenbone/opensight-golang-libraries
 
-go 1.21
+go 1.22.1
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
