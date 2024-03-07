@@ -15,7 +15,7 @@ import (
 // Sorting is a pointer to a sorting.Request struct that specifies the sorting order for the query.
 // Paging is a pointer to a paging.Request struct that specifies the paging configuration for the query.
 type ResultSelector struct {
-	Filter  *filter.Request  `json:"filter" binding:"required"`
+	Filter  *filter.Request  `json:"filter" binding:"omitempty"`
 	Sorting *sorting.Request `json:"sorting" binding:"omitempty"`
 	Paging  *paging.Request  `json:"paging" binding:"omitempty"`
 }

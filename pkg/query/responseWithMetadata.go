@@ -25,15 +25,17 @@ type ResponseWithMetadata[T any] struct {
 
 // Metadata represents the metadata used in a query.
 type Metadata struct {
-	Filter  *filter.Request  `json:"filter" binding:"required"`
+	Filter  *filter.Request  `json:"filter,omitempty"`
 	Paging  *paging.Response `json:"paging,omitempty"`
 	Sorting *sorting.Request `json:"sorting,omitempty"`
 }
 
 func NewMetadata(resultSelector ResultSelector, totalRowCount uint64) Metadata {
-	for i, field := range resultSelector.Filter.Fields {
-		if field.Keys == nil {
-			resultSelector.Filter.Fields[i].Keys = []string{}
+	if resultSelector.Filter != nil {
+		for i, field := range resultSelector.Filter.Fields {
+			if field.Keys == nil {
+				resultSelector.Filter.Fields[i].Keys = []string{}
+			}
 		}
 	}
 	return Metadata{

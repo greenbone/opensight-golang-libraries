@@ -54,6 +54,13 @@ func TestRequestOptionValidation(t *testing.T) {
 		}
 	}
 
+	t.Run("shouldAllowUnsetFilter", func(t *testing.T) {
+		setup(t)
+
+		err := ValidateFilter(nil, requestOptions)
+		require.NoError(t, err)
+	})
+
 	t.Run("shouldAllowEmptyFilter", func(t *testing.T) {
 		setup(t)
 
