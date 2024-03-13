@@ -55,7 +55,7 @@ Metadata represents the metadata used in a query.
 
 ```go
 type Metadata struct {
-    Filter  *filter.Request  `json:"filter" binding:"required"`
+    Filter  *filter.Request  `json:"filter,omitempty"`
     Paging  *paging.Response `json:"paging,omitempty"`
     Sorting *sorting.Request `json:"sorting,omitempty"`
 }
@@ -101,7 +101,7 @@ ResultSelector is a type that represents the selection criteria for querying dat
 
 ```go
 type ResultSelector struct {
-    Filter  *filter.Request  `json:"filter" binding:"required"`
+    Filter  *filter.Request  `json:"filter" binding:"omitempty"`
     Sorting *sorting.Request `json:"sorting" binding:"omitempty"`
     Paging  *paging.Request  `json:"paging" binding:"omitempty"`
 }

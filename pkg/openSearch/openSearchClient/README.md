@@ -134,7 +134,7 @@ func NewOpenSearchErrorWithStack(message string) error
 func NewOpenSearchProjectClient(ctx context.Context, config config.OpensearchClientConfig) (*opensearch.Client, error)
 ```
 
-NewOpenSearchProjectClient creates a new official OpenSearch client \(package github.com/opensearch\-project/opensearch\-go\) for usage in NewClient. It returns an error if the client couldn't be created or the connection couldn't be established.
+NewOpenSearchProjectClient creates a new official OpenSearch client \(package github.com/opensearch\-project/opensearch\-go\) for usage NewClient. It returns an error if the client couldn't be created or the connection couldn't be established.
 
 ctx is the context to use for the connection. config is the configuration for the client.
 

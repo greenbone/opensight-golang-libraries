@@ -15,6 +15,10 @@ import (
 
 // ValidateFilter validates the filter in the request
 func ValidateFilter(request *Request, requestOptions []RequestOption) error {
+	if request == nil {
+		return nil
+	}
+
 	for i, field := range request.Fields {
 		fieldNameIsValid := false
 		if field.Name == "tag" {
