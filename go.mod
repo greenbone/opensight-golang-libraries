@@ -19,7 +19,7 @@ require (
 	github.com/testcontainers/testcontainers-go v0.30.0
 	gorm.io/driver/postgres v1.5.7
 	gorm.io/driver/sqlite v1.5.5
-	gorm.io/gorm v1.25.9
+	gorm.io/gorm v1.25.10
 )
 
 require (
@@ -28,12 +28,12 @@ require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/Microsoft/hcsshim v0.12.3 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
-	github.com/containerd/containerd v1.7.15 // indirect
+	github.com/containerd/containerd v1.7.16 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/cpuguy83/dockercfg v0.3.1 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/distribution/reference v0.6.0 // indirect
-	github.com/docker/docker v26.0.2+incompatible // indirect
+	github.com/docker/docker v26.1.0+incompatible // indirect
 	github.com/docker/go-connections v0.5.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
@@ -85,13 +85,13 @@ require (
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
-	github.com/tklauser/go-sysconf v0.3.13 // indirect
-	github.com/tklauser/numcpus v0.7.0 // indirect
+	github.com/tklauser/go-sysconf v0.3.14 // indirect
+	github.com/tklauser/numcpus v0.8.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.50.0 // indirect
-	go.opentelemetry.io/otel v1.25.0 // indirect
-	go.opentelemetry.io/otel/metric v1.25.0 // indirect
-	go.opentelemetry.io/otel/trace v1.25.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.51.0 // indirect
+	go.opentelemetry.io/otel v1.26.0 // indirect
+	go.opentelemetry.io/otel/metric v1.26.0 // indirect
+	go.opentelemetry.io/otel/trace v1.26.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.22.0 // indirect
 	golang.org/x/exp v0.0.0-20231127185646-65229373498e // indirect
