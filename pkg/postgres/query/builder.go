@@ -52,11 +52,11 @@ func (qb *Builder) AddFilterRequest(request *filter.Request) error {
 		if err != nil {
 			return err
 		}
-		mappedField, err := mapFilterFieldToEntityName(field, qb.querySettings.FilterFieldMapping)
+		column, err := mapFilterFieldToColumn(field, qb.querySettings.FilterFieldMapping)
 		if err != nil {
 			return err
 		}
-		qb.query.WriteString(generateConditionalQuery(field.Value, mappedField, operator,
+		qb.query.WriteString(generateConditionalQuery(field.Value, column, operator,
 			logicOperator, index == filterFieldsLen-1))
 	}
 	return nil
@@ -66,7 +66,7 @@ func (qb *Builder) AddFilterRequest(request *filter.Request) error {
 // field mappings, logic operators, and a flag indicating if these are the final request fields.
 // If the field value is not of the expected type or cannot be converted to a string, it skips that field.
 // The finalRequestFields flag determines whether to append the logic operator at the end of the query.
-func generateConditionalQuery(filterFieldValue any, fieldMappings, mappedLogicOperator, logicOperator string, finalRequestFields bool) string {
+func generateConditionalQuery(filterFieldValue any, column, sqlOperator, logicOperator string, finalRequestFields bool) string {
 	var queryString strings.Builder
 
 	fieldList, ok := filterFieldValue.([]any)
@@ -80,10 +80,10 @@ func generateConditionalQuery(filterFieldValue any, fieldMappings, mappedLogicOp
 			continue
 		}
 		if index != fieldLen-1 || !finalRequestFields {
-			queryString.WriteString(fmt.Sprintf("%s %s '%s' ", fieldMappings, mappedLogicOperator, fieldString))
+			queryString.WriteString(fmt.Sprintf("%s %s '%s' ", column, sqlOperator, fieldString))
 		} else {
 			queryString.WriteString(fmt.Sprintf("%s %s %s '%s' ", logicOperator,
-				fieldMappings, mappedLogicOperator, fieldString))
+				column, sqlOperator, fieldString))
 		}
 	}
 	return queryString.String()
@@ -116,15 +116,15 @@ func (qb *Builder) AddPaging(paging *paging.Request) error {
 	return nil
 }
 
-// mapFilterFieldToEntityName retrieves the mapped entity name for the given DTO field from the provided field mapping.
+// mapFilterFieldToColumn retrieves the mapped entity name for the given DTO field from the provided field mapping.
 // If the mapping is not found, it returns an error indicating that the mapping for the filter field is not implemented.
-func mapFilterFieldToEntityName(dtoField filter.RequestField, fieldMapping map[string]string) (string, error) {
-	entityName, ok := fieldMapping[dtoField.Name]
+func mapFilterFieldToColumn(dtoField filter.RequestField, fieldMapping map[string]string) (string, error) {
+	column, ok := fieldMapping[dtoField.Name]
 	if !ok {
 		return "", filter.NewInvalidFilterFieldError(
 			"Mapping for filter field '%s' is currently not implemented.", dtoField.Name)
 	}
-	return entityName, nil
+	return column, nil
 }
 
 // mapCompareOperatorToSQLOperator maps the given compare operator string to its corresponding SQL operator.

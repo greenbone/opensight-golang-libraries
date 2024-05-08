@@ -78,7 +78,7 @@ func TestQueryBuilder(t *testing.T) {
 			wantQuery: "WHERE status = 'invalid status' AND source_id = 'some_source_id' ",
 		},
 		{
-			name: "Build query with filter and paging",
+			name: "build query with filter and paging",
 			mockArg: query.ResultSelector{
 				Filter: &filter.Request{
 					Fields: []filter.RequestField{
