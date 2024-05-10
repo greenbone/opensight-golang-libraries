@@ -2,7 +2,6 @@
 
 # Overview
 
-Package Postgres provides a query builder that translates the result selector into a PostgresSQL conditional query string
+Package Postgres provides utilities for building conditional queries for PostgreSQL databases.
 
-
-* [postgres query](query/README.md) - query builder for filter result selector 
+* [postgres query](query/README.md) - query builder for result selector, provides filter, paging and sorting
