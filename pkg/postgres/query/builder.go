@@ -58,7 +58,8 @@ func (qb *Builder) AddFilterRequest(request *filter.Request) error {
 		if err != nil {
 			return fmt.Errorf("error checking filter field value type '%s': %w", field, err)
 		}
-		conditionTemplate, conditionParams, err = composeQuery(qb.querySettings.FilterFieldMapping, field, valueIsList, valueList)
+		conditionTemplate, conditionParams, err =
+			composeQuery(qb.querySettings.FilterFieldMapping, field, valueIsList, valueList)
 		if err != nil {
 			return fmt.Errorf("error composing query from filter field %w", err)
 		}

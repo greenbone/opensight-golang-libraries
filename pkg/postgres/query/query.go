@@ -6,11 +6,12 @@ package query
 
 import (
 	"fmt"
+	"reflect"
+	"strings"
+
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
-	"reflect"
-	"strings"
 )
 
 // Replacer for escaping LIKE clause wildcards and backslashes
