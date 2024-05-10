@@ -54,7 +54,7 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "desc",
 				},
 			},
-			wantQuery: "WHERE status = 'invalid status' status = 'valid status' source_id = 'some_source_id' source_id = 'another_source_id' OR source_id = 'third_source_id' ORDER BY started DESC OFFSET 2 LIMIT 5",
+			wantQuery: "WHERE \"status\" IN ('invalid status', 'valid status') OR \"source_id\" IN ('some_source_id', 'another_source_id', 'third_source_id') ORDER BY started DESC OFFSET 2 LIMIT 5",
 		},
 		{
 			name: "build query with filter only",
@@ -75,7 +75,7 @@ func TestQueryBuilder(t *testing.T) {
 					Operator: filter.LogicOperatorAnd,
 				},
 			},
-			wantQuery: "WHERE status = 'invalid status' AND source_id = 'some_source_id' ",
+			wantQuery: "WHERE \"status\" IN ('invalid status') AND \"source_id\" IN ('some_source_id')",
 		},
 		{
 			name: "build query with filter and paging",
@@ -100,7 +100,7 @@ func TestQueryBuilder(t *testing.T) {
 					PageSize:  5,
 				},
 			},
-			wantQuery: "WHERE status = 'invalid status' AND source_id = 'some_source_id' OFFSET 2 LIMIT 5",
+			wantQuery: "WHERE \"status\" IN ('invalid status') AND \"source_id\" IN ('some_source_id') OFFSET 2 LIMIT 5",
 		},
 	}
 
