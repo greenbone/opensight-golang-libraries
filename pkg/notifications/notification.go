@@ -23,12 +23,17 @@ type Client struct {
 	notificationServiceAddress string
 }
 
+// Config configures the notification service client
+type Config struct {
+	Address string
+}
+
 // NewClient returns a new [Client] with the notification service address (host:port) set.
 // As httpClient you can use e.g. [http.DefaultClient].
-func NewClient(httpClient *http.Client, notificationServiceAddress string) *Client {
+func NewClient(httpClient *http.Client, config Config) *Client {
 	return &Client{
 		httpClient:                 httpClient,
-		notificationServiceAddress: notificationServiceAddress,
+		notificationServiceAddress: config.Address,
 	}
 }
 

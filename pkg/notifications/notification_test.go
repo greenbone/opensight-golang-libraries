@@ -77,9 +77,10 @@ func TestClient_CreateNotification(t *testing.T) {
 			}))
 			defer server.Close()
 
-			notificationServiceBaseUrl := server.URL
-
-			client := NewClient(http.DefaultClient, notificationServiceBaseUrl)
+			config := Config{
+				Address: server.URL,
+			}
+			client := NewClient(http.DefaultClient, config)
 			err := client.CreateNotification(notification)
 
 			require.True(t, serverCalled.Load(), "server was not called")
