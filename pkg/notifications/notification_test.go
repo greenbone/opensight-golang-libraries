@@ -36,7 +36,7 @@ func TestClient_CreateNotification(t *testing.T) {
 
 	notification := Notification{
 		Origin:       "Example Task XY",
-		Timestamp:    time.Time{}.Format(time.RFC3339Nano),
+		Timestamp:    time.Time{},
 		Title:        "Example Task XY failed",
 		Detail:       "Example Task XY failed because ...",
 		Level:        LevelError,

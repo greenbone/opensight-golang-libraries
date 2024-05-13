@@ -34,8 +34,10 @@ func NewClient(httpClient *http.Client, notificationServiceAddress string) *Clie
 
 // CreateNotification sends a notification to the notification service
 func (c *Client) CreateNotification(notification Notification) error {
+	notificationModel := toNotificationModel(notification)
+
 	var notificationSerialized bytes.Buffer
-	err := json.NewEncoder(&notificationSerialized).Encode(notification)
+	err := json.NewEncoder(&notificationSerialized).Encode(notificationModel)
 	if err != nil {
 		return fmt.Errorf("failed to serialize notification object: %w", err)
 	}
