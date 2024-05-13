@@ -1,6 +1,6 @@
 module github.com/greenbone/opensight-golang-libraries
 
-go 1.22.2
+go 1.22.3
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
@@ -10,6 +10,7 @@ require (
 	github.com/go-playground/validator/v10 v10.20.0
 	github.com/google/uuid v1.6.0
 	github.com/json-iterator/go v1.1.12
+	github.com/lib/pq v1.10.9
 	github.com/opensearch-project/opensearch-go v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.32.0

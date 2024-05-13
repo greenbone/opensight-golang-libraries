@@ -14,6 +14,7 @@ The following functionalities are provided:
 * [errorResponses](pkg/errorResponses/README.md) - rest api models for errors
 * [jobQueue](pkg/jobQueue/README.md) - a simple job queue
 * [openSearch](pkg/openSearch/README.md) - a client and extension functions to query openSearch - suited for the [query](pkg/query/README.md) package
+* [postgres](pkg/postgres/README.md) - provides utilities for building conditional queries for PostgreSQL databases
 * [query](pkg/query/README.md) - provides basic selector and response objects for requests, including filter, paging and sorting
 * [slices](pkg/slices/README.md) - utility functions for slices
 * [testFolder](pkg/testFolder/README.md) - access to test data from the file system
