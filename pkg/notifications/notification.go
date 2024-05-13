@@ -24,6 +24,7 @@ type Client struct {
 }
 
 // NewClient returns a new [Client] with the notification service address (host:port) set.
+// As httpClient you can use e.g. [http.DefaultClient].
 func NewClient(httpClient *http.Client, notificationServiceAddress string) *Client {
 	return &Client{
 		httpClient:                 httpClient,

@@ -13,6 +13,7 @@ The following functionalities are provided:
 * [dbcrypt](pkg/dbcrypt/README.md) - provides encryption / decryption for fields of entities persisted with GORM
 * [errorResponses](pkg/errorResponses/README.md) - rest api models for errors
 * [jobQueue](pkg/jobQueue/README.md) - a simple job queue
+* [notifications](pkg/notifications/README.md) - a client to send notifications to the openSight Notification Service 
 * [openSearch](pkg/openSearch/README.md) - a client and extension functions to query openSearch - suited for the [query](pkg/query/README.md) package
 * [query](pkg/query/README.md) - provides basic selector and response objects for requests, including filter, paging and sorting
 * [slices](pkg/slices/README.md) - utility functions for slices

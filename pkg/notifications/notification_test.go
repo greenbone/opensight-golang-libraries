@@ -5,12 +5,12 @@
 package notifications
 
 import (
-	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -34,14 +34,25 @@ func TestClient_CreateNotification(t *testing.T) {
 		},
 	}
 
-	// client arguments
 	notification := Notification{
-		Title: "test notification",
-		// other mandatory fields not set for brevity ...
+		Origin:       "Example Task XY",
+		Timestamp:    time.Time{}.Format(time.RFC3339Nano),
+		Title:        "Example Task XY failed",
+		Detail:       "Example Task XY failed because ...",
+		Level:        LevelError,
+		CustomFields: map[string]any{"extraProperty": "value"},
 	}
 
-	wantNotificationSerialized, err := json.Marshal(notification)
-	require.NoError(t, err, "failed to parse notification to json")
+	wantNotificationSerialized := `{
+		"origin": "Example Task XY",
+		"timestamp": "0001-01-01T00:00:00Z",
+		"title": "Example Task XY failed",
+		"detail": "Example Task XY failed because ...",
+		"level": "error",
+		"customFields": {
+			"extraProperty": "value"
+		}
+	}`
 
 	wantRequestUri := basePath + createNotificationPath
 
