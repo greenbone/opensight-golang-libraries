@@ -63,7 +63,7 @@ func (qb *Builder) AddFilterRequest(request *filter.Request) error {
 		if err != nil {
 			return fmt.Errorf("error composing query from filter field %w", err)
 		}
-		if index == len(request.Fields)-1 {
+		if index == len(request.Fields)-1 && len(request.Fields) != 1 {
 			qb.query.WriteString(fmt.Sprintf(" %s", logicOperator))
 		}
 		qb.query.WriteString(generateConditionalQuery(conditionParams, conditionTemplate))

@@ -102,6 +102,46 @@ func TestQueryBuilder(t *testing.T) {
 			},
 			wantQuery: "WHERE \"status\" IN ('invalid status') AND \"source_id\" IN ('some_source_id') OFFSET 2 LIMIT 5",
 		},
+		{
+			name: "build query with just one filter and paging",
+			mockArg: query.ResultSelector{
+				Filter: &filter.Request{
+					Fields: []filter.RequestField{
+						{
+							Name:     "status",
+							Operator: filter.CompareOperatorIsEqualTo,
+							Value:    []any{"invalid status"},
+						},
+					},
+					Operator: filter.LogicOperatorOr,
+				},
+				Paging: &paging.Request{
+					PageIndex: 2,
+					PageSize:  5,
+				},
+			},
+			wantQuery: "WHERE \"status\" IN ('invalid status') OFFSET 2 LIMIT 5",
+		},
+		{
+			name: "build query with just one filter with multiple values and paging",
+			mockArg: query.ResultSelector{
+				Filter: &filter.Request{
+					Fields: []filter.RequestField{
+						{
+							Name:     "status",
+							Operator: filter.CompareOperatorIsEqualTo,
+							Value:    []any{"invalid status", "another status"},
+						},
+					},
+					Operator: filter.LogicOperatorOr,
+				},
+				Paging: &paging.Request{
+					PageIndex: 2,
+					PageSize:  5,
+				},
+			},
+			wantQuery: "WHERE \"status\" IN ('invalid status', 'another status') OFFSET 2 LIMIT 5",
+		},
 	}
 
 	for _, tt := range tests {
