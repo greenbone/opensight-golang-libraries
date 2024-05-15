@@ -37,6 +37,8 @@ func NewPostgresQueryBuilder(querySetting *Settings) *Builder {
 
 // AddFilterRequest appends filter conditions to the query builder based on the provided filter request.
 // It constructs conditional clauses using the logic operator specified in the request.
+// TODO: Enhance the AddFilterRequest function to prevent SQL injection vulnerabilities.
+// AddFilterRequest is currently vulnerable to sql injection and should be used only when the input is trusted
 func (qb *Builder) AddFilterRequest(request *filter.Request) error {
 	if request == nil {
 		return errors.New("missing filter request, add filter request body or remove the call to AddFilterRequest()")
@@ -62,7 +64,7 @@ func (qb *Builder) AddFilterRequest(request *filter.Request) error {
 		if err != nil {
 			return fmt.Errorf("error composing query from filter field %w", err)
 		}
-		if index == len(request.Fields)-1 && len(request.Fields) != 1 {
+		if index > 0 {
 			qb.query.WriteString(fmt.Sprintf(" %s", logicOperator))
 		}
 		qb.query.WriteString(generateConditionalQuery(conditionParams, conditionTemplate))
