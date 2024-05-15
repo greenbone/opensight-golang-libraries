@@ -15,10 +15,11 @@ import (
 )
 
 func TestQueryBuilder(t *testing.T) {
+	//field mapping from filter field to database col name
 	fieldMapping := map[string]string{
-		"status":             "status",
-		"source_id":          "source_id",
-		"other_filter_field": "corresponding_filter_field",
+		"status":             "status_col_name",
+		"source_id":          "source_id_col_name",
+		"other_filter_field": "other_filter_field_col_name",
 	}
 
 	tests := []struct {
@@ -53,7 +54,7 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "desc",
 				},
 			},
-			wantQuery: "WHERE \"status\" IN ('invalid status', 'valid status') OR \"source_id\" IN ('some_source_id', 'another_source_id', 'third_source_id') ORDER BY started DESC OFFSET 2 LIMIT 5",
+			wantQuery: "WHERE \"status_col_name\" IN ('invalid status', 'valid status') OR \"source_id_col_name\" IN ('some_source_id', 'another_source_id', 'third_source_id') ORDER BY started DESC OFFSET 2 LIMIT 5",
 		},
 		{
 			name: "build query with filter only",
@@ -74,7 +75,7 @@ func TestQueryBuilder(t *testing.T) {
 					Operator: filter.LogicOperatorAnd,
 				},
 			},
-			wantQuery: "WHERE \"status\" IN ('invalid status') AND \"source_id\" IN ('some_source_id')",
+			wantQuery: "WHERE \"status_col_name\" IN ('invalid status') AND \"source_id_col_name\" IN ('some_source_id')",
 		},
 		{
 			name: "build query with filter and paging",
@@ -99,7 +100,7 @@ func TestQueryBuilder(t *testing.T) {
 					PageSize:  5,
 				},
 			},
-			wantQuery: "WHERE \"status\" IN ('invalid status') AND \"source_id\" IN ('some_source_id') OFFSET 2 LIMIT 5",
+			wantQuery: "WHERE \"status_col_name\" IN ('invalid status') AND \"source_id_col_name\" IN ('some_source_id') OFFSET 2 LIMIT 5",
 		},
 		{
 			name: "build query with just one filter and paging",
@@ -119,7 +120,7 @@ func TestQueryBuilder(t *testing.T) {
 					PageSize:  5,
 				},
 			},
-			wantQuery: "WHERE \"status\" IN ('invalid status') OFFSET 2 LIMIT 5",
+			wantQuery: "WHERE \"status_col_name\" IN ('invalid status') OFFSET 2 LIMIT 5",
 		},
 		{
 			name: "build query with just one filter with multiple values and paging",
@@ -139,7 +140,7 @@ func TestQueryBuilder(t *testing.T) {
 					PageSize:  5,
 				},
 			},
-			wantQuery: "WHERE \"status\" IN ('invalid status', 'another status') OFFSET 2 LIMIT 5",
+			wantQuery: "WHERE \"status_col_name\" IN ('invalid status', 'another status') OFFSET 2 LIMIT 5",
 		},
 		{
 			name: "build query with more than two filter paging and sorting",
@@ -173,7 +174,7 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "desc",
 				},
 			},
-			wantQuery: "WHERE \"status\" IN ('invalid status', 'valid status') \"source_id\" IN ('some_source_id', 'another_source_id', 'third_source_id') OR \"corresponding_filter_field\" IN ('some_field', 'another_field', 'third_field') ORDER BY started DESC OFFSET 2 LIMIT 5",
+			wantQuery: "WHERE \"status_col_name\" IN ('invalid status', 'valid status') \"source_id_col_name\" IN ('some_source_id', 'another_source_id', 'third_source_id') OR \"other_filter_field_col_name\" IN ('some_field', 'another_field', 'third_field') ORDER BY started DESC OFFSET 2 LIMIT 5",
 		},
 		{
 			name: "build query with more than two filter paging and sorting",
@@ -207,7 +208,7 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "desc",
 				},
 			},
-			wantQuery: "WHERE \"status\" IN ('invalid status', 'valid status') \"source_id\" IN ('some_source_id', 'another_source_id', 'third_source_id') OR \"corresponding_filter_field\" IN ('some_field', 'another_field', 'third_field') ORDER BY started DESC OFFSET 2 LIMIT 5",
+			wantQuery: "WHERE \"status_col_name\" IN ('invalid status', 'valid status') \"source_id_col_name\" IN ('some_source_id', 'another_source_id', 'third_source_id') OR \"other_filter_field_col_name\" IN ('some_field', 'another_field', 'third_field') ORDER BY started DESC OFFSET 2 LIMIT 5",
 		},
 		{
 			name: "build query with just one filter with multiple values, compareOperatorNotEqualTo, and paging",
@@ -227,7 +228,7 @@ func TestQueryBuilder(t *testing.T) {
 					PageSize:  5,
 				},
 			},
-			wantQuery: "WHERE \"status\" NOT IN ('invalid status', 'another status') OFFSET 2 LIMIT 5",
+			wantQuery: "WHERE \"status_col_name\" NOT IN ('invalid status', 'another status') OFFSET 2 LIMIT 5",
 		},
 	}
 

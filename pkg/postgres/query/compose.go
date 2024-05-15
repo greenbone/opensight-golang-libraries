@@ -21,11 +21,12 @@ func composeQuery(
 	err error, // Error encountered during execution
 ) {
 	// translate filter field to database column name if field mapping exists
-	if len(fieldMapping) != 0 {
-		dbColumnName, ok := fieldMapping[field.Name]
-		if ok {
-			field.Name = dbColumnName
-		}
+	dbColumnName, ok := fieldMapping[field.Name]
+	if ok {
+		field.Name = dbColumnName
+	} else {
+		return "", nil, filter.NewInvalidFilterFieldError(
+			"Mapping for filter field '%s' is currently not implemented.", field.Name)
 	}
 
 	switch field.Operator {
