@@ -209,6 +209,26 @@ func TestQueryBuilder(t *testing.T) {
 			},
 			wantQuery: "WHERE \"status\" IN ('invalid status', 'valid status') \"source_id\" IN ('some_source_id', 'another_source_id', 'third_source_id') OR \"corresponding_filter_field\" IN ('some_field', 'another_field', 'third_field') ORDER BY started DESC OFFSET 2 LIMIT 5",
 		},
+		{
+			name: "build query with just one filter with multiple values, compareOperatorNotEqualTo, and paging",
+			mockArg: query.ResultSelector{
+				Filter: &filter.Request{
+					Fields: []filter.RequestField{
+						{
+							Name:     "status",
+							Operator: filter.CompareOperatorIsNotEqualTo,
+							Value:    []any{"invalid status", "another status"},
+						},
+					},
+					Operator: filter.LogicOperatorOr,
+				},
+				Paging: &paging.Request{
+					PageIndex: 2,
+					PageSize:  5,
+				},
+			},
+			wantQuery: "WHERE \"status\" NOT IN ('invalid status', 'another status') OFFSET 2 LIMIT 5",
+		},
 	}
 
 	for _, tt := range tests {
