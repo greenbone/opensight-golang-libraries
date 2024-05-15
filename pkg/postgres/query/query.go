@@ -50,26 +50,6 @@ func simpleOperatorCondition(
 	return conditionTemplate, conditionParams, nil
 }
 
-func simpleSingleStringValueOperatorCondition(
-	field filter.RequestField, valueIsList bool, singleValueTemplate string,
-) (conditionTemplate string, conditionParams []any, err error) {
-	conditionParams = []any{field.Value}
-	if valueIsList {
-		err = errors.Errorf("operator '%s' does not support multi-select", field.Operator)
-		return "", nil, err
-	} else if _, ok := field.Value.(string); ok {
-		quotedName, err := getQuotedName(field.Name)
-		if err != nil {
-			return "", nil, errors.Wrap(err, "could not get quoted name")
-		}
-		conditionTemplate = fmt.Sprintf(singleValueTemplate, quotedName)
-	} else {
-		err = errors.Errorf("operator '%s' requires a string value", field.Operator)
-		return "", nil, err
-	}
-	return conditionTemplate, conditionParams, nil
-}
-
 func checkFieldValueType(field filter.RequestField) (valueIsList bool, valueList []any, err error) {
 	if reflect.TypeOf(field.Value).Kind() == reflect.Slice {
 		valueList, valueIsList = field.Value.([]any)
