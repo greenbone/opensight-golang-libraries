@@ -50,16 +50,15 @@ func (qb *Builder) AddFilterRequest(request *filter.Request) error {
 		var (
 			err               error
 			valueIsList       bool
-			valueList         []any
 			conditionTemplate string
 			conditionParams   []any
 		)
-		valueIsList, valueList, err = checkFieldValueType(field)
+		valueIsList, _, err = checkFieldValueType(field)
 		if err != nil {
 			return fmt.Errorf("error checking filter field value type '%s': %w", field, err)
 		}
 		conditionTemplate, conditionParams, err =
-			composeQuery(qb.querySettings.FilterFieldMapping, field, valueIsList, valueList)
+			composeQuery(qb.querySettings.FilterFieldMapping, field, valueIsList)
 		if err != nil {
 			return fmt.Errorf("error composing query from filter field %w", err)
 		}

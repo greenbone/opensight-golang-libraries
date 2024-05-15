@@ -14,9 +14,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Replacer for escaping LIKE clause wildcards and backslashes
-var likeReplacer = strings.NewReplacer(`_`, `\_`, `%`, `\%`, `\`, `\\`)
-
 func getQuotedName(fieldName string) (string, error) {
 	// handles field names for joins that contain a `.`
 	if strings.Contains(fieldName, ".") {
@@ -50,77 +47,6 @@ func simpleOperatorCondition(
 	} else {
 		conditionTemplate = fmt.Sprintf(singleValueTemplate, quotedName)
 	}
-	return conditionTemplate, conditionParams, nil
-}
-
-func singleLikeTemplate(quotedField string, negate bool) string {
-	if negate {
-		return quotedField + " NOT ILIKE ?"
-	} else {
-		return quotedField + " ILIKE ?"
-	}
-}
-
-func equalsAsLikePattern(value string) string {
-	return likeReplacer.Replace(value)
-}
-
-func containsAsLikePattern(value string) string {
-	return "%" + likeReplacer.Replace(value) + "%"
-}
-
-func beginsWithAsLikePattern(value string) string {
-	return likeReplacer.Replace(value) + "%"
-}
-
-func multiLikeOrTemplate(quotedField string, elementCount int, negate bool) string {
-	builder := strings.Builder{}
-	if negate {
-		builder.WriteString("NOT ")
-	}
-	builder.WriteRune('(')
-	for i := 0; i < elementCount; i++ {
-		if i > 0 {
-			builder.WriteString(" OR ")
-		}
-		builder.WriteString(quotedField + " ILIKE ?")
-	}
-	builder.WriteRune(')')
-	return builder.String()
-}
-
-func likeOperatorCondition(
-	field filter.RequestField, valueIsList bool, valueList []any, likeValueFunc func(string) string, negate bool,
-) (conditionTemplate string, conditionParams []any, err error) {
-	quotedName, err := getQuotedName(field.Name)
-	if err != nil {
-		return "", nil, errors.Wrap(err, "could not get quoted name")
-	}
-
-	if valueIsList {
-		conditionParams = make([]any, len(valueList))
-		for i, element := range valueList {
-			if elementStr, ok := element.(string); ok {
-				conditionParams[i] = likeValueFunc(elementStr)
-				conditionTemplate = multiLikeOrTemplate(quotedName, len(valueList), negate)
-			} else {
-				err = errors.Errorf(
-					"operator '%s' requires string values, got %T",
-					field.Operator, element,
-				)
-				return "", nil, err
-			}
-		}
-	} else {
-		if valueStr, ok := field.Value.(string); ok {
-			conditionParams = []any{likeValueFunc(valueStr)}
-			conditionTemplate = singleLikeTemplate(quotedName, negate)
-		} else {
-			err = errors.Errorf("operator '%s' requires a string value", field.Operator)
-			return "", nil, err
-		}
-	}
-
 	return conditionTemplate, conditionParams, nil
 }
 

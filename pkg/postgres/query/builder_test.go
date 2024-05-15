@@ -15,11 +15,10 @@ import (
 )
 
 func TestQueryBuilder(t *testing.T) {
-	querySettings := &Settings{
-		FilterFieldMapping: map[string]string{
-			"status":    "status",
-			"source_id": "source_id",
-		},
+	fieldMapping := map[string]string{
+		"status":             "status",
+		"source_id":          "source_id",
+		"other_filter_field": "corresponding_filter_field",
 	}
 
 	tests := []struct {
@@ -142,10 +141,81 @@ func TestQueryBuilder(t *testing.T) {
 			},
 			wantQuery: "WHERE \"status\" IN ('invalid status', 'another status') OFFSET 2 LIMIT 5",
 		},
+		{
+			name: "build query with more than two filter paging and sorting",
+			mockArg: query.ResultSelector{
+				Filter: &filter.Request{
+					Fields: []filter.RequestField{
+						{
+							Name:     "status",
+							Operator: filter.CompareOperatorIsEqualTo,
+							Value:    []any{"invalid status", "valid status"},
+						},
+						{
+							Name:     "source_id",
+							Operator: filter.CompareOperatorIsEqualTo,
+							Value:    []any{"some_source_id", "another_source_id", "third_source_id"},
+						},
+						{
+							Name:     "other_filter_field",
+							Operator: filter.CompareOperatorIsEqualTo,
+							Value:    []any{"some_field", "another_field", "third_field"},
+						},
+					},
+					Operator: filter.LogicOperatorOr,
+				},
+				Paging: &paging.Request{
+					PageIndex: 2,
+					PageSize:  5,
+				},
+				Sorting: &sorting.Request{
+					SortColumn:    "started",
+					SortDirection: "desc",
+				},
+			},
+			wantQuery: "WHERE \"status\" IN ('invalid status', 'valid status') \"source_id\" IN ('some_source_id', 'another_source_id', 'third_source_id') OR \"corresponding_filter_field\" IN ('some_field', 'another_field', 'third_field') ORDER BY started DESC OFFSET 2 LIMIT 5",
+		},
+		{
+			name: "build query with more than two filter paging and sorting",
+			mockArg: query.ResultSelector{
+				Filter: &filter.Request{
+					Fields: []filter.RequestField{
+						{
+							Name:     "status",
+							Operator: filter.CompareOperatorIsEqualTo,
+							Value:    []any{"invalid status", "valid status"},
+						},
+						{
+							Name:     "source_id",
+							Operator: filter.CompareOperatorIsEqualTo,
+							Value:    []any{"some_source_id", "another_source_id", "third_source_id"},
+						},
+						{
+							Name:     "other_filter_field",
+							Operator: filter.CompareOperatorIsEqualTo,
+							Value:    []any{"some_field", "another_field", "third_field"},
+						},
+					},
+					Operator: filter.LogicOperatorOr,
+				},
+				Paging: &paging.Request{
+					PageIndex: 2,
+					PageSize:  5,
+				},
+				Sorting: &sorting.Request{
+					SortColumn:    "started",
+					SortDirection: "desc",
+				},
+			},
+			wantQuery: "WHERE \"status\" IN ('invalid status', 'valid status') \"source_id\" IN ('some_source_id', 'another_source_id', 'third_source_id') OR \"corresponding_filter_field\" IN ('some_field', 'another_field', 'third_field') ORDER BY started DESC OFFSET 2 LIMIT 5",
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			querySettings := &Settings{
+				FilterFieldMapping: fieldMapping,
+			}
 			queryBuilder := NewPostgresQueryBuilder(querySettings)
 			queryString := queryBuilder.Build(tt.mockArg)
 
