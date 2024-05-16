@@ -103,7 +103,14 @@ func (qb *Builder) AddSorting(sort *sorting.Request) error {
 	if sort == nil {
 		return errors.New("missing sorting fields, add sort request or remove call to AddSort()")
 	}
-	qb.query.WriteString(fmt.Sprintf(" ORDER BY %s %s", sort.SortColumn, sort.SortDirection))
+
+	// map fields to column
+	sortColumn, ok := qb.querySettings.FilterFieldMapping[sort.SortColumn]
+	if !ok {
+		return fmt.Errorf("mapping for sort column '%s' has not been implemented", sort.SortColumn)
+	}
+
+	qb.query.WriteString(fmt.Sprintf(" ORDER BY %s %s", sortColumn, sort.SortDirection))
 	return nil
 }
 
