@@ -20,6 +20,7 @@ func TestQueryBuilder(t *testing.T) {
 		"status":             "status_col_name",
 		"source_id":          "source_id_col_name",
 		"other_filter_field": "other_filter_field_col_name",
+		"started":            "started_col_name",
 	}
 
 	tests := []struct {
@@ -54,7 +55,7 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "desc",
 				},
 			},
-			wantQuery: "WHERE \"status_col_name\" IN ('invalid status', 'valid status') OR \"source_id_col_name\" IN ('some_source_id', 'another_source_id', 'third_source_id') ORDER BY started DESC OFFSET 2 LIMIT 5",
+			wantQuery: "WHERE \"status_col_name\" IN ('invalid status', 'valid status') OR \"source_id_col_name\" IN ('some_source_id', 'another_source_id', 'third_source_id') ORDER BY started_col_name DESC OFFSET 2 LIMIT 5",
 		},
 		{
 			name: "build query with filter only",
@@ -174,7 +175,7 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "desc",
 				},
 			},
-			wantQuery: "WHERE \"status_col_name\" IN ('invalid status', 'valid status') OR \"source_id_col_name\" IN ('some_source_id', 'another_source_id', 'third_source_id') OR \"other_filter_field_col_name\" IN ('some_field', 'another_field', 'third_field') ORDER BY started DESC OFFSET 2 LIMIT 5",
+			wantQuery: "WHERE \"status_col_name\" IN ('invalid status', 'valid status') OR \"source_id_col_name\" IN ('some_source_id', 'another_source_id', 'third_source_id') OR \"other_filter_field_col_name\" IN ('some_field', 'another_field', 'third_field') ORDER BY started_col_name DESC OFFSET 2 LIMIT 5",
 		},
 		{
 			name: "build query with more than two filter paging and sorting",
@@ -208,7 +209,7 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "desc",
 				},
 			},
-			wantQuery: "WHERE \"status_col_name\" IN ('invalid status', 'valid status') OR \"source_id_col_name\" IN ('some_source_id', 'another_source_id', 'third_source_id') OR \"other_filter_field_col_name\" IN ('some_field', 'another_field', 'third_field') ORDER BY started DESC OFFSET 2 LIMIT 5",
+			wantQuery: "WHERE \"status_col_name\" IN ('invalid status', 'valid status') OR \"source_id_col_name\" IN ('some_source_id', 'another_source_id', 'third_source_id') OR \"other_filter_field_col_name\" IN ('some_field', 'another_field', 'third_field') ORDER BY started_col_name DESC OFFSET 2 LIMIT 5",
 		},
 		{
 			name: "build query with just one filter with multiple values, compareOperatorNotEqualTo, and paging",
