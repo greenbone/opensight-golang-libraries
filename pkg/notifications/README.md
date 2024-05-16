@@ -13,14 +13,15 @@ Package Notifications provides a client to communicate with the OpenSight Notifi
 ## Index
 
 - [type Client](<#Client>)
-  - [func NewClient\(httpClient \*http.Client, notificationServiceAddress string\) \*Client](<#NewClient>)
-  - [func \(c \*Client\) CreateNotification\(notification Notification\) error](<#Client.CreateNotification>)
+  - [func NewClient\(httpClient \*http.Client, config Config\) \*Client](<#NewClient>)
+  - [func \(c \*Client\) CreateNotification\(ctx context.Context, notification Notification\) error](<#Client.CreateNotification>)
+- [type Config](<#Config>)
 - [type Level](<#Level>)
 - [type Notification](<#Notification>)
 
 
 <a name="Client"></a>
-## type [Client](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L21-L24>)
+## type [Client](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L24-L30>)
 
 Client can be used to send notifications
 
@@ -31,25 +32,39 @@ type Client struct {
 ```
 
 <a name="NewClient"></a>
-### func [NewClient](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L28>)
+### func [NewClient](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L42>)
 
 ```go
-func NewClient(httpClient *http.Client, notificationServiceAddress string) *Client
+func NewClient(httpClient *http.Client, config Config) *Client
 ```
 
 NewClient returns a new [Client](<#Client>) with the notification service address \(host:port\) set. As httpClient you can use e.g. \[http.DefaultClient\].
 
 <a name="Client.CreateNotification"></a>
-### func \(\*Client\) [CreateNotification](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L36>)
+### func \(\*Client\) [CreateNotification](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L55>)
 
 ```go
-func (c *Client) CreateNotification(notification Notification) error
+func (c *Client) CreateNotification(ctx context.Context, notification Notification) error
 ```
 
-CreateNotification sends a notification to the notification service
+CreateNotification sends a notification to the notification service. The request is retried up to the configured number of retries with an exponential backoff. So it can take some time until the functions returns.
+
+<a name="Config"></a>
+## type [Config](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L33-L38>)
+
+Config configures the notification service client
+
+```go
+type Config struct {
+    Address      string
+    MaxRetries   int
+    RetryWaitMin time.Duration
+    RetryWaitMax time.Duration
+}
+```
 
 <a name="Level"></a>
-## type [Level](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/model.go#L21>)
+## type [Level](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/model.go#L34>)
 
 Level describes the severity of the notification
 
@@ -71,18 +86,18 @@ const (
 <a name="Notification"></a>
 ## type [Notification](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/model.go#L9-L18>)
 
-Notification is the object which can be sent to the notification service. It is defined in notification service REST API: https://github.com/greenbone/opensight-notification-service/tree/main/api/notificationservice
+
 
 ```go
 type Notification struct {
     // omit property `Id` here, as it is read only
-    Origin       string         `json:"origin"`
-    OriginUri    string         `json:"originUri,omitempty"` // can be used to provide a link to the origin
-    Timestamp    string         `json:"timestamp" format:"date-time"`
-    Title        string         `json:"title"` // can also be seen as the 'type'
-    Detail       string         `json:"detail"`
-    Level        Level          `json:"level"`
-    CustomFields map[string]any `json:"customFields,omitempty"` // can contain arbitrary structured information about the notification
+    Origin       string
+    OriginUri    string // can be used to provide a link to the origin
+    Timestamp    time.Time
+    Title        string // can also be seen as the 'type'
+    Detail       string
+    Level        Level
+    CustomFields map[string]any // can contain arbitrary structured information about the notification
 }
 ```
 

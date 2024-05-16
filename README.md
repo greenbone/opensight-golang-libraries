@@ -16,6 +16,7 @@ The following functionalities are provided:
 * [notifications](pkg/notifications/README.md) - a client to send notifications to the openSight Notification Service 
 * [openSearch](pkg/openSearch/README.md) - a client and extension functions to query openSearch - suited for the [query](pkg/query/README.md) package
 * [query](pkg/query/README.md) - provides basic selector and response objects for requests, including filter, paging and sorting
+* [retryableRequest] - provides function to execute a http request with retries on failures
 * [slices](pkg/slices/README.md) - utility functions for slices
 * [testFolder](pkg/testFolder/README.md) - access to test data from the file system
 
