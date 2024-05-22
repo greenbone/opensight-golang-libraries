@@ -43,6 +43,9 @@ func (qb *Builder) AddFilterRequest(request *filter.Request) error {
 	if request == nil {
 		return errors.New("missing filter request, add filter request body or remove the call to AddFilterRequest()")
 	}
+	if len(request.Fields) == 0 {
+		return nil
+	}
 
 	logicOperator := strings.ToUpper(string(request.Operator))
 
