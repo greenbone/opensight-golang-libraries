@@ -40,10 +40,9 @@ func NewPostgresQueryBuilder(querySetting *Settings) *Builder {
 // TODO: Enhance the AddFilterRequest function to prevent SQL injection vulnerabilities.
 // AddFilterRequest is currently vulnerable to sql injection and should be used only when the input is trusted
 func (qb *Builder) AddFilterRequest(request *filter.Request) error {
-	if request == nil {
-		return errors.New("missing filter request, add filter request body or remove the call to AddFilterRequest()")
+	if request == nil || len(request.Fields) == 0 {
+		return nil
 	}
-
 	logicOperator := strings.ToUpper(string(request.Operator))
 
 	qb.query.WriteString("WHERE")
