@@ -249,6 +249,20 @@ func TestQueryBuilder(t *testing.T) {
 			},
 			wantQuery: " ORDER BY started_col_name ASC OFFSET 3 LIMIT 10",
 		},
+		{
+			name: "build valid query without filter object",
+			mockArg: query.ResultSelector{
+				Paging: &paging.Request{
+					PageIndex: 3,
+					PageSize:  10,
+				},
+				Sorting: &sorting.Request{
+					SortColumn:    "started",
+					SortDirection: "asc",
+				},
+			},
+			wantQuery: " ORDER BY started_col_name ASC OFFSET 3 LIMIT 10",
+		},
 	}
 
 	for _, tt := range tests {
