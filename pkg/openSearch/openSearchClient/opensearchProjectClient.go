@@ -12,8 +12,8 @@ import (
 
 	"github.com/avast/retry-go/v4"
 	"github.com/greenbone/opensight-golang-libraries/pkg/openSearch/openSearchClient/config"
-	"github.com/opensearch-project/opensearch-go"
-	"github.com/opensearch-project/opensearch-go/opensearchapi"
+	"github.com/opensearch-project/opensearch-go/v2"
+	"github.com/opensearch-project/opensearch-go/v2/opensearchapi"
 )
 
 // NewOpenSearchProjectClient creates a new official OpenSearch client (package github.com/opensearch-project/opensearch-go)
