@@ -6,37 +6,97 @@ package openSearchClient
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
-	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
+	"github.com/greenbone/opensight-golang-libraries/pkg/openSearch/openSearchClient/config"
 	"github.com/opensearch-project/opensearch-go/v2"
+	"github.com/opensearch-project/opensearch-go/v2/opensearchapi"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )
+
+type ITokenReceiver interface {
+	GetAccessToken() (string, error)
+}
 
 // Client is a client for OpenSearch designed to allow easy mocking in tests.
 // It is a wrapper around the official OpenSearch client github.com/opensearch-project/opensearch-go .
 type Client struct {
 	openSearchProjectClient *opensearch.Client
+	tokenReceiver           ITokenReceiver
 	updateQueue             *UpdateQueue
+	config                  config.OpensearchClientConfig
 }
+
+type authMethod int
+
+const (
+	basic authMethod = iota
+	openId
+	none
+)
 
 // NewClient creates a new OpenSearch client.
 //
 // openSearchProjectClient is the official OpenSearch client to wrap. Use NewOpenSearchProjectClient to create it.
 // updateMaxRetries is the number of retries for update requests.
 // updateRetryDelay is the delay between retries.
-func NewClient(openSearchProjectClient *opensearch.Client, updateMaxRetries int, updateRetryDelay time.Duration) *Client {
+func NewClient(ctx context.Context, config config.OpensearchClientConfig, tokenReceiver ITokenReceiver) *Client {
+	openSearchProjectClient, searchErr := NewOpenSearchProjectClient(ctx, config)
+	if searchErr != nil {
+		log.Fatal().Err(searchErr).Msg("Error connecting to OpenSearch")
+	}
+
 	c := &Client{
 		openSearchProjectClient: openSearchProjectClient,
+		tokenReceiver:           tokenReceiver,
+		config:                  config,
 	}
-	c.updateQueue = NewRequestQueue(openSearchProjectClient, updateMaxRetries, updateRetryDelay)
+	c.updateQueue = NewRequestQueue(c, config.UpdateMaxRetries, config.UpdateRetrySleep)
 	return c
+}
+
+func (c *Client) determineAuthenticationMethod() authMethod {
+	if c.config.Username != "" && c.config.Password != "" {
+		return basic
+	} else if c.tokenReceiver != nil {
+		return openId
+	} else {
+		return none
+	}
+}
+
+func (c *Client) injectAuthenticationHeader(method authMethod, req *http.Request) {
+	switch method {
+	case basic:
+		log.Debug().Msgf("opensearch basic auth")
+		req.SetBasicAuth(c.config.Username, c.config.Password)
+	case openId:
+		log.Debug().Msgf("opensearch openID auth")
+		token, err := c.tokenReceiver.GetAccessToken()
+		if err != nil {
+			log.Error().Msgf("Could not retrieve authorization header: %v", err)
+			return
+		}
+		req.Header.Set("Authorization", "Bearer "+token)
+	case none:
+		fallthrough
+	default:
+		log.Debug().Msgf("opensearch no auth")
+	}
+}
+
+// HTTP Transport middleware
+func (c *Client) Perform(req *http.Request) (*http.Response, error) {
+	method := c.determineAuthenticationMethod()
+	c.injectAuthenticationHeader(method, req)
+	return c.openSearchProjectClient.Perform(req)
 }
 
 // Search searches for documents in the given index.
@@ -196,6 +256,10 @@ func GetResponseError(statusCode int, responseString []byte, indexName string) e
 	} else {
 		return NewOpenSearchErrorWithStack(string(responseString))
 	}
+}
+
+func (c *Client) GetIndices() *opensearchapi.Indices {
+	return c.openSearchProjectClient.Indices
 }
 
 // Close stops the underlying UpdateQueue allowing a graceful shutdown.

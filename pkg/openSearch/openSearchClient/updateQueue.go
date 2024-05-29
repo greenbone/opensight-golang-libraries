@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/elastic/go-elasticsearch/v7/esapi"
-	"github.com/opensearch-project/opensearch-go/v2"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )
@@ -31,12 +30,12 @@ type Request struct {
 
 // UpdateQueue is a queue for OpenSearch update requests.
 type UpdateQueue struct {
-	openSearchProjectClient *opensearch.Client
-	queue                   chan *Request
-	stop                    chan bool
-	wg                      sync.WaitGroup
-	updateMaxRetries        int
-	updateRetryDelay        time.Duration
+	openSearchClient esapi.Transport
+	queue            chan *Request
+	stop             chan bool
+	wg               sync.WaitGroup
+	updateMaxRetries int
+	updateRetryDelay time.Duration
 }
 
 // NewRequestQueue creates a new update queue.
@@ -44,13 +43,13 @@ type UpdateQueue struct {
 // openSearchProjectClient is the official OpenSearch client to wrap. Use NewOpenSearchProjectClient to create it.
 // updateMaxRetries is the number of retries for update requests.
 // updateRetryDelay is the delay between retries.
-func NewRequestQueue(openSearchProjectClient *opensearch.Client, updateMaxRetries int, updateRetryDelay time.Duration) *UpdateQueue {
+func NewRequestQueue(openSearchClient esapi.Transport, updateMaxRetries int, updateRetryDelay time.Duration) *UpdateQueue {
 	rQueue := &UpdateQueue{
-		openSearchProjectClient: openSearchProjectClient,
-		queue:                   make(chan *Request, 10),
-		stop:                    make(chan bool),
-		updateMaxRetries:        updateMaxRetries,
-		updateRetryDelay:        updateRetryDelay,
+		openSearchClient: openSearchClient,
+		queue:            make(chan *Request, 10),
+		stop:             make(chan bool),
+		updateMaxRetries: updateMaxRetries,
+		updateRetryDelay: updateRetryDelay,
 	}
 	rQueue.start()
 	return rQueue
@@ -140,7 +139,7 @@ func (q *UpdateQueue) update(indexName string, requestBody []byte) ([]byte, erro
 			Pretty: true,
 		}
 
-		updateResponse, err = req.Do(context.Background(), q.openSearchProjectClient)
+		updateResponse, err = req.Do(context.Background(), q.openSearchClient)
 		if err != nil {
 			log.Info().Err(err).Msgf("Attempt %d: Error in req.Do", i+1)
 			time.Sleep(q.updateRetryDelay)

@@ -39,10 +39,6 @@ func NewOpenSearchProjectClient(ctx context.Context, config config.OpensearchCli
 					fmt.Sprintf("%s://%s:%d", protocol, config.Host, config.Port),
 				},
 			}
-			if config.Username != "" && config.Password != "" {
-				openSearchApiConf.Username = config.Username
-				openSearchApiConf.Password = config.Password
-			}
 			c, err := opensearch.NewClient(openSearchApiConf)
 			if err != nil {
 				return fmt.Errorf("search client couldn't be created: %w", err)
