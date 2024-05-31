@@ -30,7 +30,7 @@ type Request struct {
 
 // UpdateQueue is a queue for OpenSearch update requests.
 type UpdateQueue struct {
-	openSearchClient esapi.Transport
+	client           esapi.Transport
 	queue            chan *Request
 	stop             chan bool
 	wg               sync.WaitGroup
@@ -40,12 +40,12 @@ type UpdateQueue struct {
 
 // NewRequestQueue creates a new update queue.
 //
-// openSearchProjectClient is the official OpenSearch client to wrap. Use NewOpenSearchProjectClient to create it.
+// client must implement the esapi.Transport interface. This can be the official OpenSearch client. Use NewOpenSearchProjectClient to create it.
 // updateMaxRetries is the number of retries for update requests.
 // updateRetryDelay is the delay between retries.
-func NewRequestQueue(openSearchClient esapi.Transport, updateMaxRetries int, updateRetryDelay time.Duration) *UpdateQueue {
+func NewRequestQueue(client esapi.Transport, updateMaxRetries int, updateRetryDelay time.Duration) *UpdateQueue {
 	rQueue := &UpdateQueue{
-		openSearchClient: openSearchClient,
+		client:           client,
 		queue:            make(chan *Request, 10),
 		stop:             make(chan bool),
 		updateMaxRetries: updateMaxRetries,
@@ -139,7 +139,7 @@ func (q *UpdateQueue) update(indexName string, requestBody []byte) ([]byte, erro
 			Pretty: true,
 		}
 
-		updateResponse, err = req.Do(context.Background(), q.openSearchClient)
+		updateResponse, err = req.Do(context.Background(), q.client)
 		if err != nil {
 			log.Info().Err(err).Msgf("Attempt %d: Error in req.Do", i+1)
 			time.Sleep(q.updateRetryDelay)

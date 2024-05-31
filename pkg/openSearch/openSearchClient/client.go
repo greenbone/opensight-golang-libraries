@@ -6,7 +6,6 @@ package openSearchClient
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -22,7 +21,7 @@ import (
 )
 
 type ITokenReceiver interface {
-	GetAccessToken() (string, error)
+	GetClientAccessToken(clientName, clientSecret string) (string, error)
 }
 
 // Client is a client for OpenSearch designed to allow easy mocking in tests.
@@ -47,11 +46,7 @@ const (
 // openSearchProjectClient is the official OpenSearch client to wrap. Use NewOpenSearchProjectClient to create it.
 // updateMaxRetries is the number of retries for update requests.
 // updateRetryDelay is the delay between retries.
-func NewClient(ctx context.Context, config config.OpensearchClientConfig, tokenReceiver ITokenReceiver) *Client {
-	openSearchProjectClient, searchErr := NewOpenSearchProjectClient(ctx, config)
-	if searchErr != nil {
-		log.Fatal().Err(searchErr).Msg("Error connecting to OpenSearch")
-	}
+func NewClient(openSearchProjectClient *opensearch.Client, config config.OpensearchClientConfig, tokenReceiver ITokenReceiver) *Client {
 
 	c := &Client{
 		openSearchProjectClient: openSearchProjectClient,
@@ -60,43 +55,6 @@ func NewClient(ctx context.Context, config config.OpensearchClientConfig, tokenR
 	}
 	c.updateQueue = NewRequestQueue(c, config.UpdateMaxRetries, config.UpdateRetrySleep)
 	return c
-}
-
-func (c *Client) determineAuthenticationMethod() authMethod {
-	if c.config.Username != "" && c.config.Password != "" {
-		return basic
-	} else if c.tokenReceiver != nil {
-		return openId
-	} else {
-		return none
-	}
-}
-
-func (c *Client) injectAuthenticationHeader(method authMethod, req *http.Request) {
-	switch method {
-	case basic:
-		log.Debug().Msgf("opensearch basic auth")
-		req.SetBasicAuth(c.config.Username, c.config.Password)
-	case openId:
-		log.Debug().Msgf("opensearch openID auth")
-		token, err := c.tokenReceiver.GetAccessToken()
-		if err != nil {
-			log.Error().Msgf("Could not retrieve authorization header: %v", err)
-			return
-		}
-		req.Header.Set("Authorization", "Bearer "+token)
-	case none:
-		fallthrough
-	default:
-		log.Debug().Msgf("opensearch no auth")
-	}
-}
-
-// HTTP Transport middleware
-func (c *Client) Perform(req *http.Request) (*http.Response, error) {
-	method := c.determineAuthenticationMethod()
-	c.injectAuthenticationHeader(method, req)
-	return c.openSearchProjectClient.Perform(req)
 }
 
 // Search searches for documents in the given index.
@@ -109,6 +67,7 @@ func (c *Client) Search(indexName string, requestBody []byte) (responseBody []by
 	searchResponse, err := c.openSearchProjectClient.Search(
 		c.openSearchProjectClient.Search.WithIndex(indexName),
 		c.openSearchProjectClient.Search.WithBody(bytes.NewReader(requestBody)),
+		c.SearchAuthenticationMiddleware,
 	)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -163,6 +122,7 @@ func (c *Client) deleteByQuery(indexName string, requestBody []byte, isAsync boo
 		[]string{indexName},
 		bytes.NewReader(requestBody),
 		c.openSearchProjectClient.DeleteByQuery.WithWaitForCompletion(!isAsync),
+		c.DeleteByQueryAuthenticationMiddleware,
 	)
 	if err != nil {
 		return errors.WithStack(err)
@@ -211,6 +171,7 @@ func (c *Client) BulkUpdate(indexName string, requestBody []byte) error {
 		bytes.NewReader(requestBody),
 		c.openSearchProjectClient.Bulk.WithIndex(indexName),
 		c.openSearchProjectClient.Bulk.WithRefresh("true"),
+		c.BulkAuthenticationMiddleware,
 	)
 	if err != nil {
 		return errors.WithStack(err)

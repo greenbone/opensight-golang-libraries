@@ -38,6 +38,7 @@ func NewOpenSearchProjectClient(ctx context.Context, config config.OpensearchCli
 				Addresses: []string{
 					fmt.Sprintf("%s://%s:%d", protocol, config.Host, config.Port),
 				},
+				Header: http.Header{},
 			}
 			c, err := opensearch.NewClient(openSearchApiConf)
 			if err != nil {
