@@ -79,16 +79,35 @@ func handleCompareOperatorContainsDifferent(fieldName string, fieldKeys []string
 // HandleCompareOperatorBeginsWith handles begins with
 func HandleCompareOperatorBeginsWith(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
 	// for list of values
+	if querySettings.WildcardArrays != nil &&
+		querySettings.WildcardArrays[fieldName] {
+		return handleCompareOperatorBeginsWithDifferent(fieldName, fieldKeys, fieldValue, querySettings)
+	} else {
+		if values, ok := fieldValue.([]interface{}); ok {
+			return esquery.Bool().
+				Should(
+					lo.Map[interface{}, esquery.Mappable](values, func(value interface{}, _ int) esquery.Mappable {
+						return esquery.Prefix(fieldName+".keyword", valueToString(value))
+					})...,
+				).
+				MinimumShouldMatch(1)
+		} else { // for single values
+			return esquery.Prefix(fieldName+".keyword", valueToString(fieldValue))
+		}
+	}
+}
+
+func handleCompareOperatorBeginsWithDifferent(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
 	if values, ok := fieldValue.([]interface{}); ok {
 		return esquery.Bool().
 			Should(
 				lo.Map[interface{}, esquery.Mappable](values, func(value interface{}, _ int) esquery.Mappable {
-					return esquery.Prefix(fieldName+".keyword", valueToString(value))
+					return esquery.Prefix(fieldName, valueToString(value))
 				})...,
 			).
 			MinimumShouldMatch(1)
-	} else { // for single values
-		return esquery.Prefix(fieldName+".keyword", valueToString(fieldValue))
+	} else {
+		return esquery.Prefix(fieldName, fieldValue.(string))
 	}
 }
 
