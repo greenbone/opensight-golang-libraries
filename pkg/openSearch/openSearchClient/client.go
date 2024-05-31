@@ -28,7 +28,6 @@ type ITokenReceiver interface {
 // It is a wrapper around the official OpenSearch client github.com/opensearch-project/opensearch-go .
 type Client struct {
 	openSearchProjectClient *opensearch.Client
-	tokenReceiver           ITokenReceiver
 	updateQueue             *UpdateQueue
 	config                  config.OpensearchClientConfig
 }
@@ -46,14 +45,14 @@ const (
 // openSearchProjectClient is the official OpenSearch client to wrap. Use NewOpenSearchProjectClient to create it.
 // updateMaxRetries is the number of retries for update requests.
 // updateRetryDelay is the delay between retries.
-func NewClient(openSearchProjectClient *opensearch.Client, config config.OpensearchClientConfig, tokenReceiver ITokenReceiver) *Client {
+func NewClient(openSearchProjectClient *opensearch.Client, config config.OpensearchClientConfig) *Client {
 
 	c := &Client{
 		openSearchProjectClient: openSearchProjectClient,
-		tokenReceiver:           tokenReceiver,
 		config:                  config,
 	}
-	c.updateQueue = NewRequestQueue(c, config.UpdateMaxRetries, config.UpdateRetrySleep)
+
+	c.updateQueue = NewRequestQueue(openSearchProjectClient, config.UpdateMaxRetries, config.UpdateRetrySleep)
 	return c
 }
 
@@ -67,7 +66,6 @@ func (c *Client) Search(indexName string, requestBody []byte) (responseBody []by
 	searchResponse, err := c.openSearchProjectClient.Search(
 		c.openSearchProjectClient.Search.WithIndex(indexName),
 		c.openSearchProjectClient.Search.WithBody(bytes.NewReader(requestBody)),
-		c.SearchAuthenticationMiddleware,
 	)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -122,7 +120,6 @@ func (c *Client) deleteByQuery(indexName string, requestBody []byte, isAsync boo
 		[]string{indexName},
 		bytes.NewReader(requestBody),
 		c.openSearchProjectClient.DeleteByQuery.WithWaitForCompletion(!isAsync),
-		c.DeleteByQueryAuthenticationMiddleware,
 	)
 	if err != nil {
 		return errors.WithStack(err)
@@ -171,8 +168,8 @@ func (c *Client) BulkUpdate(indexName string, requestBody []byte) error {
 		bytes.NewReader(requestBody),
 		c.openSearchProjectClient.Bulk.WithIndex(indexName),
 		c.openSearchProjectClient.Bulk.WithRefresh("true"),
-		c.BulkAuthenticationMiddleware,
 	)
+
 	if err != nil {
 		return errors.WithStack(err)
 	}
