@@ -32,14 +32,6 @@ type Client struct {
 	config                  config.OpensearchClientConfig
 }
 
-type authMethod int
-
-const (
-	basic authMethod = iota
-	openId
-	none
-)
-
 // NewClient creates a new OpenSearch client.
 //
 // openSearchProjectClient is the official OpenSearch client to wrap. Use NewOpenSearchProjectClient to create it.
