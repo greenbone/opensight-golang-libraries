@@ -81,7 +81,7 @@ func HandleCompareOperatorBeginsWith(fieldName string, fieldKeys []string, field
 	isWildcardArray := querySettings.WildcardArrays != nil && querySettings.WildcardArrays[fieldName]
 	field := fieldName + ".keyword"
 
-	// if the query settings specify that it is a wildcard array, use the field name appended with the '.keyword'
+	// if the query settings specify that it is a wildcard array, use the default field name without '.keyword' appended
 	if isWildcardArray {
 		field = fieldName
 	}
