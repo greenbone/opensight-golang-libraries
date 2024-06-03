@@ -6,7 +6,6 @@ package openSearchClient
 
 import (
 	"context"
-	config2 "github.com/greenbone/opensight-golang-libraries/pkg/openSearch/openSearchClient/config"
 	"testing"
 	"time"
 
@@ -40,13 +39,6 @@ func (v *Vulnerability) GetId() string {
 
 func (v *Vulnerability) SetId(id string) {
 	v.Id = id
-}
-
-type MockTokenReceiver struct {
-}
-
-func (m *MockTokenReceiver) GetClientAccessToken(clientName, clientSecret string) (string, error) {
-	return "test-token", nil
 }
 
 func TestClient(t *testing.T) {
@@ -175,12 +167,7 @@ func TestClient(t *testing.T) {
 	require.NotNil(t, opensearchProjectClient)
 
 	iFunc := NewIndexFunction(opensearchProjectClient)
-	config := config2.OpensearchClientConfig{
-		UpdateMaxRetries: 1,
-		UpdateRetrySleep: 1,
-	}
-	mockTokenReceiver := MockTokenReceiver{}
-	client := NewClient(opensearchProjectClient, config, &mockTokenReceiver)
+	client := NewClient(opensearchProjectClient, 1, 1)
 
 	for testName, testCase := range tcs {
 		t.Run(testName, func(t *testing.T) {

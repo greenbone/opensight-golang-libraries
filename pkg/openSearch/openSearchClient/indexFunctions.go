@@ -15,7 +15,6 @@ import (
 	"strings"
 
 	"github.com/opensearch-project/opensearch-go/v2"
-
 	"github.com/opensearch-project/opensearch-go/v2/opensearchapi"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"

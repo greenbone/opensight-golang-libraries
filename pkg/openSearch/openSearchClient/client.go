@@ -10,26 +10,20 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 
-	"github.com/greenbone/opensight-golang-libraries/pkg/openSearch/openSearchClient/config"
 	"github.com/opensearch-project/opensearch-go/v2"
-	"github.com/opensearch-project/opensearch-go/v2/opensearchapi"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )
-
-type ITokenReceiver interface {
-	GetClientAccessToken(clientName, clientSecret string) (string, error)
-}
 
 // Client is a client for OpenSearch designed to allow easy mocking in tests.
 // It is a wrapper around the official OpenSearch client github.com/opensearch-project/opensearch-go .
 type Client struct {
 	openSearchProjectClient *opensearch.Client
 	updateQueue             *UpdateQueue
-	config                  config.OpensearchClientConfig
 }
 
 // NewClient creates a new OpenSearch client.
@@ -37,14 +31,11 @@ type Client struct {
 // openSearchProjectClient is the official OpenSearch client to wrap. Use NewOpenSearchProjectClient to create it.
 // updateMaxRetries is the number of retries for update requests.
 // updateRetryDelay is the delay between retries.
-func NewClient(openSearchProjectClient *opensearch.Client, config config.OpensearchClientConfig) *Client {
-
+func NewClient(openSearchProjectClient *opensearch.Client, updateMaxRetries int, updateRetryDelay time.Duration) *Client {
 	c := &Client{
 		openSearchProjectClient: openSearchProjectClient,
-		config:                  config,
 	}
-
-	c.updateQueue = NewRequestQueue(openSearchProjectClient, config.UpdateMaxRetries, config.UpdateRetrySleep)
+	c.updateQueue = NewRequestQueue(openSearchProjectClient, updateMaxRetries, updateRetryDelay)
 	return c
 }
 
@@ -161,7 +152,6 @@ func (c *Client) BulkUpdate(indexName string, requestBody []byte) error {
 		c.openSearchProjectClient.Bulk.WithIndex(indexName),
 		c.openSearchProjectClient.Bulk.WithRefresh("true"),
 	)
-
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -206,10 +196,6 @@ func GetResponseError(statusCode int, responseString []byte, indexName string) e
 	} else {
 		return NewOpenSearchErrorWithStack(string(responseString))
 	}
-}
-
-func (c *Client) GetIndices() *opensearchapi.Indices {
-	return c.openSearchProjectClient.Indices
 }
 
 // Close stops the underlying UpdateQueue allowing a graceful shutdown.
