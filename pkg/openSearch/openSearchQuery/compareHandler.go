@@ -78,37 +78,31 @@ func handleCompareOperatorContainsDifferent(fieldName string, fieldKeys []string
 
 // HandleCompareOperatorBeginsWith handles begins with
 func HandleCompareOperatorBeginsWith(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
-	// for list of values
-	if querySettings.WildcardArrays != nil &&
-		querySettings.WildcardArrays[fieldName] {
-		return handleCompareOperatorBeginsWithDifferent(fieldName, fieldKeys, fieldValue, querySettings)
-	} else {
-		if values, ok := fieldValue.([]interface{}); ok {
-			return esquery.Bool().
-				Should(
-					lo.Map[interface{}, esquery.Mappable](values, func(value interface{}, _ int) esquery.Mappable {
-						return esquery.Prefix(fieldName+".keyword", valueToString(value))
-					})...,
-				).
-				MinimumShouldMatch(1)
-		} else { // for single values
-			return esquery.Prefix(fieldName+".keyword", valueToString(fieldValue))
-		}
+	isWildcardArray := querySettings.WildcardArrays != nil && querySettings.WildcardArrays[fieldName]
+	field := fieldName + ".keyword"
+
+	// if the query settings specify that it is a wildcard array, use the field name appended with the '.keyword'
+	if isWildcardArray {
+		field = fieldName
 	}
+
+	return handleCompareOperatorBeginsWith(field, fieldValue)
 }
 
-func handleCompareOperatorBeginsWithDifferent(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
-	if values, ok := fieldValue.([]interface{}); ok {
+func handleCompareOperatorBeginsWith(fieldName string, fieldValue any) esquery.Mappable {
+	if values, ok := fieldValue.([]any); ok {
+		// for a list of values
 		return esquery.Bool().
 			Should(
-				lo.Map[interface{}, esquery.Mappable](values, func(value interface{}, _ int) esquery.Mappable {
+				lo.Map[any, esquery.Mappable](values, func(value any, _ int) esquery.Mappable {
 					return esquery.Prefix(fieldName, valueToString(value))
 				})...,
 			).
 			MinimumShouldMatch(1)
-	} else {
-		return esquery.Prefix(fieldName, fieldValue.(string))
 	}
+
+	// for single value
+	return esquery.Prefix(fieldName, valueToString(fieldValue))
 }
 
 // HandleCompareOperatorNotBeginsWith handles not begins with
