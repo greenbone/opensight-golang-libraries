@@ -78,18 +78,31 @@ func handleCompareOperatorContainsDifferent(fieldName string, fieldKeys []string
 
 // HandleCompareOperatorBeginsWith handles begins with
 func HandleCompareOperatorBeginsWith(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
-	// for list of values
-	if values, ok := fieldValue.([]interface{}); ok {
+	isWildcardArray := querySettings.WildcardArrays != nil && querySettings.WildcardArrays[fieldName]
+	field := fieldName + ".keyword"
+
+	// if the query settings specify that it is a wildcard array, use the default field name without '.keyword' appended
+	if isWildcardArray {
+		field = fieldName
+	}
+
+	return handleCompareOperatorBeginsWith(field, fieldValue)
+}
+
+func handleCompareOperatorBeginsWith(fieldName string, fieldValue any) esquery.Mappable {
+	if values, ok := fieldValue.([]any); ok {
+		// for a list of values
 		return esquery.Bool().
 			Should(
-				lo.Map[interface{}, esquery.Mappable](values, func(value interface{}, _ int) esquery.Mappable {
-					return esquery.Prefix(fieldName+".keyword", valueToString(value))
+				lo.Map[any, esquery.Mappable](values, func(value any, _ int) esquery.Mappable {
+					return esquery.Prefix(fieldName, valueToString(value))
 				})...,
 			).
 			MinimumShouldMatch(1)
-	} else { // for single values
-		return esquery.Prefix(fieldName+".keyword", valueToString(fieldValue))
 	}
+
+	// for single value
+	return esquery.Prefix(fieldName, valueToString(fieldValue))
 }
 
 // HandleCompareOperatorNotBeginsWith handles not begins with
