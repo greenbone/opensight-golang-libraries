@@ -10,20 +10,6 @@ import "github.com/greenbone/opensight-golang-libraries/pkg/postgres/query"
 
 Package query facilitates the translation of a result selector into a PostgresSQL conditional query string, incorporating sorting and paging functionalities.
 
-Example Usage:
-
-```go
-func ListExamples(ctx context.Context, resultSelector query.ResultSelector) (examples []Examples, totalResult uint64, err error) {
-    querySettings := &query.Settings{
-        FilterFieldMapping: exampleFieldMapping(),
-	}
-    qb := query.NewPostgresQueryBuilder(querySettings)
-    listQueryWithResultSelector := qb.Build(resultSelector)
-
-    listQuery := unfilteredListExampleQuery + listQueryWithResultSelector
-}
-```
-
 ## Index
 
 - [type Builder](<#Builder>)
@@ -36,7 +22,7 @@ func ListExamples(ctx context.Context, resultSelector query.ResultSelector) (exa
 
 
 <a name="Builder"></a>
-## type [Builder](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L21-L24>)
+## type [Builder](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L26-L29>)
 
 Builder represents a query builder used to construct PostgresSQL conditional query strings with sorting and paging functionalities.
 
@@ -47,7 +33,7 @@ type Builder struct {
 ```
 
 <a name="NewPostgresQueryBuilder"></a>
-### func [NewPostgresQueryBuilder](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L27>)
+### func [NewPostgresQueryBuilder](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L32>)
 
 ```go
 func NewPostgresQueryBuilder(querySetting *Settings) *Builder
@@ -56,16 +42,16 @@ func NewPostgresQueryBuilder(querySetting *Settings) *Builder
 NewPostgresQueryBuilder creates a new instance of the query builder with the provided settings.
 
 <a name="Builder.AddFilterRequest"></a>
-### func \(\*Builder\) [AddFilterRequest](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L35>)
+### func \(\*Builder\) [AddFilterRequest](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L42>)
 
 ```go
 func (qb *Builder) AddFilterRequest(request *filter.Request) error
 ```
 
-AddFilterRequest appends filter conditions to the query builder based on the provided filter request. It constructs conditional clauses using the logic operator specified in the request.
+AddFilterRequest appends filter conditions to the query builder based on the provided filter request. It constructs conditional clauses using the logic operator specified in the request. TODO: Enhance the AddFilterRequest function to prevent SQL injection vulnerabilities. AddFilterRequest is currently vulnerable to sql injection and should be used only when the input is trusted
 
 <a name="Builder.AddPaging"></a>
-### func \(\*Builder\) [AddPaging](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L99>)
+### func \(\*Builder\) [AddPaging](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L118>)
 
 ```go
 func (qb *Builder) AddPaging(paging *paging.Request) error
@@ -74,7 +60,7 @@ func (qb *Builder) AddPaging(paging *paging.Request) error
 AddPaging appends paging conditions to the query builder based on the provided paging request. It constructs the OFFSET and LIMIT clauses according to the specified page index and page size.
 
 <a name="Builder.AddSorting"></a>
-### func \(\*Builder\) [AddSorting](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L89>)
+### func \(\*Builder\) [AddSorting](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L101>)
 
 ```go
 func (qb *Builder) AddSorting(sort *sorting.Request) error
@@ -83,7 +69,7 @@ func (qb *Builder) AddSorting(sort *sorting.Request) error
 AddSorting appends sorting conditions to the query builder based on the provided sorting request. It constructs the ORDER BY clause using the specified sort column and direction.
 
 <a name="Builder.Build"></a>
-### func \(\*Builder\) [Build](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L145>)
+### func \(\*Builder\) [Build](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L136>)
 
 ```go
 func (qb *Builder) Build(resultSelector query.ResultSelector) string
@@ -92,7 +78,7 @@ func (qb *Builder) Build(resultSelector query.ResultSelector) string
 Build generates the complete SQL query based on the provided result selector. It constructs the query by adding filter, sorting, and paging conditions. If any error occurs during the construction, it returns an empty string.
 
 <a name="Settings"></a>
-## type [Settings](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L15-L17>)
+## type [Settings](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L20-L22>)
 
 Settings is a configuration struct used to customize the behavior of the query builder.
 
