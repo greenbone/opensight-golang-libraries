@@ -174,7 +174,7 @@ func GetResponseError(statusCode int, responseString []byte, indexName string) e
 		}
 
 		if errorResponse.HasError {
-			return errors.Errorf("request error %v", errorResponse)
+			return errors.Errorf("request error %s", string(responseString))
 		}
 
 		return nil
