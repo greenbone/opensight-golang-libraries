@@ -57,7 +57,7 @@ func isEligibleForBasicAuth(config config.OpensearchClientConfig) bool {
 }
 
 func isEligibleForOpenId(config config.OpensearchClientConfig) bool {
-	return config.KeycloakClient != "" && config.KeycloakClientSecret != ""
+	return config.IDPClientID != "" && config.IDPClientSecret != ""
 }
 
 func determineAuthenticationMethod(config config.OpensearchClientConfig, tokenReceiver ITokenReceiver) authMethod {
