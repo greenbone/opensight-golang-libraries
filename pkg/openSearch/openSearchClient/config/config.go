@@ -17,6 +17,7 @@ type OpensearchClientConfig struct {
 	Password        string `viperEnv:"ELASTIC_PASS"`
 	IDPClientID     string `viperEnv:"OPENSEARCH_IDP_CLIENT" default:"opensearch-client"`
 	IDPClientSecret string `viperEnv:"OPENSEARCH_IDP_CLIENT_SECRET"`
+	AuthMethod      string `validate:"required" viperEnv:"OPENSEARCH_AUTH_METHOD"`
 }
 
 func ReadOpensearchClientConfig() (OpensearchClientConfig, error) {
