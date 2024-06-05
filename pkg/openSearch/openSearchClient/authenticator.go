@@ -22,7 +22,6 @@ type authMethod string
 const (
 	basic  authMethod = "basic"
 	openId authMethod = "openid"
-	none   authMethod = "none"
 )
 
 type ITokenReceiver interface {
@@ -60,21 +59,7 @@ func InjectAuthenticationIntoClient(client *opensearch.Client, config config.Ope
 	return nil
 }
 
-func validateNone(_ config.OpensearchClientConfig, _ ITokenReceiver) error {
-	return nil
-}
-
-func validateBasic(config config.OpensearchClientConfig, _ ITokenReceiver) error {
-	if config.Username == "" || config.Password == "" {
-		return fmt.Errorf("invalid configuration for basic authentication: username and password must be set")
-	}
-	return nil
-}
-
-func validateOpenId(config config.OpensearchClientConfig, tokenReceiver ITokenReceiver) error {
-	if config.IDPClientID == "" || config.IDPClientSecret == "" {
-		return fmt.Errorf("invalid configuration for openid authentication: client id and secret must be set")
-	}
+func validateOpenId(tokenReceiver ITokenReceiver) error {
 	if tokenReceiver == nil {
 		return fmt.Errorf("token receiver must not be nil for openid authentication")
 	}
@@ -82,21 +67,19 @@ func validateOpenId(config config.OpensearchClientConfig, tokenReceiver ITokenRe
 }
 
 func getAuthenticationMethod(conf config.OpensearchClientConfig, tokenReceiver ITokenReceiver) (authMethod, error) {
-	validators := map[authMethod]func(config.OpensearchClientConfig, ITokenReceiver) error{
-		none:   validateNone,
-		basic:  validateBasic,
-		openId: validateOpenId,
+	if conf.AuthUsername == "" || conf.AuthPassword == "" {
+		return "", fmt.Errorf("username and password must be set in configuration")
 	}
-
 	method := authMethod(strings.ToLower(conf.AuthMethod))
-	validator, ok := validators[method]
-	if !ok {
-		return "", fmt.Errorf("invalid authentication method for opensearch: %s", conf.AuthMethod)
-	}
 
-	err := validator(conf, tokenReceiver)
-	if err != nil {
-		return "", err
+	switch method {
+	case basic:
+	case openId:
+		if err := validateOpenId(tokenReceiver); err != nil {
+			return "", err
+		}
+	default:
+		return "", fmt.Errorf("invalid authentication method for opensearch: %s", conf.AuthMethod)
 	}
 
 	return method, nil
@@ -109,15 +92,14 @@ func (a *Authenticator) injectAuthenticationHeader(method authMethod, req *http.
 	}
 	switch method {
 	case basic:
-		reqClone.SetBasicAuth(a.config.Username, a.config.Password)
+		reqClone.SetBasicAuth(a.config.AuthUsername, a.config.AuthPassword)
 	case openId:
-		token, err := a.tokenReceiver.GetClientAccessToken(a.config.IDPClientID, a.config.IDPClientSecret)
+		token, err := a.tokenReceiver.GetClientAccessToken(a.config.AuthUsername, a.config.AuthPassword)
 		if err != nil {
 			log.Error().Msgf("Could not retrieve authorization header: %v", err)
 			return reqClone
 		}
 		reqClone.Header.Set("Authorization", "Bearer "+token)
-	case none:
 	default:
 		log.Error().Msgf("undefined authentication method for opensearch client: %s", method)
 	}

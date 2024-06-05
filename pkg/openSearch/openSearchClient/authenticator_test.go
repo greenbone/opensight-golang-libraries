@@ -28,49 +28,31 @@ func TestGetAuthenticationMethod(t *testing.T) {
 		expectedError  bool
 	}{
 		{
-			name: "returns none auth method when configured",
-			config: config.OpensearchClientConfig{
-				AuthMethod: "none",
-			},
-			expectedMethod: none,
-			expectedError:  false,
-		},
-		{
 			name: "returns basic auth method when configured",
 			config: config.OpensearchClientConfig{
-				AuthMethod: "basic",
-				Username:   "username",
-				Password:   "password",
+				AuthMethod:   "basic",
+				AuthUsername: "username",
+				AuthPassword: "password",
 			},
 			expectedMethod: basic,
 			expectedError:  false,
 		},
 		{
-			name: "returns error when username is empty for basic auth",
-			config: config.OpensearchClientConfig{
-				AuthMethod: "basic",
-				Username:   "",
-				Password:   "password",
-			},
-			expectedMethod: "",
-			expectedError:  true,
-		},
-		{
 			name: "returns openid auth method when configured",
 			config: config.OpensearchClientConfig{
-				AuthMethod:      "openid",
-				IDPClientID:     "clientID",
-				IDPClientSecret: "clientSecret",
+				AuthMethod:   "openid",
+				AuthUsername: "clientID",
+				AuthPassword: "clientSecret",
 			},
 			expectedMethod: openId,
 			expectedError:  false,
 		},
 		{
-			name: "returns error when client secret is empty for openID auth",
+			name: "returns error when password is empty",
 			config: config.OpensearchClientConfig{
-				AuthMethod:      "openid",
-				IDPClientID:     "clientID",
-				IDPClientSecret: "",
+				AuthMethod: "basic",
+				AuthUsername: "username",
+				AuthPassword: "",
 			},
 			expectedMethod: "",
 			expectedError:  true,
@@ -79,6 +61,8 @@ func TestGetAuthenticationMethod(t *testing.T) {
 			name: "returns error when invalid auth method is configured",
 			config: config.OpensearchClientConfig{
 				AuthMethod: "",
+				AuthUsername: "username",
+				AuthPassword: "password",
 			},
 			expectedMethod: "",
 			expectedError:  true,
@@ -106,21 +90,22 @@ func TestInjectAuthenticationHeader(t *testing.T) {
 		name           string
 		authMethod     authMethod
 		expectedHeader string
+		authUser       string
+		authPass       string
 	}{
 		{
 			name:           "injects basic auth header when basic auth method is used",
 			authMethod:     basic,
+			authUser:       "username",
+			authPass:       "password",
 			expectedHeader: "Basic dXNlcm5hbWU6cGFzc3dvcmQ=",
 		},
 		{
 			name:           "injects bearer token when openid auth method is used",
 			authMethod:     openId,
+			authUser:       "clientID",
+			authPass:       "clientSecret",
 			expectedHeader: "Bearer mockToken",
-		},
-		{
-			name:           "does not inject auth header when none auth method is used",
-			authMethod:     none,
-			expectedHeader: "",
 		},
 	}
 
@@ -128,10 +113,8 @@ func TestInjectAuthenticationHeader(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			authenticator := &Authenticator{
 				config: config.OpensearchClientConfig{
-					Username:        "username",
-					Password:        "password",
-					IDPClientID:     "clientID",
-					IDPClientSecret: "clientSecret",
+					AuthUsername: tc.authUser,
+					AuthPassword: tc.authPass,
 				},
 				tokenReceiver: mockTokenReceiver,
 				authMethod:    tc.authMethod,

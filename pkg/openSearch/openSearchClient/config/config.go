@@ -10,14 +10,12 @@ import (
 )
 
 type OpensearchClientConfig struct {
-	Host            string `validate:"required" viperEnv:"ELASTIC_HOST"`
-	Port            int    `validate:"required,min=1,max=65535" viperEnv:"ELASTIC_API_PORT"`
-	Https           bool   `viperEnv:"ELASTIC_HTTPS"`
-	Username        string `viperEnv:"ELASTIC_USER" default:"admin"`
-	Password        string `viperEnv:"ELASTIC_PASS"`
-	IDPClientID     string `viperEnv:"OPENSEARCH_IDP_CLIENT" default:"opensearch-client"`
-	IDPClientSecret string `viperEnv:"OPENSEARCH_IDP_CLIENT_SECRET"`
-	AuthMethod      string `validate:"required" viperEnv:"OPENSEARCH_AUTH_METHOD"`
+	Host         string `validate:"required" viperEnv:"ELASTIC_HOST"`
+	Port         int    `validate:"required,min=1,max=65535" viperEnv:"ELASTIC_API_PORT"`
+	Https        bool   `viperEnv:"ELASTIC_HTTPS"`
+	AuthUsername string `validate:"required" viperEnv:"ELASTIC_AUTH_USER"`
+	AuthPassword string `validate:"required" viperEnv:"ELASTIC_AUTH_PASS"`
+	AuthMethod   string `validate:"required" viperEnv:"ELASTIC_AUTH_METHOD"`
 }
 
 func ReadOpensearchClientConfig() (OpensearchClientConfig, error) {
