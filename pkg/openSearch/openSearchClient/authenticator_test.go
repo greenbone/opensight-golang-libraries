@@ -5,25 +5,31 @@
 package openSearchClient
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/openSearch/openSearchClient/config"
+	"github.com/opensearch-project/opensearch-go/v2"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
-type MockTokenReceiver struct{}
+type MockTokenReceiver struct {
+	mock.Mock
+}
 
 func (m *MockTokenReceiver) GetClientAccessToken(clientName, clientSecret string) (string, error) {
-	return "mockToken", nil
+	args := m.Called()
+	return args.String(0), args.Error(1)
 }
 
 func TestGetAuthenticationMethod(t *testing.T) {
-	mockTokenReceiver := &MockTokenReceiver{}
-
 	tests := []struct {
 		name           string
 		config         config.OpensearchClientConfig
+		tokenReceiver  ITokenReceiver
 		expectedMethod authMethod
 		expectedError  bool
 	}{
@@ -34,6 +40,7 @@ func TestGetAuthenticationMethod(t *testing.T) {
 				AuthUsername: "username",
 				AuthPassword: "password",
 			},
+			tokenReceiver:  nil,
 			expectedMethod: basic,
 			expectedError:  false,
 		},
@@ -44,13 +51,14 @@ func TestGetAuthenticationMethod(t *testing.T) {
 				AuthUsername: "clientID",
 				AuthPassword: "clientSecret",
 			},
+			tokenReceiver:  &MockTokenReceiver{},
 			expectedMethod: openId,
 			expectedError:  false,
 		},
 		{
 			name: "returns error when password is empty",
 			config: config.OpensearchClientConfig{
-				AuthMethod: "basic",
+				AuthMethod:   "basic",
 				AuthUsername: "username",
 				AuthPassword: "",
 			},
@@ -58,9 +66,20 @@ func TestGetAuthenticationMethod(t *testing.T) {
 			expectedError:  true,
 		},
 		{
+			name: "returns error when token receiver is nil for openid auth method",
+			config: config.OpensearchClientConfig{
+				AuthMethod:   "openid",
+				AuthUsername: "username",
+				AuthPassword: "password",
+			},
+			tokenReceiver:  nil,
+			expectedMethod: "",
+			expectedError:  true,
+		},
+		{
 			name: "returns error when invalid auth method is configured",
 			config: config.OpensearchClientConfig{
-				AuthMethod: "",
+				AuthMethod:   "",
 				AuthUsername: "username",
 				AuthPassword: "password",
 			},
@@ -71,7 +90,7 @@ func TestGetAuthenticationMethod(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			method, err := getAuthenticationMethod(tc.config, mockTokenReceiver)
+			method, err := getAuthenticationMethod(tc.config, tc.tokenReceiver)
 
 			if tc.expectedError {
 				assert.Error(t, err)
@@ -84,14 +103,15 @@ func TestGetAuthenticationMethod(t *testing.T) {
 }
 
 func TestInjectAuthenticationHeader(t *testing.T) {
-	mockTokenReceiver := &MockTokenReceiver{}
-
 	tests := []struct {
 		name           string
 		authMethod     authMethod
-		expectedHeader string
 		authUser       string
 		authPass       string
+		mockToken      string
+		mockError      error
+		expectedHeader string
+		expectedError  bool
 	}{
 		{
 			name:           "injects basic auth header when basic auth method is used",
@@ -105,12 +125,27 @@ func TestInjectAuthenticationHeader(t *testing.T) {
 			authMethod:     openId,
 			authUser:       "clientID",
 			authPass:       "clientSecret",
+			mockToken:      "mockToken",
+			mockError:      nil,
 			expectedHeader: "Bearer mockToken",
+		},
+		{
+			name:           "returns error when tokenReceiver.GetClientAccessToken fails",
+			authMethod:     openId,
+			authUser:       "clientID",
+			authPass:       "clientSecret",
+			mockToken:      "",
+			mockError:      fmt.Errorf("mock error"),
+			expectedHeader: "",
+			expectedError:  true,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			mockTokenReceiver := new(MockTokenReceiver)
+			mockTokenReceiver.On("GetClientAccessToken").Return(tc.mockToken, tc.mockError)
+
 			authenticator := &Authenticator{
 				config: config.OpensearchClientConfig{
 					AuthUsername: tc.authUser,
@@ -121,9 +156,52 @@ func TestInjectAuthenticationHeader(t *testing.T) {
 			}
 
 			req, _ := http.NewRequest("GET", "http://localhost", nil)
-			reqWithAuth := authenticator.injectAuthenticationHeader(authenticator.authMethod, req)
+			reqWithAuth, err := authenticator.injectAuthenticationHeader(req)
 
-			assert.Equal(t, tc.expectedHeader, reqWithAuth.Header.Get("Authorization"))
+			if tc.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.expectedHeader, reqWithAuth.Header.Get("Authorization"))
+			}
 		})
 	}
+}
+
+type MockTransport struct {
+	mock.Mock
+}
+
+func (m *MockTransport) Perform(req *http.Request) (*http.Response, error) {
+	args := m.Called()
+	return args.Get(0).(*http.Response), args.Error(1)
+}
+
+func TestInjectAuthenticationIntoClient(t *testing.T) {
+	mockTransport := new(MockTransport)
+	mockTransport.On("Perform").Return(&http.Response{}, nil)
+
+	client := &opensearch.Client{
+		Transport: mockTransport,
+	}
+
+	conf := config.OpensearchClientConfig{
+		AuthMethod:   "openid",
+		AuthUsername: "username",
+		AuthPassword: "password",
+	}
+
+	mockTokenReceiver := new(MockTokenReceiver)
+	mockTokenReceiver.On("GetClientAccessToken").Return("mockToken", nil)
+
+	err := InjectAuthenticationIntoClient(client, conf, mockTokenReceiver)
+	require.NoError(t, err)
+
+	req, _ := http.NewRequest("GET", "http://localhost", nil)
+
+	_, err = client.Perform(req)
+	assert.NoError(t, err)
+
+	mockTransport.AssertCalled(t, "Perform")
+	mockTokenReceiver.AssertCalled(t, "GetClientAccessToken")
 }

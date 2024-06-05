@@ -5,7 +5,6 @@
 package openSearchClient
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -59,24 +58,18 @@ func InjectAuthenticationIntoClient(client *opensearch.Client, config config.Ope
 	return nil
 }
 
-func validateOpenId(tokenReceiver ITokenReceiver) error {
-	if tokenReceiver == nil {
-		return fmt.Errorf("token receiver must not be nil for openid authentication")
-	}
-	return nil
-}
-
 func getAuthenticationMethod(conf config.OpensearchClientConfig, tokenReceiver ITokenReceiver) (authMethod, error) {
 	if conf.AuthUsername == "" || conf.AuthPassword == "" {
 		return "", fmt.Errorf("username and password must be set in configuration")
 	}
+
 	method := authMethod(strings.ToLower(conf.AuthMethod))
 
 	switch method {
 	case basic:
 	case openId:
-		if err := validateOpenId(tokenReceiver); err != nil {
-			return "", err
+		if tokenReceiver == nil {
+			return "", fmt.Errorf("token receiver must not be nil for openid authentication")
 		}
 	default:
 		return "", fmt.Errorf("invalid authentication method for opensearch: %s", conf.AuthMethod)
@@ -85,29 +78,31 @@ func getAuthenticationMethod(conf config.OpensearchClientConfig, tokenReceiver I
 	return method, nil
 }
 
-func (a *Authenticator) injectAuthenticationHeader(method authMethod, req *http.Request) *http.Request {
-	reqClone := req.Clone(context.Background())
+func (a *Authenticator) injectAuthenticationHeader(req *http.Request) (*http.Request, error) {
+	reqClone := req.Clone(req.Context())
 	if reqClone.Header == nil {
 		reqClone.Header = http.Header{}
 	}
-	switch method {
+	switch a.authMethod {
 	case basic:
 		reqClone.SetBasicAuth(a.config.AuthUsername, a.config.AuthPassword)
 	case openId:
 		token, err := a.tokenReceiver.GetClientAccessToken(a.config.AuthUsername, a.config.AuthPassword)
 		if err != nil {
-			log.Error().Msgf("Could not retrieve authorization header: %v", err)
-			return reqClone
+			return nil, fmt.Errorf("could not retrieve authorization header: %w", err)
 		}
 		reqClone.Header.Set("Authorization", "Bearer "+token)
 	default:
-		log.Error().Msgf("undefined authentication method for opensearch client: %s", method)
+		log.Error().Msgf("undefined authentication method for opensearch client: %s", a.authMethod)
 	}
-	return reqClone
+	return reqClone, nil
 }
 
 // Perform implements the opensearchapi.Transport interface
 func (a *Authenticator) Perform(req *http.Request) (*http.Response, error) {
-	requestWithInjectedAuth := a.injectAuthenticationHeader(a.authMethod, req)
+	requestWithInjectedAuth, err := a.injectAuthenticationHeader(req)
+	if err != nil {
+		return nil, err
+	}
 	return a.clientTransport.Perform(requestWithInjectedAuth)
 }
