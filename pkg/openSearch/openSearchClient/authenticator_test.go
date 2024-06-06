@@ -139,6 +139,11 @@ func TestInjectAuthenticationHeader(t *testing.T) {
 			expectedHeader: "",
 			expectedError:  true,
 		},
+		{
+			name:           "returns error when undefined auth method is configured",
+			authMethod:     authMethod("undefined"),
+			expectedError:  true,
+		},
 	}
 
 	for _, tc := range tests {
