@@ -56,6 +56,16 @@ func TestGetAuthenticationMethod(t *testing.T) {
 			expectedError:  false,
 		},
 		{
+			name: "returns error when username is empty",
+			config: config.OpensearchClientConfig{
+				AuthMethod:   "basic",
+				AuthUsername: "",
+				AuthPassword: "password",
+			},
+			expectedMethod: "",
+			expectedError:  true,
+		},
+		{
 			name: "returns error when password is empty",
 			config: config.OpensearchClientConfig{
 				AuthMethod:   "basic",
