@@ -38,13 +38,15 @@ func simpleOperatorCondition(
 ) (conditionTemplate string, err error) {
 	quotedName, err := getQuotedName(field.Name)
 	if err != nil {
-		return "", errors.Wrap(err, "could not get quoted name")
+		err = errors.New("could not get quoted name")
+		return
 	}
 
 	if valueIsList {
 		valueList, ok := field.Value.([]any)
 		if !ok {
-			return "", errors.Wrap(err, "couldn't not get field list values")
+			err = errors.New("couldn't not get field list values")
+			return
 		}
 		placeholders := make([]string, len(valueList))
 		for i := range valueList {
