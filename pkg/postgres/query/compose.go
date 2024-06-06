@@ -31,11 +31,11 @@ func composeQuery(
 	switch field.Operator {
 	case filter.CompareOperatorIsEqualTo:
 		conditionTemplate, err = simpleOperatorCondition(
-			field, valueIsList, "%s = ?", "%s IN (?)",
+			field, valueIsList, " %s = ?", " %s IN (%s)",
 		)
 	case filter.CompareOperatorIsNotEqualTo:
 		conditionTemplate, err = simpleOperatorCondition(
-			field, valueIsList, "%s != ?", "%s NOT IN (?)",
+			field, valueIsList, " %s != ?", " %s NOT IN (%s)",
 		)
 	default:
 		err = errors.Errorf("field '%s' with unknown operator '%s'", field.Name, field.Operator)

@@ -79,19 +79,13 @@ func extractFieldValues(value any) []any {
 
 // AddSorting appends sorting conditions to the query builder based on the provided sorting request.
 // It constructs the ORDER BY clause using the specified sort column and direction.
-func (qb *Builder) AddSorting(sort *sorting.Request) error {
+func (qb *Builder) AddSorting(sort *sorting.Request) ([]any, error) {
 	if sort == nil {
-		return errors.New("missing sorting fields, add sort request or remove call to AddSort()")
+		return nil, errors.New("missing sorting fields, add sort request or remove call to AddSort()")
 	}
 
-	// map fields to column
-	sortColumn, ok := qb.querySettings.FilterFieldMapping[sort.SortColumn]
-	if !ok {
-		return fmt.Errorf("mapping for sort column '%s' has not been implemented", sort.SortColumn)
-	}
-
-	qb.query.WriteString(fmt.Sprintf(" ORDER BY %s %s", sortColumn, sort.SortDirection))
-	return nil
+	qb.query.WriteString(fmt.Sprintf(" ORDER BY ? %s", sort.SortDirection))
+	return []any{sort.SortColumn}, nil
 }
 
 // AddPaging appends paging conditions to the query builder based on the provided paging request.
@@ -125,11 +119,12 @@ func (qb *Builder) Build(resultSelector query.ResultSelector) (query string, arg
 	}
 
 	if resultSelector.Sorting != nil {
-		err = qb.AddSorting(resultSelector.Sorting)
-		if err != nil {
+		sortingArg, sortingErr := qb.AddSorting(resultSelector.Sorting)
+		if sortingErr != nil {
 			err = fmt.Errorf("error adding sort query: %w", err)
 			return
 		}
+		args = append(args, sortingArg...)
 	}
 
 	if resultSelector.Paging != nil {
