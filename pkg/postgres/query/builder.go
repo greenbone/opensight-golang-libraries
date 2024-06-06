@@ -35,11 +35,12 @@ func NewPostgresQueryBuilder(querySetting *Settings) *Builder {
 	}
 }
 
-// AddFilterRequest appends filter conditions to the query builder based on the provided filter request.
+// BuildQueryConditions builds and appends filter conditions to the query builder based on the provided filter request.
 // It constructs conditional clauses using the logic operator specified in the request.
 // It uses the `?` query placeholder, so you can pass your parameter separately
 // It returns all individual field values in a single list
-func (qb *Builder) AddFilterRequest(request *filter.Request) (args []any, err error) {
+// BuildQueryConditions can be used as a standalone function with Gorm
+func (qb *Builder) BuildQueryConditions(request *filter.Request) (args []any, err error) {
 	if request == nil || len(request.Fields) == 0 {
 		return nil, nil
 	}
@@ -77,9 +78,9 @@ func extractFieldValues(value any) []any {
 	return []any{value}
 }
 
-// AddSorting appends sorting conditions to the query builder based on the provided sorting request.
+// addSorting appends sorting conditions to the query builder based on the provided sorting request.
 // It constructs the ORDER BY clause using the specified sort column and direction.
-func (qb *Builder) AddSorting(sort *sorting.Request) ([]any, error) {
+func (qb *Builder) addSorting(sort *sorting.Request) ([]any, error) {
 	if sort == nil {
 		return nil, errors.New("missing sorting fields, add sort request or remove call to AddSort()")
 	}
@@ -88,9 +89,9 @@ func (qb *Builder) AddSorting(sort *sorting.Request) ([]any, error) {
 	return []any{sort.SortColumn}, nil
 }
 
-// AddPaging appends paging conditions to the query builder based on the provided paging request.
+// addPaging appends paging conditions to the query builder based on the provided paging request.
 // It constructs the OFFSET and LIMIT clauses according to the specified page index and page size.
-func (qb *Builder) AddPaging(paging *paging.Request) error {
+func (qb *Builder) addPaging(paging *paging.Request) error {
 	if paging == nil {
 		return errors.New("missing paging fields, add paging request or remove call to AddSize()")
 	}
@@ -111,7 +112,7 @@ func (qb *Builder) AddPaging(paging *paging.Request) error {
 // If any error occurs during the construction, it returns an empty string.
 func (qb *Builder) Build(resultSelector query.ResultSelector) (query string, args []any, err error) {
 	if resultSelector.Filter != nil {
-		args, err = qb.AddFilterRequest(resultSelector.Filter)
+		args, err = qb.BuildQueryConditions(resultSelector.Filter)
 		if err != nil {
 			err = fmt.Errorf("error adding filter query: %w", err)
 			return
@@ -119,7 +120,7 @@ func (qb *Builder) Build(resultSelector query.ResultSelector) (query string, arg
 	}
 
 	if resultSelector.Sorting != nil {
-		sortingArg, sortingErr := qb.AddSorting(resultSelector.Sorting)
+		sortingArg, sortingErr := qb.addSorting(resultSelector.Sorting)
 		if sortingErr != nil {
 			err = fmt.Errorf("error adding sort query: %w", err)
 			return
@@ -128,7 +129,7 @@ func (qb *Builder) Build(resultSelector query.ResultSelector) (query string, arg
 	}
 
 	if resultSelector.Paging != nil {
-		err = qb.AddPaging(resultSelector.Paging)
+		err = qb.addPaging(resultSelector.Paging)
 		if err != nil {
 			err = fmt.Errorf("error adding paging query: %w", err)
 			return

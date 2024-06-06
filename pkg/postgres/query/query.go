@@ -47,7 +47,7 @@ func simpleOperatorCondition(
 			return "", errors.Wrap(err, "couldn't not get field list values")
 		}
 		placeholders := make([]string, len(valueList))
-		for i, _ := range valueList {
+		for i := range valueList {
 			placeholders[i] = "?"
 		}
 		conditionTemplate = fmt.Sprintf(listValueTemplate, quotedName, strings.Join(placeholders, ", "))
