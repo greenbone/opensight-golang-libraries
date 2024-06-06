@@ -6,7 +6,6 @@ require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/aquasecurity/esquery v0.2.0
 	github.com/avast/retry-go/v4 v4.6.0
-	github.com/elastic/go-elasticsearch/v7 v7.17.10
 	github.com/go-playground/validator/v10 v10.21.0
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-retryablehttp v0.7.7
@@ -38,6 +37,7 @@ require (
 	github.com/docker/docker v26.1.3+incompatible // indirect
 	github.com/docker/go-connections v0.5.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
+	github.com/elastic/go-elasticsearch/v7 v7.6.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect

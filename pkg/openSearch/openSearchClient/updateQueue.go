@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/elastic/go-elasticsearch/v7/esapi"
+	"github.com/opensearch-project/opensearch-go/v2/opensearchapi"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )
@@ -30,7 +30,7 @@ type Request struct {
 
 // UpdateQueue is a queue for OpenSearch update requests.
 type UpdateQueue struct {
-	client           esapi.Transport
+	client           opensearchapi.Transport
 	queue            chan *Request
 	stop             chan bool
 	wg               sync.WaitGroup
@@ -40,10 +40,10 @@ type UpdateQueue struct {
 
 // NewRequestQueue creates a new update queue.
 //
-// client must implement the esapi.Transport interface. This can be the official OpenSearch client. Use NewOpenSearchProjectClient to create it.
+// client must implement the opensearchapi.Transport interface. This can be the official OpenSearch client. Use NewOpenSearchProjectClient to create it.
 // updateMaxRetries is the number of retries for update requests.
 // updateRetryDelay is the delay between retries.
-func NewRequestQueue(client esapi.Transport, updateMaxRetries int, updateRetryDelay time.Duration) *UpdateQueue {
+func NewRequestQueue(client opensearchapi.Transport, updateMaxRetries int, updateRetryDelay time.Duration) *UpdateQueue {
 	rQueue := &UpdateQueue{
 		client:           client,
 		queue:            make(chan *Request, 10),
@@ -128,12 +128,12 @@ func (q *UpdateQueue) run() {
 func (q *UpdateQueue) update(indexName string, requestBody []byte) ([]byte, error) {
 	log.Debug().Msgf("update requestBody: %s", string(requestBody))
 
-	var updateResponse *esapi.Response
+	var updateResponse *opensearchapi.Response
 	var result []byte
 	var err error
 
 	for i := 0; i < q.updateMaxRetries; i++ {
-		req := esapi.UpdateByQueryRequest{
+		req := opensearchapi.UpdateByQueryRequest{
 			Index:  []string{indexName},
 			Body:   bytes.NewReader(requestBody),
 			Pretty: true,

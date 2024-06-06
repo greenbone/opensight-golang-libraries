@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/greenbone/opensight-golang-libraries/pkg/openSearch/openSearchClient/config"
 	"github.com/opensearch-project/opensearch-go/v2"
 	"github.com/opensearch-project/opensearch-go/v2/opensearchapi"
@@ -39,8 +38,8 @@ type Authenticator struct {
 	authMethod      authMethod
 }
 
-// Ensure Authenticator implements the esapi.Transport interface.
-var _ esapi.Transport = &Authenticator{}
+// Ensure Authenticator implements the opensearchapi.Transport interface.
+var _ opensearchapi.Transport = &Authenticator{}
 
 // InjectAuthenticationIntoClient is a function that sets up the authentication method for the OpenSearch client.
 // client is the OpenSearch client to inject the authentication into.
