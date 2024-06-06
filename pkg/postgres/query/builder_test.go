@@ -5,6 +5,7 @@
 package query
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
@@ -27,6 +28,7 @@ func TestQueryBuilder(t *testing.T) {
 		name      string
 		mockArg   query.ResultSelector
 		wantQuery string
+		wantArgs  []any
 	}{
 		{
 			name: "build query with filter paging and sorting",
@@ -55,7 +57,8 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "desc",
 				},
 			},
-			wantQuery: "WHERE \"status_col_name\" IN ('invalid status', 'valid status') OR \"source_id_col_name\" IN ('some_source_id', 'another_source_id', 'third_source_id') ORDER BY started_col_name DESC OFFSET 2 LIMIT 5",
+			wantQuery: `WHERE "status_col_name" IN (?, ?) OR "source_id_col_name" IN (?, ?, ?) ORDER BY ? DESC OFFSET 2 LIMIT 5`,
+			wantArgs:  []any{"invalid status", "valid status", "some_source_id", "another_source_id", "third_source_id", "started_col_name"},
 		},
 		{
 			name: "build query with filter only",
@@ -65,7 +68,7 @@ func TestQueryBuilder(t *testing.T) {
 						{
 							Name:     "status",
 							Operator: filter.CompareOperatorIsEqualTo,
-							Value:    []any{"invalid status"},
+							Value:    "invalid status",
 						},
 						{
 							Name:     "source_id",
@@ -76,7 +79,8 @@ func TestQueryBuilder(t *testing.T) {
 					Operator: filter.LogicOperatorAnd,
 				},
 			},
-			wantQuery: "WHERE \"status_col_name\" IN ('invalid status') AND \"source_id_col_name\" IN ('some_source_id')",
+			wantQuery: `WHERE "status_col_name" = ? AND "source_id_col_name" IN (?)`,
+			wantArgs:  []any{"invalid status", "some_source_id"},
 		},
 		{
 			name: "build query with filter and paging",
@@ -101,7 +105,8 @@ func TestQueryBuilder(t *testing.T) {
 					PageSize:  5,
 				},
 			},
-			wantQuery: "WHERE \"status_col_name\" IN ('invalid status') AND \"source_id_col_name\" IN ('some_source_id') OFFSET 2 LIMIT 5",
+			wantQuery: `WHERE "status_col_name" IN (?) AND "source_id_col_name" IN (?) OFFSET 2 LIMIT 5`,
+			wantArgs:  []any{"invalid status", "some_source_id"},
 		},
 		{
 			name: "build query with just one filter and paging",
@@ -121,7 +126,8 @@ func TestQueryBuilder(t *testing.T) {
 					PageSize:  5,
 				},
 			},
-			wantQuery: "WHERE \"status_col_name\" IN ('invalid status') OFFSET 2 LIMIT 5",
+			wantQuery: `WHERE "status_col_name" IN (?) OFFSET 2 LIMIT 5`,
+			wantArgs:  []any{"invalid status"},
 		},
 		{
 			name: "build query with just one filter with multiple values and paging",
@@ -141,7 +147,8 @@ func TestQueryBuilder(t *testing.T) {
 					PageSize:  5,
 				},
 			},
-			wantQuery: "WHERE \"status_col_name\" IN ('invalid status', 'another status') OFFSET 2 LIMIT 5",
+			wantQuery: `WHERE "status_col_name" IN (?, ?) OFFSET 2 LIMIT 5`,
+			wantArgs:  []any{"invalid status", "another status"},
 		},
 		{
 			name: "build query with more than two filter paging and sorting",
@@ -175,7 +182,8 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "desc",
 				},
 			},
-			wantQuery: "WHERE \"status_col_name\" IN ('invalid status', 'valid status') OR \"source_id_col_name\" IN ('some_source_id', 'another_source_id', 'third_source_id') OR \"other_filter_field_col_name\" IN ('some_field', 'another_field', 'third_field') ORDER BY started_col_name DESC OFFSET 2 LIMIT 5",
+			wantQuery: `WHERE "status_col_name" IN (?, ?) OR "source_id_col_name" IN (?, ?, ?) OR "other_filter_field_col_name" IN (?, ?, ?) ORDER BY ? DESC OFFSET 2 LIMIT 5`,
+			wantArgs:  []any{"invalid status", "valid status", "some_source_id", "another_source_id", "third_source_id", "some_field", "another_field", "third_field", "started_col_name"},
 		},
 		{
 			name: "build query with more than two filter paging and sorting",
@@ -209,7 +217,8 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "desc",
 				},
 			},
-			wantQuery: "WHERE \"status_col_name\" IN ('invalid status', 'valid status') OR \"source_id_col_name\" IN ('some_source_id', 'another_source_id', 'third_source_id') OR \"other_filter_field_col_name\" IN ('some_field', 'another_field', 'third_field') ORDER BY started_col_name DESC OFFSET 2 LIMIT 5",
+			wantQuery: `WHERE "status_col_name" IN (?, ?) OR "source_id_col_name" IN (?, ?, ?) OR "other_filter_field_col_name" IN (?, ?, ?) ORDER BY ? DESC OFFSET 2 LIMIT 5`,
+			wantArgs:  []any{"invalid status", "valid status", "some_source_id", "another_source_id", "third_source_id", "some_field", "another_field", "third_field", "started_col_name"},
 		},
 		{
 			name: "build query with just one filter with multiple values, compareOperatorNotEqualTo, and paging",
@@ -229,7 +238,8 @@ func TestQueryBuilder(t *testing.T) {
 					PageSize:  5,
 				},
 			},
-			wantQuery: "WHERE \"status_col_name\" NOT IN ('invalid status', 'another status') OFFSET 2 LIMIT 5",
+			wantQuery: `WHERE "status_col_name" NOT IN (?, ?) OFFSET 2 LIMIT 5`,
+			wantArgs:  []any{"invalid status", "another status"},
 		},
 		{
 			name: "build valid query without filter fields",
@@ -247,7 +257,8 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "asc",
 				},
 			},
-			wantQuery: " ORDER BY started_col_name ASC OFFSET 3 LIMIT 10",
+			wantQuery: " ORDER BY ? ASC OFFSET 3 LIMIT 10",
+			wantArgs:  []any{"started"},
 		},
 		{
 			name: "build valid query without filter object",
@@ -261,7 +272,8 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "asc",
 				},
 			},
-			wantQuery: " ORDER BY started_col_name ASC OFFSET 3 LIMIT 10",
+			wantQuery: " ORDER BY ? ASC OFFSET 3 LIMIT 10",
+			wantArgs:  []any{"started"},
 		},
 	}
 
@@ -271,8 +283,9 @@ func TestQueryBuilder(t *testing.T) {
 				FilterFieldMapping: fieldMapping,
 			}
 			queryBuilder := NewPostgresQueryBuilder(querySettings)
-			queryString := queryBuilder.Build(tt.mockArg)
-
+			queryString, arg, err := queryBuilder.Build(tt.mockArg)
+			assert.NoError(t, err)
+			reflect.DeepEqual(tt.wantArgs, arg)
 			assert.Equal(t, queryString, tt.wantQuery)
 		})
 	}
