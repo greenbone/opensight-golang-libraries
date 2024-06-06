@@ -35,13 +35,14 @@ func NewPostgresQueryBuilder(querySetting *Settings) *Builder {
 	}
 }
 
-// AddFilterRequest appends filter conditions to the query builder based on the provided filter request.
+// BuildQueryConditions builds and appends filter conditions to the query builder based on the provided filter request.
 // It constructs conditional clauses using the logic operator specified in the request.
-// TODO: Enhance the AddFilterRequest function to prevent SQL injection vulnerabilities.
-// AddFilterRequest is currently vulnerable to sql injection and should be used only when the input is trusted
-func (qb *Builder) AddFilterRequest(request *filter.Request) error {
+// It uses the `?` query placeholder, so you can pass your parameter separately
+// It returns all individual field values in a single list
+// BuildQueryConditions can be used as a standalone function with Gorm
+func (qb *Builder) BuildQueryConditions(request *filter.Request) (args []any, err error) {
 	if request == nil || len(request.Fields) == 0 {
-		return nil
+		return nil, nil
 	}
 	logicOperator := strings.ToUpper(string(request.Operator))
 
@@ -52,70 +53,50 @@ func (qb *Builder) AddFilterRequest(request *filter.Request) error {
 			err               error
 			valueIsList       bool
 			conditionTemplate string
-			conditionParams   []any
 		)
 		valueIsList, _, err = checkFieldValueType(field)
 		if err != nil {
-			return fmt.Errorf("error checking filter field value type '%s': %w", field, err)
+			return nil, fmt.Errorf("error checking filter field value type '%s': %w", field, err)
 		}
-		conditionTemplate, conditionParams, err =
-			composeQuery(qb.querySettings.FilterFieldMapping, field, valueIsList)
+		conditionTemplate, err = composeQuery(qb.querySettings.FilterFieldMapping, field, valueIsList)
 		if err != nil {
-			return fmt.Errorf("error composing query from filter field %w", err)
+			return nil, fmt.Errorf("error composing query from filter field %w", err)
 		}
 		if index > 0 {
 			qb.query.WriteString(fmt.Sprintf(" %s", logicOperator))
 		}
-		qb.query.WriteString(generateConditionalQuery(conditionParams, conditionTemplate))
+		args = append(args, extractFieldValues(field.Value)...)
+		qb.query.WriteString(conditionTemplate)
 	}
-	return nil
+	return
 }
 
-// generateConditionalQuery generates filter conditions based on the provided filter field value,
-// field mappings, logic operators, and a flag indicating if these are the final request fields.
-// If the field value is not of the expected type or cannot be converted to a string, it skips that field.
-// The finalRequestFields flag determines whether to append the logic operator at the end of the query.
-func generateConditionalQuery(conditionParams []any, column string) string {
-	var (
-		queryString strings.Builder
-		conditions  []string
-	)
-
-	queryString.WriteString(fmt.Sprintf(" %s (", column))
-	for _, conditionParam := range conditionParams {
-		params, ok := conditionParam.([]any)
-		if !ok {
-			continue
-		}
-		for _, condition := range params {
-			conditions = append(conditions, fmt.Sprintf("'%s'", condition))
-		}
+func extractFieldValues(value any) []any {
+	if params, ok := value.([]any); ok {
+		return params
 	}
-	conditionalQuery := strings.Join(conditions, ", ")
-	queryString.WriteString(fmt.Sprintf("%s)", conditionalQuery))
-	return queryString.String()
+	return []any{value}
 }
 
-// AddSorting appends sorting conditions to the query builder based on the provided sorting request.
+// addSorting appends sorting conditions to the query builder based on the provided sorting request.
 // It constructs the ORDER BY clause using the specified sort column and direction.
-func (qb *Builder) AddSorting(sort *sorting.Request) error {
+func (qb *Builder) addSorting(sort *sorting.Request) (string, error) {
 	if sort == nil {
-		return errors.New("missing sorting fields, add sort request or remove call to AddSort()")
+		return "", errors.New("missing sorting fields, add sort request or remove call to addSorting()")
 	}
 
-	// map fields to column
-	sortColumn, ok := qb.querySettings.FilterFieldMapping[sort.SortColumn]
+	dbColumnName, ok := qb.querySettings.FilterFieldMapping[sort.SortColumn]
 	if !ok {
-		return fmt.Errorf("mapping for sort column '%s' has not been implemented", sort.SortColumn)
+		return "", filter.NewInvalidFilterFieldError("missing filter field mapping for '%s'", sort.SortColumn)
 	}
 
-	qb.query.WriteString(fmt.Sprintf(" ORDER BY %s %s", sortColumn, sort.SortDirection))
-	return nil
+	qb.query.WriteString(fmt.Sprintf(" ORDER BY ? %s", sort.SortDirection))
+	return dbColumnName, nil
 }
 
-// AddPaging appends paging conditions to the query builder based on the provided paging request.
+// addPaging appends paging conditions to the query builder based on the provided paging request.
 // It constructs the OFFSET and LIMIT clauses according to the specified page index and page size.
-func (qb *Builder) AddPaging(paging *paging.Request) error {
+func (qb *Builder) addPaging(paging *paging.Request) error {
 	if paging == nil {
 		return errors.New("missing paging fields, add paging request or remove call to AddSize()")
 	}
@@ -132,28 +113,34 @@ func (qb *Builder) AddPaging(paging *paging.Request) error {
 
 // Build generates the complete SQL query based on the provided result selector.
 // It constructs the query by adding filter, sorting, and paging conditions.
+// It returns the constructed query string, and all the individual filter fields values (args) in a single list
 // If any error occurs during the construction, it returns an empty string.
-func (qb *Builder) Build(resultSelector query.ResultSelector) string {
+func (qb *Builder) Build(resultSelector query.ResultSelector) (query string, args []any, err error) {
 	if resultSelector.Filter != nil {
-		err := qb.AddFilterRequest(resultSelector.Filter)
+		args, err = qb.BuildQueryConditions(resultSelector.Filter)
 		if err != nil {
-			return ""
+			err = fmt.Errorf("error adding filter query: %w", err)
+			return
 		}
 	}
 
 	if resultSelector.Sorting != nil {
-		err := qb.AddSorting(resultSelector.Sorting)
-		if err != nil {
-			return ""
+		sortingArg, sortingErr := qb.addSorting(resultSelector.Sorting)
+		if sortingErr != nil {
+			err = fmt.Errorf("error adding sort query: %w", err)
+			return
 		}
+		args = append(args, any(sortingArg))
 	}
 
 	if resultSelector.Paging != nil {
-		err := qb.AddPaging(resultSelector.Paging)
+		err = qb.addPaging(resultSelector.Paging)
 		if err != nil {
-			return ""
+			err = fmt.Errorf("error adding paging query: %w", err)
+			return
 		}
 	}
 
-	return qb.query.String()
+	query = qb.query.String()
+	return
 }

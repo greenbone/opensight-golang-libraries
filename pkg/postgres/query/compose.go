@@ -17,7 +17,6 @@ func composeQuery(
 	valueIsList bool, // Indicates if the value is a list
 ) (
 	conditionTemplate string, // Template for the SQL condition
-	conditionParams []any, // Parameters for the SQL condition
 	err error, // Error encountered during execution
 ) {
 	// translate filter field to database column name if field mapping exists
@@ -25,21 +24,21 @@ func composeQuery(
 	if ok {
 		field.Name = dbColumnName
 	} else {
-		return "", nil, filter.NewInvalidFilterFieldError(
+		return "", filter.NewInvalidFilterFieldError(
 			"Mapping for filter field '%s' is currently not implemented.", field.Name)
 	}
 
 	switch field.Operator {
 	case filter.CompareOperatorIsEqualTo:
-		conditionTemplate, conditionParams, err = simpleOperatorCondition(
-			field, valueIsList, "%s =", "%s IN",
+		conditionTemplate, err = simpleOperatorCondition(
+			field, valueIsList, " %s = ?", " %s IN (%s)",
 		)
 	case filter.CompareOperatorIsNotEqualTo:
-		conditionTemplate, conditionParams, err = simpleOperatorCondition(
-			field, valueIsList, "%s !=", "%s NOT IN",
+		conditionTemplate, err = simpleOperatorCondition(
+			field, valueIsList, " %s != ?", " %s NOT IN (%s)",
 		)
 	default:
 		err = errors.Errorf("field '%s' with unknown operator '%s'", field.Name, field.Operator)
 	}
-	return conditionTemplate, conditionParams, err
+	return conditionTemplate, err
 }

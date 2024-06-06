@@ -35,19 +35,27 @@ func getQuotedName(fieldName string) (string, error) {
 
 func simpleOperatorCondition(
 	field filter.RequestField, valueIsList bool, singleValueTemplate string, listValueTemplate string,
-) (conditionTemplate string, conditionParams []any, err error) {
+) (conditionTemplate string, err error) {
 	quotedName, err := getQuotedName(field.Name)
 	if err != nil {
-		return "", nil, errors.Wrap(err, "could not get quoted name")
+		return "", errors.Wrap(err, "failed to parse quoted name")
 	}
 
-	conditionParams = []any{field.Value}
 	if valueIsList {
-		conditionTemplate = fmt.Sprintf(listValueTemplate, quotedName)
+		valueList, ok := field.Value.([]any)
+		if !ok {
+			err = errors.New("couldn't not get field list values")
+			return
+		}
+		placeholders := make([]string, len(valueList))
+		for i := range valueList {
+			placeholders[i] = "?"
+		}
+		conditionTemplate = fmt.Sprintf(listValueTemplate, quotedName, strings.Join(placeholders, ", "))
 	} else {
 		conditionTemplate = fmt.Sprintf(singleValueTemplate, quotedName)
 	}
-	return conditionTemplate, conditionParams, nil
+	return conditionTemplate, nil
 }
 
 func checkFieldValueType(field filter.RequestField) (valueIsList bool, valueList []any, err error) {
