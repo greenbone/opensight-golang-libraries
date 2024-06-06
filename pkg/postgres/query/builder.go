@@ -80,13 +80,18 @@ func extractFieldValues(value any) []any {
 
 // addSorting appends sorting conditions to the query builder based on the provided sorting request.
 // It constructs the ORDER BY clause using the specified sort column and direction.
-func (qb *Builder) addSorting(sort *sorting.Request) ([]any, error) {
+func (qb *Builder) addSorting(sort *sorting.Request) (string, error) {
 	if sort == nil {
-		return nil, errors.New("missing sorting fields, add sort request or remove call to AddSort()")
+		return "", errors.New("missing sorting fields, add sort request or remove call to addSorting()")
+	}
+
+	dbColumnName, ok := qb.querySettings.FilterFieldMapping[sort.SortColumn]
+	if !ok {
+		return "", filter.NewInvalidFilterFieldError("missing filter field mapping for '%s'", sort.SortColumn)
 	}
 
 	qb.query.WriteString(fmt.Sprintf(" ORDER BY ? %s", sort.SortDirection))
-	return []any{sort.SortColumn}, nil
+	return dbColumnName, nil
 }
 
 // addPaging appends paging conditions to the query builder based on the provided paging request.
@@ -125,7 +130,7 @@ func (qb *Builder) Build(resultSelector query.ResultSelector) (query string, arg
 			err = fmt.Errorf("error adding sort query: %w", err)
 			return
 		}
-		args = append(args, sortingArg...)
+		args = append(args, any(sortingArg))
 	}
 
 	if resultSelector.Paging != nil {

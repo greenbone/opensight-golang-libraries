@@ -38,8 +38,7 @@ func simpleOperatorCondition(
 ) (conditionTemplate string, err error) {
 	quotedName, err := getQuotedName(field.Name)
 	if err != nil {
-		err = errors.New("could not get quoted name")
-		return
+		return "", errors.Wrap(err, "failed to parse quoted name")
 	}
 
 	if valueIsList {
