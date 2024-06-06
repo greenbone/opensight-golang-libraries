@@ -12,7 +12,7 @@ import (
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/openSearch/openSearchClient/config"
 	"github.com/opensearch-project/opensearch-go/v2"
-	"github.com/opensearch-project/opensearch-go/v2/opensearchapi"
+	"github.com/opensearch-project/opensearch-go/v2/opensearchtransport"
 	"github.com/rs/zerolog/log"
 )
 
@@ -32,14 +32,14 @@ type ITokenReceiver interface {
 
 // Authenticator is a struct that holds the necessary information for authenticating with OpenSearch.
 type Authenticator struct {
-	clientTransport opensearchapi.Transport
+	clientTransport opensearchtransport.Interface
 	config          config.OpensearchClientConfig
 	tokenReceiver   ITokenReceiver
 	authMethod      authMethod
 }
 
-// Ensure Authenticator implements the opensearchapi.Transport interface.
-var _ opensearchapi.Transport = &Authenticator{}
+// Ensure Authenticator implements the opensearchtransport.Interface interface.
+var _ opensearchtransport.Interface = &Authenticator{}
 
 // InjectAuthenticationIntoClient is a function that sets up the authentication method for the OpenSearch client.
 // client is the OpenSearch client to inject the authentication into.
@@ -109,7 +109,7 @@ func (a *Authenticator) injectAuthenticationHeader(req *http.Request) (*http.Req
 	return reqClone, nil
 }
 
-// Perform is a method that implements the opensearchapi.Transport interface.
+// Perform is a method that implements the opensearchtransport.Interface interface.
 // It injects the authentication header into the request and then performs the request.
 func (a *Authenticator) Perform(req *http.Request) (*http.Response, error) {
 	requestWithInjectedAuth, err := a.injectAuthenticationHeader(req)
