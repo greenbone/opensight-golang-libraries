@@ -23,6 +23,11 @@ if err != nil {
 	return err
 }
 
+err = InjectAuthenticationIntoClient(openSearchProjectClient, clientConfig, nil)
+if err != nil {
+	return err
+}
+
 client := NewClient(opensearchProjectClient, 10, 1)
 
 query := `{"query":{"bool":{"filter":[{"term":{"oid":{"value":"1.3.6.1.4.1.25623.1.0.117842"}}}]}}}`
@@ -38,6 +43,16 @@ if err != nil {
 ```
 
 For further usage examples see ./client\_test.go.
+
+## Configuration
+
+The client is configured using the following environment variables:
+- `ELASTIC_HOST` (the hostname of the opensearch instance, required)
+- `ELASTIC_API_PORT` (the exposed port of the opensearch instance, required)
+- `ELASTIC_HTTPS` (enable https, default: `false`)
+- `ELASTIC_AUTH_USER` (the username for basic auth or the client ID for openID, required)
+- `ELASTIC_AUTH_PASS` (the password for basic auth or the client secret for openID, required)
+- `ELASTIC_AUTH_METHOD` (the authentication method to use [`basic` | `openid`], required)
 
 ## Index
 

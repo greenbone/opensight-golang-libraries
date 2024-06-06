@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+// Package openSearchClient provides functionality for interacting with OpenSearch.
 package openSearchClient
 
 import (
@@ -16,17 +17,21 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// authMethod represents the type of authentication method used.
 type authMethod string
 
+// Constants representing the different types of authentication methods.
 const (
 	basic  authMethod = "basic"
 	openId authMethod = "openid"
 )
 
+// ITokenReceiver is an interface for receiving client access tokens.
 type ITokenReceiver interface {
 	GetClientAccessToken(clientName, clientSecret string) (string, error)
 }
 
+// Authenticator is a struct that holds the necessary information for authenticating with OpenSearch.
 type Authenticator struct {
 	clientTransport opensearchapi.Transport
 	config          config.OpensearchClientConfig
@@ -34,8 +39,13 @@ type Authenticator struct {
 	authMethod      authMethod
 }
 
+// Ensure Authenticator implements the esapi.Transport interface.
 var _ esapi.Transport = &Authenticator{}
 
+// InjectAuthenticationIntoClient is a function that sets up the authentication method for the OpenSearch client.
+// client is the OpenSearch client to inject the authentication into.
+// config is the configuration for the OpenSearch client.
+// tokenReceiver is the token receiver for OpenID authentication and must implement the GetClientAccessToken function. It can be nil for basic authentication.
 func InjectAuthenticationIntoClient(client *opensearch.Client, config config.OpensearchClientConfig, tokenReceiver ITokenReceiver) error {
 	method, err := getAuthenticationMethod(config, tokenReceiver)
 	if err != nil {
@@ -58,6 +68,7 @@ func InjectAuthenticationIntoClient(client *opensearch.Client, config config.Ope
 	return nil
 }
 
+// getAuthenticationMethod is a helper function that determines the authentication method based on the provided configuration.
 func getAuthenticationMethod(conf config.OpensearchClientConfig, tokenReceiver ITokenReceiver) (authMethod, error) {
 	if conf.AuthUsername == "" || conf.AuthPassword == "" {
 		return "", fmt.Errorf("username and password must be set in configuration")
@@ -78,6 +89,7 @@ func getAuthenticationMethod(conf config.OpensearchClientConfig, tokenReceiver I
 	return method, nil
 }
 
+// injectAuthenticationHeader is a method that injects the appropriate authentication header into the request.
 func (a *Authenticator) injectAuthenticationHeader(req *http.Request) (*http.Request, error) {
 	reqClone := req.Clone(req.Context())
 	if reqClone.Header == nil {
@@ -98,7 +110,8 @@ func (a *Authenticator) injectAuthenticationHeader(req *http.Request) (*http.Req
 	return reqClone, nil
 }
 
-// Perform implements the opensearchapi.Transport interface
+// Perform is a method that implements the opensearchapi.Transport interface.
+// It injects the authentication header into the request and then performs the request.
 func (a *Authenticator) Perform(req *http.Request) (*http.Response, error) {
 	requestWithInjectedAuth, err := a.injectAuthenticationHeader(req)
 	if err != nil {
