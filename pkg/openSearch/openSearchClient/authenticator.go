@@ -104,7 +104,7 @@ func (a *Authenticator) injectAuthenticationHeader(req *http.Request) (*http.Req
 		}
 		reqClone.Header.Set("Authorization", "Bearer "+token)
 	default:
-		log.Error().Msgf("undefined authentication method for opensearch client: %s", a.authMethod)
+		return nil, fmt.Errorf("undefined authentication method for opensearch client: %s", a.authMethod)
 	}
 	return reqClone, nil
 }
