@@ -5,7 +5,6 @@
 package query
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
@@ -22,6 +21,7 @@ func TestQueryBuilder(t *testing.T) {
 		"source_id":          "source_id_col_name",
 		"other_filter_field": "other_filter_field_col_name",
 		"started":            "started_col_name",
+		"severity":           "severity_col_name",
 	}
 
 	tests := []struct {
@@ -183,7 +183,10 @@ func TestQueryBuilder(t *testing.T) {
 				},
 			},
 			wantQuery: `WHERE "status_col_name" IN (?, ?) OR "source_id_col_name" IN (?, ?, ?) OR "other_filter_field_col_name" IN (?, ?, ?) ORDER BY ? DESC OFFSET 2 LIMIT 5`,
-			wantArgs:  []any{"invalid status", "valid status", "some_source_id", "another_source_id", "third_source_id", "some_field", "another_field", "third_field", "started_col_name"},
+			wantArgs: []any{
+				"invalid status", "valid status", "some_source_id", "another_source_id",
+				"third_source_id", "some_field", "another_field", "third_field", "started_col_name",
+			},
 		},
 		{
 			name: "build query with more than two filter paging and sorting",
@@ -218,7 +221,10 @@ func TestQueryBuilder(t *testing.T) {
 				},
 			},
 			wantQuery: `WHERE "status_col_name" IN (?, ?) OR "source_id_col_name" IN (?, ?, ?) OR "other_filter_field_col_name" IN (?, ?, ?) ORDER BY ? DESC OFFSET 2 LIMIT 5`,
-			wantArgs:  []any{"invalid status", "valid status", "some_source_id", "another_source_id", "third_source_id", "some_field", "another_field", "third_field", "started_col_name"},
+			wantArgs: []any{
+				"invalid status", "valid status", "some_source_id", "another_source_id",
+				"third_source_id", "some_field", "another_field", "third_field", "started_col_name",
+			},
 		},
 		{
 			name: "build query with just one filter with multiple values, compareOperatorNotEqualTo, and paging",
@@ -258,7 +264,7 @@ func TestQueryBuilder(t *testing.T) {
 				},
 			},
 			wantQuery: " ORDER BY ? ASC OFFSET 3 LIMIT 10",
-			wantArgs:  []any{"started"},
+			wantArgs:  []any{"started_col_name"},
 		},
 		{
 			name: "build valid query without filter object",
@@ -273,7 +279,127 @@ func TestQueryBuilder(t *testing.T) {
 				},
 			},
 			wantQuery: " ORDER BY ? ASC OFFSET 3 LIMIT 10",
-			wantArgs:  []any{"started"},
+			wantArgs:  []any{"started_col_name"},
+		},
+		{
+			name: "build query with filter paging, sorting, and date compare operators",
+			mockArg: query.ResultSelector{
+				Filter: &filter.Request{
+					Fields: []filter.RequestField{
+						{
+							Name:     "started",
+							Operator: filter.CompareOperatorAfterDate,
+							Value:    "another_date",
+						},
+						{
+							Name:     "started",
+							Operator: filter.CompareOperatorBeforeDate,
+							Value:    "some_date",
+						},
+					},
+					Operator: filter.LogicOperatorOr,
+				},
+				Paging: &paging.Request{
+					PageIndex: 2,
+					PageSize:  5,
+				},
+				Sorting: &sorting.Request{
+					SortColumn:    "started",
+					SortDirection: "desc",
+				},
+			},
+			wantQuery: `WHERE date_trunc('day'::text, "started_col_name") > date_trunc('day'::text, ?::timestamp) OR date_trunc('day'::text, "started_col_name") < date_trunc('day'::text, ?::timestamp) ORDER BY ? DESC OFFSET 2 LIMIT 5`,
+			wantArgs:  []any{"another_date", "some_date", "started_col_name"},
+		},
+		{
+			name: "build query with filter paging, sorting, greater than && less than operators",
+			mockArg: query.ResultSelector{
+				Filter: &filter.Request{
+					Fields: []filter.RequestField{
+						{
+							Name:     "severity",
+							Operator: filter.CompareOperatorIsGreaterThan,
+							Value:    5.3,
+						},
+						{
+							Name:     "severity",
+							Operator: filter.CompareOperatorIsLessThan,
+							Value:    8.2,
+						},
+					},
+					Operator: filter.LogicOperatorOr,
+				},
+				Paging: &paging.Request{
+					PageIndex: 2,
+					PageSize:  5,
+				},
+				Sorting: &sorting.Request{
+					SortColumn:    "started",
+					SortDirection: "desc",
+				},
+			},
+			wantQuery: `WHERE "severity_col_name" > ? OR "severity_col_name" < ? ORDER BY ? DESC OFFSET 2 LIMIT 5`,
+			wantArgs:  []any{5.3, 8.2, "started_col_name"},
+		},
+		{
+			name: "build query with filter paging, sorting, greater than && less than operators",
+			mockArg: query.ResultSelector{
+				Filter: &filter.Request{
+					Fields: []filter.RequestField{
+						{
+							Name:     "severity",
+							Operator: filter.CompareOperatorIsGreaterThanOrEqualTo,
+							Value:    5.3,
+						},
+						{
+							Name:     "severity",
+							Operator: filter.CompareOperatorIsLessThanOrEqualTo,
+							Value:    8.2,
+						},
+					},
+					Operator: filter.LogicOperatorOr,
+				},
+				Paging: &paging.Request{
+					PageIndex: 2,
+					PageSize:  5,
+				},
+				Sorting: &sorting.Request{
+					SortColumn:    "started",
+					SortDirection: "desc",
+				},
+			},
+			wantQuery: `WHERE "severity_col_name" >= ? OR "severity_col_name" <= ? ORDER BY ? DESC OFFSET 2 LIMIT 5`,
+			wantArgs:  []any{5.3, 8.2, "started_col_name"},
+		},
+		{
+			name: "build query with filter paging, sorting, begins with && contains compare operators",
+			mockArg: query.ResultSelector{
+				Filter: &filter.Request{
+					Fields: []filter.RequestField{
+						{
+							Name:     "other_filter_field",
+							Operator: filter.CompareOperatorBeginsWith,
+							Value:    []any{"some text"},
+						},
+						{
+							Name:     "other_filter_field",
+							Operator: filter.CompareOperatorContains,
+							Value:    []any{"another text"},
+						},
+					},
+					Operator: filter.LogicOperatorOr,
+				},
+				Paging: &paging.Request{
+					PageIndex: 2,
+					PageSize:  5,
+				},
+				Sorting: &sorting.Request{
+					SortColumn:    "started",
+					SortDirection: "desc",
+				},
+			},
+			wantQuery: `WHERE ("other_filter_field_col_name" ILIKE ?) OR ("other_filter_field_col_name" ILIKE ?) ORDER BY ? DESC OFFSET 2 LIMIT 5`,
+			wantArgs:  []any{"some text", "another text", "started_col_name"},
 		},
 	}
 
@@ -285,7 +411,7 @@ func TestQueryBuilder(t *testing.T) {
 			queryBuilder := NewPostgresQueryBuilder(querySettings)
 			queryString, arg, err := queryBuilder.Build(tt.mockArg)
 			assert.NoError(t, err)
-			reflect.DeepEqual(tt.wantArgs, arg)
+			assert.ElementsMatch(t, tt.wantArgs, arg)
 			assert.Equal(t, queryString, tt.wantQuery)
 		})
 	}

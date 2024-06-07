@@ -37,6 +37,40 @@ func composeQuery(
 		conditionTemplate, err = simpleOperatorCondition(
 			field, valueIsList, " %s != ?", " %s NOT IN (%s)",
 		)
+	case filter.CompareOperatorIsLessThan:
+		conditionTemplate, err = simpleOperatorCondition(
+			field, valueIsList, " %s < ?", "%s < greatest ?",
+		)
+	case filter.CompareOperatorIsLessThanOrEqualTo:
+		conditionTemplate, err = simpleOperatorCondition(
+			field, valueIsList, " %s <= ?", "%s <= greatest ?",
+		)
+	case filter.CompareOperatorIsGreaterThan:
+		conditionTemplate, err = simpleOperatorCondition(
+			field, valueIsList, " %s > ?", "%s > least ?",
+		)
+	case filter.CompareOperatorIsGreaterThanOrEqualTo:
+		conditionTemplate, err = simpleOperatorCondition(
+			field, valueIsList, " %s >= ?", "%s >= least ?",
+		)
+	case filter.CompareOperatorContains:
+		conditionTemplate, err = likeOperatorCondition(
+			field, valueIsList, false,
+		)
+	case filter.CompareOperatorBeginsWith:
+		conditionTemplate, err = likeOperatorCondition(
+			field, valueIsList, false,
+		)
+	case filter.CompareOperatorBeforeDate:
+		conditionTemplate, err = simpleSingleStringValueOperatorCondition(
+			field, valueIsList,
+			" date_trunc('day'::text, %s) < date_trunc('day'::text, ?::timestamp)",
+		)
+	case filter.CompareOperatorAfterDate:
+		conditionTemplate, err = simpleSingleStringValueOperatorCondition(
+			field, valueIsList,
+			" date_trunc('day'::text, %s) > date_trunc('day'::text, ?::timestamp)",
+		)
 	default:
 		err = errors.Errorf("field '%s' with unknown operator '%s'", field.Name, field.Operator)
 	}
