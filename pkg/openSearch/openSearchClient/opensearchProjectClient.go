@@ -12,8 +12,8 @@ import (
 
 	"github.com/avast/retry-go/v4"
 	"github.com/greenbone/opensight-golang-libraries/pkg/openSearch/openSearchClient/config"
-	"github.com/opensearch-project/opensearch-go"
-	"github.com/opensearch-project/opensearch-go/opensearchapi"
+	"github.com/opensearch-project/opensearch-go/v2"
+	"github.com/opensearch-project/opensearch-go/v2/opensearchapi"
 )
 
 // NewOpenSearchProjectClient creates a new official OpenSearch client (package github.com/opensearch-project/opensearch-go)
@@ -38,10 +38,6 @@ func NewOpenSearchProjectClient(ctx context.Context, config config.OpensearchCli
 				Addresses: []string{
 					fmt.Sprintf("%s://%s:%d", protocol, config.Host, config.Port),
 				},
-			}
-			if config.Username != "" && config.Password != "" {
-				openSearchApiConf.Username = config.Username
-				openSearchApiConf.Password = config.Password
 			}
 			c, err := opensearch.NewClient(openSearchApiConf)
 			if err != nil {
