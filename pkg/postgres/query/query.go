@@ -83,7 +83,7 @@ func likeOperatorCondition(
 	if valueIsList {
 		valueList, ok := field.Value.([]any)
 		if !ok {
-			err = errors.New("couldn't not get field list values")
+			err = errors.New("could not get field list values")
 			return
 		}
 		for _, element := range valueList {
