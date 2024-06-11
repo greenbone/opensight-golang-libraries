@@ -373,6 +373,36 @@ func TestQueryBuilder(t *testing.T) {
 			wantArgs:  []any{5.3, 8.2, "started_col_name"},
 		},
 		{
+			name: "build query with filter paging, sorting, greater than && less than operators",
+			mockArg: query.ResultSelector{
+				Filter: &filter.Request{
+					Fields: []filter.RequestField{
+						{
+							Name:     "severity",
+							Operator: filter.CompareOperatorIsGreaterThanOrEqualTo,
+							Value:    []any{5.3, 4.3},
+						},
+						{
+							Name:     "severity",
+							Operator: filter.CompareOperatorIsLessThanOrEqualTo,
+							Value:    []any{8.2, 2.1},
+						},
+					},
+					Operator: filter.LogicOperatorOr,
+				},
+				Paging: &paging.Request{
+					PageIndex: 2,
+					PageSize:  5,
+				},
+				Sorting: &sorting.Request{
+					SortColumn:    "started",
+					SortDirection: "desc",
+				},
+			},
+			wantQuery: `WHERE "severity_col_name" >= GREATEST(?, ?) OR "severity_col_name" <= LEAST(?, ?) ORDER BY ? DESC OFFSET 2 LIMIT 5`,
+			wantArgs:  []any{5.3, 4.3, 8.2, 2.1, "started_col_name"},
+		},
+		{
 			name: "build query with filter paging, sorting, begins with && contains compare operators",
 			mockArg: query.ResultSelector{
 				Filter: &filter.Request{
