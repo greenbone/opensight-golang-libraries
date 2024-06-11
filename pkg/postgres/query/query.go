@@ -72,6 +72,9 @@ func checkFieldValueType(field filter.RequestField) (valueIsList bool, valueList
 	return valueIsList, valueList, nil
 }
 
+// likeOperatorCondition generates a SQL 'LIKE' condition template based on the given field parameters.
+// - negate: a boolean indicating if the condition should be negated (e.g., NOT LIKE).
+// - beginsWith: a boolean indicating if the condition should check for "begins with".
 func likeOperatorCondition(
 	field filter.RequestField, valueIsList bool, negate bool, beginsWith bool,
 ) (conditionTemplate string, err error) {
@@ -125,7 +128,7 @@ func multiLikeOrTemplate(quotedField string, elementCount int, negate bool, begi
 	builder.WriteString(" (")
 	for i := 0; i < elementCount; i++ {
 		if i > 0 {
-			builder.WriteString(" OR ")
+			builder.WriteString(") OR (")
 		}
 		builder.WriteString(quotedField + " ILIKE " + handleMultiLikeType(beginsWith))
 	}

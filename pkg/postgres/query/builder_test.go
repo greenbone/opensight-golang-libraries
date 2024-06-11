@@ -22,7 +22,6 @@ func TestQueryBuilder(t *testing.T) {
 		"other_filter_field": "other_filter_field_col_name",
 		"started":            "started_col_name",
 		"severity":           "severity_col_name",
-		"published":          "published_col_name",
 	}
 
 	tests := []struct {
@@ -283,7 +282,7 @@ func TestQueryBuilder(t *testing.T) {
 			wantArgs:  []any{"started_col_name"},
 		},
 		{
-			name: "build query with filter paging, sorting, and date compare operators",
+			name: "build query with filter and date compare operators",
 			mockArg: query.ResultSelector{
 				Filter: &filter.Request{
 					Fields: []filter.RequestField{
@@ -300,20 +299,12 @@ func TestQueryBuilder(t *testing.T) {
 					},
 					Operator: filter.LogicOperatorOr,
 				},
-				Paging: &paging.Request{
-					PageIndex: 2,
-					PageSize:  5,
-				},
-				Sorting: &sorting.Request{
-					SortColumn:    "started",
-					SortDirection: "desc",
-				},
 			},
-			wantQuery: `WHERE date_trunc('day'::text, "started_col_name") > date_trunc('day'::text, ?::timestamp) OR date_trunc('day'::text, "started_col_name") < date_trunc('day'::text, ?::timestamp) ORDER BY ? DESC OFFSET 2 LIMIT 5`,
-			wantArgs:  []any{"another_date", "some_date", "started_col_name"},
+			wantQuery: `WHERE date_trunc('day'::text, "started_col_name") > date_trunc('day'::text, ?::timestamp) OR date_trunc('day'::text, "started_col_name") < date_trunc('day'::text, ?::timestamp)`,
+			wantArgs:  []any{"another_date", "some_date"},
 		},
 		{
-			name: "build query with filter paging, sorting, greater than && less than operators",
+			name: "build query with filter compare operators 'is greater than' && 'is less than'",
 			mockArg: query.ResultSelector{
 				Filter: &filter.Request{
 					Fields: []filter.RequestField{
@@ -330,20 +321,12 @@ func TestQueryBuilder(t *testing.T) {
 					},
 					Operator: filter.LogicOperatorOr,
 				},
-				Paging: &paging.Request{
-					PageIndex: 2,
-					PageSize:  5,
-				},
-				Sorting: &sorting.Request{
-					SortColumn:    "started",
-					SortDirection: "desc",
-				},
 			},
-			wantQuery: `WHERE "severity_col_name" > ? OR "severity_col_name" < ? ORDER BY ? DESC OFFSET 2 LIMIT 5`,
-			wantArgs:  []any{5.3, 8.2, "started_col_name"},
+			wantQuery: `WHERE "severity_col_name" > ? OR "severity_col_name" < ?`,
+			wantArgs:  []any{5.3, 8.2},
 		},
 		{
-			name: "build query with filter paging, sorting, greater than && less than operators",
+			name: "build query with filter compare operators 'is greater than' && 'is less than'",
 			mockArg: query.ResultSelector{
 				Filter: &filter.Request{
 					Fields: []filter.RequestField{
@@ -357,23 +340,25 @@ func TestQueryBuilder(t *testing.T) {
 							Operator: filter.CompareOperatorIsLessThanOrEqualTo,
 							Value:    8.2,
 						},
+						{
+							Name:     "severity",
+							Operator: filter.CompareOperatorIsLessThanOrEqualTo,
+							Value:    []any{8.6, 2.1},
+						},
+						{
+							Name:     "severity",
+							Operator: filter.CompareOperatorIsGreaterThanOrEqualTo,
+							Value:    []any{5.7, 1.1},
+						},
 					},
 					Operator: filter.LogicOperatorOr,
 				},
-				Paging: &paging.Request{
-					PageIndex: 2,
-					PageSize:  5,
-				},
-				Sorting: &sorting.Request{
-					SortColumn:    "started",
-					SortDirection: "desc",
-				},
 			},
-			wantQuery: `WHERE "severity_col_name" >= ? OR "severity_col_name" <= ? ORDER BY ? DESC OFFSET 2 LIMIT 5`,
-			wantArgs:  []any{5.3, 8.2, "started_col_name"},
+			wantQuery: `WHERE "severity_col_name" >= ? OR "severity_col_name" <= ? OR "severity_col_name" <= LEAST(?, ?) OR "severity_col_name" >= GREATEST(?, ?)`,
+			wantArgs:  []any{5.3, 8.2, 8.6, 2.1, 5.7, 1.1},
 		},
 		{
-			name: "build query with filter paging, sorting, greater than && less than operators",
+			name: "build query with filter compare operators 'is greater than or equal to' && 'is less than or equal to' operators",
 			mockArg: query.ResultSelector{
 				Filter: &filter.Request{
 					Fields: []filter.RequestField{
@@ -390,20 +375,12 @@ func TestQueryBuilder(t *testing.T) {
 					},
 					Operator: filter.LogicOperatorOr,
 				},
-				Paging: &paging.Request{
-					PageIndex: 2,
-					PageSize:  5,
-				},
-				Sorting: &sorting.Request{
-					SortColumn:    "started",
-					SortDirection: "desc",
-				},
 			},
-			wantQuery: `WHERE "severity_col_name" >= GREATEST(?, ?) OR "severity_col_name" <= LEAST(?, ?) ORDER BY ? DESC OFFSET 2 LIMIT 5`,
-			wantArgs:  []any{5.3, 4.3, 8.2, 2.1, "started_col_name"},
+			wantQuery: `WHERE "severity_col_name" >= GREATEST(?, ?) OR "severity_col_name" <= LEAST(?, ?)`,
+			wantArgs:  []any{5.3, 4.3, 8.2, 2.1},
 		},
 		{
-			name: "build query with filter paging, sorting, begins with && contains compare operators",
+			name: "build query with filter compare operators 'beginsWith' && 'contains'",
 			mockArg: query.ResultSelector{
 				Filter: &filter.Request{
 					Fields: []filter.RequestField{
@@ -415,52 +392,36 @@ func TestQueryBuilder(t *testing.T) {
 						{
 							Name:     "other_filter_field",
 							Operator: filter.CompareOperatorContains,
-							Value:    []any{"another text"},
+							Value:    []any{"another text", "test text"},
 						},
 					},
 					Operator: filter.LogicOperatorOr,
 				},
-				Paging: &paging.Request{
-					PageIndex: 2,
-					PageSize:  5,
-				},
-				Sorting: &sorting.Request{
-					SortColumn:    "started",
-					SortDirection: "desc",
-				},
 			},
-			wantQuery: `WHERE ("other_filter_field_col_name" ILIKE ? || '%') OR ("other_filter_field_col_name" ILIKE '%' || ? || '%') ORDER BY ? DESC OFFSET 2 LIMIT 5`,
-			wantArgs:  []any{"some text", "another text", "started_col_name"},
+			wantQuery: `WHERE ("other_filter_field_col_name" ILIKE ? || '%') OR ("other_filter_field_col_name" ILIKE '%' || ? || '%') OR ("other_filter_field_col_name" ILIKE '%' || ? || '%')`,
+			wantArgs:  []any{"some text", "another text", "test text"},
 		},
 		{
-			name: "build query with filter paging, sorting, and date operators",
+			name: "build query with filter compare operators 'beginsWith', 'contains' and escaped string value",
 			mockArg: query.ResultSelector{
 				Filter: &filter.Request{
 					Fields: []filter.RequestField{
 						{
-							Name:     "published",
-							Operator: filter.CompareOperatorIsGreaterThanOrEqualTo,
-							Value:    5.3,
+							Name:     "other_filter_field",
+							Operator: filter.CompareOperatorBeginsWith,
+							Value:    []any{"B%SI"},
 						},
 						{
-							Name:     "severity",
-							Operator: filter.CompareOperatorIsLessThanOrEqualTo,
-							Value:    8.2,
+							Name:     "status",
+							Operator: filter.CompareOperatorBeginsWith,
+							Value:    []any{"S%TI"},
 						},
 					},
 					Operator: filter.LogicOperatorOr,
 				},
-				Paging: &paging.Request{
-					PageIndex: 2,
-					PageSize:  5,
-				},
-				Sorting: &sorting.Request{
-					SortColumn:    "started",
-					SortDirection: "desc",
-				},
 			},
-			wantQuery: `WHERE "published_col_name" >= ? OR "severity_col_name" <= ? ORDER BY ? DESC OFFSET 2 LIMIT 5`,
-			wantArgs:  []any{5.3, 8.2, "started_col_name"},
+			wantQuery: `WHERE ("other_filter_field_col_name" ILIKE ? || '%') OR ("status_col_name" ILIKE ? || '%')`,
+			wantArgs:  []any{`B\%SI`, `S\%TI`},
 		},
 	}
 
