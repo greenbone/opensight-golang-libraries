@@ -55,11 +55,11 @@ func composeQuery(
 		)
 	case filter.CompareOperatorContains:
 		conditionTemplate, err = likeOperatorCondition(
-			field, valueIsList, false,
+			field, valueIsList, false, false,
 		)
 	case filter.CompareOperatorBeginsWith:
 		conditionTemplate, err = likeOperatorCondition(
-			field, valueIsList, false,
+			field, valueIsList, false, true,
 		)
 	case filter.CompareOperatorBeforeDate:
 		conditionTemplate, err = simpleSingleStringValueOperatorCondition(

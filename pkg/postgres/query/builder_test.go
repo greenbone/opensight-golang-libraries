@@ -22,6 +22,7 @@ func TestQueryBuilder(t *testing.T) {
 		"other_filter_field": "other_filter_field_col_name",
 		"started":            "started_col_name",
 		"severity":           "severity_col_name",
+		"published":          "published_col_name",
 	}
 
 	tests := []struct {
@@ -398,8 +399,38 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "desc",
 				},
 			},
-			wantQuery: `WHERE ("other_filter_field_col_name" ILIKE ?) OR ("other_filter_field_col_name" ILIKE ?) ORDER BY ? DESC OFFSET 2 LIMIT 5`,
+			wantQuery: `WHERE ("other_filter_field_col_name" ILIKE ? || '%') OR ("other_filter_field_col_name" ILIKE '%' || ? || '%') ORDER BY ? DESC OFFSET 2 LIMIT 5`,
 			wantArgs:  []any{"some text", "another text", "started_col_name"},
+		},
+		{
+			name: "build query with filter paging, sorting, and date operators",
+			mockArg: query.ResultSelector{
+				Filter: &filter.Request{
+					Fields: []filter.RequestField{
+						{
+							Name:     "published",
+							Operator: filter.CompareOperatorIsGreaterThanOrEqualTo,
+							Value:    5.3,
+						},
+						{
+							Name:     "severity",
+							Operator: filter.CompareOperatorIsLessThanOrEqualTo,
+							Value:    8.2,
+						},
+					},
+					Operator: filter.LogicOperatorOr,
+				},
+				Paging: &paging.Request{
+					PageIndex: 2,
+					PageSize:  5,
+				},
+				Sorting: &sorting.Request{
+					SortColumn:    "started",
+					SortDirection: "desc",
+				},
+			},
+			wantQuery: `WHERE "published_col_name" >= ? OR "severity_col_name" <= ? ORDER BY ? DESC OFFSET 2 LIMIT 5`,
+			wantArgs:  []any{5.3, 8.2, "started_col_name"},
 		},
 	}
 

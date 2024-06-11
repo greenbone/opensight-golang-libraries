@@ -87,7 +87,8 @@ func (qb *Builder) addSorting(sort *sorting.Request) (string, error) {
 
 	dbColumnName, ok := qb.querySettings.FilterFieldMapping[sort.SortColumn]
 	if !ok {
-		return "", filter.NewInvalidFilterFieldError("missing filter field mapping for '%s'", sort.SortColumn)
+		return "", filter.NewInvalidFilterFieldError(
+			"missing filter field mapping for '%s'", sort.SortColumn)
 	}
 
 	qb.query.WriteString(fmt.Sprintf(" ORDER BY ? %s", sort.SortDirection))
@@ -130,7 +131,7 @@ func (qb *Builder) Build(resultSelector query.ResultSelector) (query string, arg
 			err = fmt.Errorf("error adding sort query: %w", err)
 			return
 		}
-		args = append(args, any(sortingArg))
+		args = append(args, sortingArg)
 	}
 
 	if resultSelector.Paging != nil {

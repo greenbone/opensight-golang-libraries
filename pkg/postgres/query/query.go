@@ -73,7 +73,7 @@ func checkFieldValueType(field filter.RequestField) (valueIsList bool, valueList
 }
 
 func likeOperatorCondition(
-	field filter.RequestField, valueIsList bool, negate bool,
+	field filter.RequestField, valueIsList bool, negate bool, beginsWith bool,
 ) (conditionTemplate string, err error) {
 	quotedName, err := getQuotedName(field.Name)
 	if err != nil {
@@ -88,7 +88,7 @@ func likeOperatorCondition(
 		}
 		for _, element := range valueList {
 			if _, ok := element.(string); ok {
-				conditionTemplate = multiLikeOrTemplate(quotedName, len(valueList), negate)
+				conditionTemplate = multiLikeOrTemplate(quotedName, len(valueList), negate, beginsWith)
 			} else {
 				err = errors.Errorf(
 					"operator '%s' requires string values, got %T",
@@ -99,7 +99,7 @@ func likeOperatorCondition(
 		}
 	} else {
 		if _, ok := field.Value.(string); ok {
-			conditionTemplate = singleLikeTemplate(quotedName, negate)
+			conditionTemplate = singleLikeTemplate(quotedName, negate, beginsWith)
 		} else {
 			err = errors.Errorf("operator '%s' requires a string value", field.Operator)
 			return "", err
@@ -109,15 +109,15 @@ func likeOperatorCondition(
 	return conditionTemplate, nil
 }
 
-func singleLikeTemplate(quotedField string, negate bool) string {
+func singleLikeTemplate(quotedField string, negate bool, beginsWith bool) string {
 	if negate {
-		return quotedField + " NOT ILIKE ?"
+		return quotedField + " NOT ILIKE " + handleMultiLikeType(beginsWith)
 	} else {
-		return quotedField + " ILIKE ?"
+		return quotedField + " ILIKE " + handleMultiLikeType(beginsWith)
 	}
 }
 
-func multiLikeOrTemplate(quotedField string, elementCount int, negate bool) string {
+func multiLikeOrTemplate(quotedField string, elementCount int, negate bool, beginsWith bool) string {
 	builder := strings.Builder{}
 	if negate {
 		builder.WriteString("NOT ")
@@ -127,10 +127,25 @@ func multiLikeOrTemplate(quotedField string, elementCount int, negate bool) stri
 		if i > 0 {
 			builder.WriteString(" OR ")
 		}
-		builder.WriteString(quotedField + " ILIKE ?")
+		builder.WriteString(quotedField + " ILIKE " + handleMultiLikeType(beginsWith))
 	}
 	builder.WriteRune(')')
 	return builder.String()
+}
+
+func handleMultiLikeType(beginsWith bool) string {
+	if beginsWith {
+		return beginsWithAsLikePattern()
+	}
+	return containsAsLikePattern()
+}
+
+func containsAsLikePattern() string {
+	return `'%' || ? || '%'`
+}
+
+func beginsWithAsLikePattern() string {
+	return `? || '%'`
 }
 
 func simpleSingleStringValueOperatorCondition(
