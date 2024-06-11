@@ -87,9 +87,7 @@ func likeOperatorCondition(
 			return
 		}
 		for _, element := range valueList {
-			if _, ok := element.(string); ok {
-				conditionTemplate = multiLikeOrTemplate(quotedName, len(valueList), negate, beginsWith)
-			} else {
+			if _, ok := element.(string); !ok {
 				err = errors.Errorf(
 					"operator '%s' requires string values, got %T",
 					field.Operator, element,
@@ -97,6 +95,8 @@ func likeOperatorCondition(
 				return "", err
 			}
 		}
+
+		conditionTemplate = multiLikeOrTemplate(quotedName, len(valueList), negate, beginsWith)
 	} else {
 		if _, ok := field.Value.(string); ok {
 			conditionTemplate = singleLikeTemplate(quotedName, negate, beginsWith)
