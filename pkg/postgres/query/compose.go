@@ -43,7 +43,7 @@ func composeQuery(
 		)
 	case filter.CompareOperatorIsLessThanOrEqualTo:
 		conditionTemplate, err = simpleOperatorCondition(
-			field, valueIsList, " %s <= ?", " %s <= LEAST(%s)",
+			field, valueIsList, " %s <= ?", " %s <= GREATEST(%s)",
 		)
 	case filter.CompareOperatorIsGreaterThan:
 		conditionTemplate, err = simpleOperatorCondition(
@@ -51,7 +51,7 @@ func composeQuery(
 		)
 	case filter.CompareOperatorIsGreaterThanOrEqualTo:
 		conditionTemplate, err = simpleOperatorCondition(
-			field, valueIsList, " %s >= ?", " %s >= GREATEST(%s)",
+			field, valueIsList, " %s >= ?", " %s >= LEAST(%s)",
 		)
 	case filter.CompareOperatorContains:
 		conditionTemplate, err = likeOperatorCondition(

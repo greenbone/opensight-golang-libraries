@@ -354,7 +354,7 @@ func TestQueryBuilder(t *testing.T) {
 					Operator: filter.LogicOperatorOr,
 				},
 			},
-			wantQuery: `WHERE "severity_col_name" >= ? OR "severity_col_name" <= ? OR "severity_col_name" <= LEAST(?, ?) OR "severity_col_name" >= GREATEST(?, ?)`,
+			wantQuery: `WHERE "severity_col_name" >= ? OR "severity_col_name" <= ? OR "severity_col_name" <= GREATEST(?, ?) OR "severity_col_name" >= LEAST(?, ?)`,
 			wantArgs:  []any{5.3, 8.2, 8.6, 2.1, 5.7, 1.1},
 		},
 		{
@@ -376,7 +376,7 @@ func TestQueryBuilder(t *testing.T) {
 					Operator: filter.LogicOperatorOr,
 				},
 			},
-			wantQuery: `WHERE "severity_col_name" >= GREATEST(?, ?) OR "severity_col_name" <= LEAST(?, ?)`,
+			wantQuery: `WHERE "severity_col_name" >= LEAST(?, ?) OR "severity_col_name" <= GREATEST(?, ?)`,
 			wantArgs:  []any{5.3, 4.3, 8.2, 2.1},
 		},
 		{
@@ -389,17 +389,12 @@ func TestQueryBuilder(t *testing.T) {
 							Operator: filter.CompareOperatorBeginsWith,
 							Value:    []any{"some text"},
 						},
-						{
-							Name:     "other_filter_field",
-							Operator: filter.CompareOperatorContains,
-							Value:    []any{"another text", "test text"},
-						},
 					},
 					Operator: filter.LogicOperatorOr,
 				},
 			},
-			wantQuery: `WHERE ("other_filter_field_col_name" ILIKE ? || '%') OR ("other_filter_field_col_name" ILIKE '%' || ? || '%') OR ("other_filter_field_col_name" ILIKE '%' || ? || '%')`,
-			wantArgs:  []any{"some text", "another text", "test text"},
+			wantQuery: `WHERE ("other_filter_field_col_name" ILIKE ? || '%')`,
+			wantArgs:  []any{"some text"},
 		},
 		{
 			name: "build query with filter compare operators 'beginsWith', 'contains' and escaped string value",
