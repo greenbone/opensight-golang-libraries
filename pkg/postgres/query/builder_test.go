@@ -389,12 +389,17 @@ func TestQueryBuilder(t *testing.T) {
 							Operator: filter.CompareOperatorBeginsWith,
 							Value:    []any{"some text"},
 						},
+						{
+							Name:     "other_filter_field",
+							Operator: filter.CompareOperatorContains,
+							Value:    []any{"contains text"},
+						},
 					},
 					Operator: filter.LogicOperatorOr,
 				},
 			},
-			wantQuery: `WHERE ("other_filter_field_col_name" ILIKE ? || '%')`,
-			wantArgs:  []any{"some text"},
+			wantQuery: `WHERE ("other_filter_field_col_name" ILIKE ? || '%') OR ("other_filter_field_col_name" ILIKE '%' || ? || '%')`,
+			wantArgs:  []any{"some text", "contains text"},
 		},
 		{
 			name: "build query with filter compare operators 'beginsWith', 'contains' and escaped string value",
@@ -404,19 +409,41 @@ func TestQueryBuilder(t *testing.T) {
 						{
 							Name:     "other_filter_field",
 							Operator: filter.CompareOperatorBeginsWith,
-							Value:    []any{"B%SI"},
+							Value:    []any{"B%SI", "T%logy"},
 						},
 						{
 							Name:     "status",
-							Operator: filter.CompareOperatorBeginsWith,
+							Operator: filter.CompareOperatorContains,
 							Value:    []any{"S%TI"},
 						},
 					},
 					Operator: filter.LogicOperatorOr,
 				},
 			},
-			wantQuery: `WHERE ("other_filter_field_col_name" ILIKE ? || '%') OR ("status_col_name" ILIKE ? || '%')`,
-			wantArgs:  []any{`B\%SI`, `S\%TI`},
+			wantQuery: `WHERE ("other_filter_field_col_name" ILIKE ? || '%') OR ("other_filter_field_col_name" ILIKE ? || '%') OR ("status_col_name" ILIKE '%' || ? || '%')`,
+			wantArgs:  []any{`B\%SI`, `T\%logy`, `S\%TI`},
+		},
+		{
+			name: "build query with filter compare operators 'is greater than' && 'is less than'",
+			mockArg: query.ResultSelector{
+				Filter: &filter.Request{
+					Fields: []filter.RequestField{
+						{
+							Name:     "severity",
+							Operator: filter.CompareOperatorIsGreaterThanOrEqualTo,
+							Value:    []any{5.3, 9.1},
+						},
+						{
+							Name:     "severity",
+							Operator: filter.CompareOperatorIsGreaterThanOrEqualTo,
+							Value:    []any{6.7},
+						},
+					},
+					Operator: filter.LogicOperatorOr,
+				},
+			},
+			wantQuery: `WHERE "severity_col_name" >= LEAST(?, ?) OR "severity_col_name" >= LEAST(?)`,
+			wantArgs:  []any{5.3, 9.1, 6.7},
 		},
 	}
 
