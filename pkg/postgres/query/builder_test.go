@@ -424,7 +424,7 @@ func TestQueryBuilder(t *testing.T) {
 			wantArgs:  []any{`B\%SI`, `T\%logy`, `S\%TI`},
 		},
 		{
-			name: "build query with filter compare operators 'is greater than or equal to' && 'is less than or equal to'",
+			name: "build query with filter compare operators 'is greater than or equal to'",
 			mockArg: query.ResultSelector{
 				Filter: &filter.Request{
 					Fields: []filter.RequestField{
