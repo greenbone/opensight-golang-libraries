@@ -326,7 +326,7 @@ func TestQueryBuilder(t *testing.T) {
 			wantArgs:  []any{5.3, 8.2},
 		},
 		{
-			name: "build query with filter compare operators 'is greater than' && 'is less than'",
+			name: "build query with filter compare operators 'is greater than or is equal to' && 'is less than or equal to' with list values",
 			mockArg: query.ResultSelector{
 				Filter: &filter.Request{
 					Fields: []filter.RequestField{
