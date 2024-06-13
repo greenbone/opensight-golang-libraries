@@ -65,17 +65,39 @@ func (qb *Builder) BuildQueryConditions(request *filter.Request) (args []any, er
 		if index > 0 {
 			qb.query.WriteString(fmt.Sprintf(" %s", logicOperator))
 		}
-		args = append(args, extractFieldValues(field.Value)...)
+		args = append(args, extractFieldValues(field.Value, field.Operator)...)
 		qb.query.WriteString(conditionTemplate)
 	}
 	return
 }
 
-func extractFieldValues(value any) []any {
-	if params, ok := value.([]any); ok {
-		return params
+// Replacer for escaping LIKE clause wildcards and backslashes
+var likeReplacer = strings.NewReplacer(`_`, `\_`, `%`, `\%`, `\`, `\\`)
+
+func extractFieldValues(input any, compareOperator filter.CompareOperator) (resp []any) {
+	processString := func(str string) string {
+		if compareOperator == filter.CompareOperatorBeginsWith || compareOperator == filter.CompareOperatorContains {
+			replacedStr := likeReplacer.Replace(str)
+			return replacedStr
+		}
+		return str
 	}
-	return []any{value}
+
+	if values, isSlice := input.([]any); isSlice {
+		// validate values and escape special symbols
+		for index, value := range values {
+			if strValue, isString := value.(string); isString {
+				values[index] = processString(strValue)
+			}
+		}
+		return values
+	}
+
+	if strValue, isString := input.(string); isString {
+		return []any{processString(strValue)}
+	}
+	return []any{input}
+
 }
 
 // addSorting appends sorting conditions to the query builder based on the provided sorting request.
@@ -87,7 +109,8 @@ func (qb *Builder) addSorting(sort *sorting.Request) (string, error) {
 
 	dbColumnName, ok := qb.querySettings.FilterFieldMapping[sort.SortColumn]
 	if !ok {
-		return "", filter.NewInvalidFilterFieldError("missing filter field mapping for '%s'", sort.SortColumn)
+		return "", filter.NewInvalidFilterFieldError(
+			"missing filter field mapping for '%s'", sort.SortColumn)
 	}
 
 	qb.query.WriteString(fmt.Sprintf(" ORDER BY ? %s", sort.SortDirection))
@@ -130,7 +153,7 @@ func (qb *Builder) Build(resultSelector query.ResultSelector) (query string, arg
 			err = fmt.Errorf("error adding sort query: %w", err)
 			return
 		}
-		args = append(args, any(sortingArg))
+		args = append(args, sortingArg)
 	}
 
 	if resultSelector.Paging != nil {
