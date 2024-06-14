@@ -18,7 +18,9 @@ import (
 
 // Settings is a configuration struct used to customize the behavior of the query builder.
 type Settings struct {
-	FilterFieldMapping map[string]string // Mapping of filter fields for query customization
+	// FilterFieldMapping is the mapping of filter fields for query customization
+	// also serves as safeguard against sql injection
+	FilterFieldMapping map[string]string
 }
 
 // Builder represents a query builder used to construct PostgresSQL conditional query strings
@@ -76,7 +78,8 @@ var likeReplacer = strings.NewReplacer(`_`, `\_`, `%`, `\%`, `\`, `\\`)
 
 func extractFieldValues(input any, compareOperator filter.CompareOperator) (resp []any) {
 	processString := func(str string) string {
-		if compareOperator == filter.CompareOperatorBeginsWith || compareOperator == filter.CompareOperatorContains {
+		if compareOperator == filter.CompareOperatorBeginsWith ||
+			compareOperator == filter.CompareOperatorContains {
 			replacedStr := likeReplacer.Replace(str)
 			return replacedStr
 		}
@@ -97,24 +100,23 @@ func extractFieldValues(input any, compareOperator filter.CompareOperator) (resp
 		return []any{processString(strValue)}
 	}
 	return []any{input}
-
 }
 
 // addSorting appends sorting conditions to the query builder based on the provided sorting request.
 // It constructs the ORDER BY clause using the specified sort column and direction.
-func (qb *Builder) addSorting(sort *sorting.Request) (string, error) {
+func (qb *Builder) addSorting(sort *sorting.Request) error {
 	if sort == nil {
-		return "", errors.New("missing sorting fields, add sort request or remove call to addSorting()")
+		return errors.New("missing sorting fields, add sort request or remove call to addSorting()")
 	}
 
 	dbColumnName, ok := qb.querySettings.FilterFieldMapping[sort.SortColumn]
 	if !ok {
-		return "", filter.NewInvalidFilterFieldError(
+		return filter.NewInvalidFilterFieldError(
 			"missing filter field mapping for '%s'", sort.SortColumn)
 	}
 
-	qb.query.WriteString(fmt.Sprintf(" ORDER BY ? %s", sort.SortDirection))
-	return dbColumnName, nil
+	qb.query.WriteString(fmt.Sprintf(" ORDER BY %s %s", dbColumnName, sort.SortDirection))
+	return nil
 }
 
 // addPaging appends paging conditions to the query builder based on the provided paging request.
@@ -148,12 +150,11 @@ func (qb *Builder) Build(resultSelector query.ResultSelector) (query string, arg
 	}
 
 	if resultSelector.Sorting != nil {
-		sortingArg, sortingErr := qb.addSorting(resultSelector.Sorting)
+		sortingErr := qb.addSorting(resultSelector.Sorting)
 		if sortingErr != nil {
 			err = fmt.Errorf("error adding sort query: %w", err)
 			return
 		}
-		args = append(args, sortingArg)
 	}
 
 	if resultSelector.Paging != nil {

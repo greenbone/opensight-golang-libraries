@@ -57,8 +57,8 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "desc",
 				},
 			},
-			wantQuery: `WHERE "status_col_name" IN (?, ?) OR "source_id_col_name" IN (?, ?, ?) ORDER BY ? DESC OFFSET 2 LIMIT 5`,
-			wantArgs:  []any{"invalid status", "valid status", "some_source_id", "another_source_id", "third_source_id", "started_col_name"},
+			wantQuery: `WHERE "status_col_name" IN (?, ?) OR "source_id_col_name" IN (?, ?, ?) ORDER BY started_col_name DESC OFFSET 2 LIMIT 5`,
+			wantArgs:  []any{"invalid status", "valid status", "some_source_id", "another_source_id", "third_source_id"},
 		},
 		{
 			name: "build query with filter only",
@@ -182,10 +182,10 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "desc",
 				},
 			},
-			wantQuery: `WHERE "status_col_name" IN (?, ?) OR "source_id_col_name" IN (?, ?, ?) OR "other_filter_field_col_name" IN (?, ?, ?) ORDER BY ? DESC OFFSET 2 LIMIT 5`,
+			wantQuery: `WHERE "status_col_name" IN (?, ?) OR "source_id_col_name" IN (?, ?, ?) OR "other_filter_field_col_name" IN (?, ?, ?) ORDER BY started_col_name DESC OFFSET 2 LIMIT 5`,
 			wantArgs: []any{
 				"invalid status", "valid status", "some_source_id", "another_source_id",
-				"third_source_id", "some_field", "another_field", "third_field", "started_col_name",
+				"third_source_id", "some_field", "another_field", "third_field",
 			},
 		},
 		{
@@ -220,10 +220,10 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "desc",
 				},
 			},
-			wantQuery: `WHERE "status_col_name" IN (?, ?) OR "source_id_col_name" IN (?, ?, ?) OR "other_filter_field_col_name" IN (?, ?, ?) ORDER BY ? DESC OFFSET 2 LIMIT 5`,
+			wantQuery: `WHERE "status_col_name" IN (?, ?) OR "source_id_col_name" IN (?, ?, ?) OR "other_filter_field_col_name" IN (?, ?, ?) ORDER BY started_col_name DESC OFFSET 2 LIMIT 5`,
 			wantArgs: []any{
 				"invalid status", "valid status", "some_source_id", "another_source_id",
-				"third_source_id", "some_field", "another_field", "third_field", "started_col_name",
+				"third_source_id", "some_field", "another_field", "third_field",
 			},
 		},
 		{
@@ -263,8 +263,8 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "asc",
 				},
 			},
-			wantQuery: " ORDER BY ? ASC OFFSET 3 LIMIT 10",
-			wantArgs:  []any{"started_col_name"},
+			wantQuery: " ORDER BY started_col_name ASC OFFSET 3 LIMIT 10",
+			wantArgs:  []any{},
 		},
 		{
 			name: "build valid query without filter object",
@@ -278,8 +278,8 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "asc",
 				},
 			},
-			wantQuery: " ORDER BY ? ASC OFFSET 3 LIMIT 10",
-			wantArgs:  []any{"started_col_name"},
+			wantQuery: " ORDER BY started_col_name ASC OFFSET 3 LIMIT 10",
+			wantArgs:  []any{},
 		},
 		{
 			name: "build query with filter and date compare operators",
