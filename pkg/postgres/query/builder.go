@@ -126,8 +126,9 @@ func (qb *Builder) addPaging(paging *paging.Request) error {
 		return errors.New("missing paging fields, add paging request or remove call to AddSize()")
 	}
 
-	if paging.PageIndex > 1 {
-		qb.query.WriteString(fmt.Sprintf(" OFFSET %d", paging.PageIndex))
+	if paging.PageIndex > 0 {
+		offset := paging.PageIndex * paging.PageSize
+		qb.query.WriteString(fmt.Sprintf(" OFFSET %d", offset))
 	}
 
 	if paging.PageSize > 0 {
