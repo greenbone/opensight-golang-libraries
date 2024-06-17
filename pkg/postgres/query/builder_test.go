@@ -49,7 +49,7 @@ func TestQueryBuilder(t *testing.T) {
 					Operator: filter.LogicOperatorOr,
 				},
 				Paging: &paging.Request{
-					PageIndex: 2,
+					PageIndex: 1,
 					PageSize:  5,
 				},
 				Sorting: &sorting.Request{
@@ -57,7 +57,7 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "desc",
 				},
 			},
-			wantQuery: `WHERE "status_col_name" IN (?, ?) OR "source_id_col_name" IN (?, ?, ?) ORDER BY started_col_name DESC OFFSET 2 LIMIT 5`,
+			wantQuery: `WHERE "status_col_name" IN (?, ?) OR "source_id_col_name" IN (?, ?, ?) ORDER BY started_col_name DESC OFFSET 1 LIMIT 5`,
 			wantArgs:  []any{"invalid status", "valid status", "some_source_id", "another_source_id", "third_source_id"},
 		},
 		{
