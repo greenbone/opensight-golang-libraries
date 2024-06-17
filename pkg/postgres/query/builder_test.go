@@ -57,7 +57,7 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "desc",
 				},
 			},
-			wantQuery: `WHERE "status_col_name" IN (?, ?) OR "source_id_col_name" IN (?, ?, ?) ORDER BY started_col_name DESC OFFSET 1 LIMIT 5`,
+			wantQuery: `WHERE "status_col_name" IN (?, ?) OR "source_id_col_name" IN (?, ?, ?) ORDER BY started_col_name DESC OFFSET 5 LIMIT 5`,
 			wantArgs:  []any{"invalid status", "valid status", "some_source_id", "another_source_id", "third_source_id"},
 		},
 		{
@@ -105,7 +105,7 @@ func TestQueryBuilder(t *testing.T) {
 					PageSize:  5,
 				},
 			},
-			wantQuery: `WHERE "status_col_name" IN (?) AND "source_id_col_name" IN (?) OFFSET 2 LIMIT 5`,
+			wantQuery: `WHERE "status_col_name" IN (?) AND "source_id_col_name" IN (?) OFFSET 10 LIMIT 5`,
 			wantArgs:  []any{"invalid status", "some_source_id"},
 		},
 		{
@@ -123,10 +123,10 @@ func TestQueryBuilder(t *testing.T) {
 				},
 				Paging: &paging.Request{
 					PageIndex: 2,
-					PageSize:  5,
+					PageSize:  10,
 				},
 			},
-			wantQuery: `WHERE "status_col_name" IN (?) OFFSET 2 LIMIT 5`,
+			wantQuery: `WHERE "status_col_name" IN (?) OFFSET 20 LIMIT 10`,
 			wantArgs:  []any{"invalid status"},
 		},
 		{
@@ -147,7 +147,7 @@ func TestQueryBuilder(t *testing.T) {
 					PageSize:  5,
 				},
 			},
-			wantQuery: `WHERE "status_col_name" IN (?, ?) OFFSET 2 LIMIT 5`,
+			wantQuery: `WHERE "status_col_name" IN (?, ?) OFFSET 10 LIMIT 5`,
 			wantArgs:  []any{"invalid status", "another status"},
 		},
 		{
@@ -182,7 +182,7 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "desc",
 				},
 			},
-			wantQuery: `WHERE "status_col_name" IN (?, ?) OR "source_id_col_name" IN (?, ?, ?) OR "other_filter_field_col_name" IN (?, ?, ?) ORDER BY started_col_name DESC OFFSET 2 LIMIT 5`,
+			wantQuery: `WHERE "status_col_name" IN (?, ?) OR "source_id_col_name" IN (?, ?, ?) OR "other_filter_field_col_name" IN (?, ?, ?) ORDER BY started_col_name DESC OFFSET 10 LIMIT 5`,
 			wantArgs: []any{
 				"invalid status", "valid status", "some_source_id", "another_source_id",
 				"third_source_id", "some_field", "another_field", "third_field",
@@ -220,7 +220,7 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "desc",
 				},
 			},
-			wantQuery: `WHERE "status_col_name" IN (?, ?) OR "source_id_col_name" IN (?, ?, ?) OR "other_filter_field_col_name" IN (?, ?, ?) ORDER BY started_col_name DESC OFFSET 2 LIMIT 5`,
+			wantQuery: `WHERE "status_col_name" IN (?, ?) OR "source_id_col_name" IN (?, ?, ?) OR "other_filter_field_col_name" IN (?, ?, ?) ORDER BY started_col_name DESC OFFSET 10 LIMIT 5`,
 			wantArgs: []any{
 				"invalid status", "valid status", "some_source_id", "another_source_id",
 				"third_source_id", "some_field", "another_field", "third_field",
@@ -244,7 +244,7 @@ func TestQueryBuilder(t *testing.T) {
 					PageSize:  5,
 				},
 			},
-			wantQuery: `WHERE "status_col_name" NOT IN (?, ?) OFFSET 2 LIMIT 5`,
+			wantQuery: `WHERE "status_col_name" NOT IN (?, ?) OFFSET 10 LIMIT 5`,
 			wantArgs:  []any{"invalid status", "another status"},
 		},
 		{
@@ -263,7 +263,7 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "asc",
 				},
 			},
-			wantQuery: " ORDER BY started_col_name ASC OFFSET 3 LIMIT 10",
+			wantQuery: " ORDER BY started_col_name ASC OFFSET 30 LIMIT 10",
 			wantArgs:  []any{},
 		},
 		{
@@ -278,7 +278,7 @@ func TestQueryBuilder(t *testing.T) {
 					SortDirection: "asc",
 				},
 			},
-			wantQuery: " ORDER BY started_col_name ASC OFFSET 3 LIMIT 10",
+			wantQuery: " ORDER BY started_col_name ASC OFFSET 30 LIMIT 10",
 			wantArgs:  []any{},
 		},
 		{

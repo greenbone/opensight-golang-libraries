@@ -127,7 +127,8 @@ func (qb *Builder) addPaging(paging *paging.Request) error {
 	}
 
 	if paging.PageIndex > 0 {
-		qb.query.WriteString(fmt.Sprintf(" OFFSET %d", paging.PageIndex))
+		offset := paging.PageIndex * paging.PageSize
+		qb.query.WriteString(fmt.Sprintf(" OFFSET %d", offset))
 	}
 
 	if paging.PageSize > 0 {
