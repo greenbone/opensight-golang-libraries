@@ -8,6 +8,8 @@
 import "github.com/greenbone/opensight-golang-libraries/pkg/openSearch/openSearchClient"
 ```
 
+Package openSearchClient provides functionality for interacting with OpenSearch.
+
 Package openSearchClient provides a client for OpenSearch designed to allow easy mocking in tests.
 
 Example Usage:
@@ -19,11 +21,6 @@ if err != nil {
 }
 
 opensearchProjectClient, err := NewOpenSearchProjectClient(context.Background(), clientConfig)
-if err != nil {
-	return err
-}
-
-err = InjectAuthenticationIntoClient(openSearchProjectClient, clientConfig, nil)
 if err != nil {
 	return err
 }
@@ -44,33 +41,25 @@ if err != nil {
 
 For further usage examples see ./client\_test.go.
 
-## Configuration
-
-The client is configured using the following environment variables:
-- `ELASTIC_HOST` (the hostname of the opensearch instance, required)
-- `ELASTIC_API_PORT` (the exposed port of the opensearch instance, required)
-- `ELASTIC_HTTPS` (enable https, default: `false`)
-- `ELASTIC_AUTH_USER` (the username for basic auth or the client ID for openID, required)
-- `ELASTIC_AUTH_PASS` (the password for basic auth or the client secret for openID, required)
-- `ELASTIC_AUTH_METHOD` (the authentication method to use [`basic` | `openid`], required)
-
 ## Index
 
-- [func GetResponseError\(statusCode int, responseString \[\]byte, indexName string\) error](<#GetResponseError>)
 - [func InitializeJson\(timeFormats \[\]string\)](<#InitializeJson>)
+- [func InjectAuthenticationIntoClient\(client \*opensearchapi.Client, config config.OpensearchClientConfig, tokenReceiver TokenReceiver\) error](<#InjectAuthenticationIntoClient>)
 - [func NewOpenSearchErrorWithStack\(message string\) error](<#NewOpenSearchErrorWithStack>)
-- [func NewOpenSearchProjectClient\(ctx context.Context, config config.OpensearchClientConfig\) \(\*opensearch.Client, error\)](<#NewOpenSearchProjectClient>)
+- [func NewOpenSearchProjectClient\(ctx context.Context, config config.OpensearchClientConfig, tokenReceiver TokenReceiver\) \(\*opensearchapi.Client, error\)](<#NewOpenSearchProjectClient>)
 - [func NewOpenSearchResourceAlreadyExistsWithStack\(message string\) error](<#NewOpenSearchResourceAlreadyExistsWithStack>)
 - [func NewOpenSearchResourceNotFoundWithStack\(message string\) error](<#NewOpenSearchResourceNotFoundWithStack>)
 - [func SerializeDocumentsForBulkUpdate\[T any\]\(indexName string, documents \[\]T\) \(\[\]byte, error\)](<#SerializeDocumentsForBulkUpdate>)
 - [func StartOpensearchTestContainer\(ctx context.Context\) \(testcontainers.Container, config.OpensearchClientConfig, error\)](<#StartOpensearchTestContainer>)
 - [func Unmarshal\(data \[\]byte, v any\) error](<#Unmarshal>)
 - [func UnmarshalWithoutValidation\(data \[\]byte, v any\) error](<#UnmarshalWithoutValidation>)
+- [type Authenticator](<#Authenticator>)
+  - [func \(a \*Authenticator\) Perform\(req \*http.Request\) \(\*http.Response, error\)](<#Authenticator.Perform>)
 - [type Bucket](<#Bucket>)
   - [func \(bucket \*Bucket\) UnmarshalJSON\(bytes \[\]byte\) error](<#Bucket.UnmarshalJSON>)
 - [type BulkResponse](<#BulkResponse>)
 - [type Client](<#Client>)
-  - [func NewClient\(openSearchProjectClient \*opensearch.Client, updateMaxRetries int, updateRetryDelay time.Duration\) \*Client](<#NewClient>)
+  - [func NewClient\(openSearchProjectClient \*opensearchapi.Client, updateMaxRetries int, updateRetryDelay time.Duration\) \*Client](<#NewClient>)
   - [func \(c \*Client\) AsyncDeleteByQuery\(indexName string, requestBody \[\]byte\) error](<#Client.AsyncDeleteByQuery>)
   - [func \(c \*Client\) BulkUpdate\(indexName string, requestBody \[\]byte\) error](<#Client.BulkUpdate>)
   - [func \(c \*Client\) Close\(\)](<#Client.Close>)
@@ -83,6 +72,18 @@ The client is configured using the following environment variables:
 - [type DynamicAggregation](<#DynamicAggregation>)
 - [type DynamicAggregationHits](<#DynamicAggregationHits>)
 - [type IndexError](<#IndexError>)
+- [type IndexFunction](<#IndexFunction>)
+  - [func NewIndexFunction\(openSearchProjectClient \*opensearchapi.Client\) \*IndexFunction](<#NewIndexFunction>)
+  - [func \(i \*IndexFunction\) AliasExists\(aliasName string\) \(bool, error\)](<#IndexFunction.AliasExists>)
+  - [func \(i \*IndexFunction\) CreateIndex\(indexName string, indexSchema \[\]byte\) error](<#IndexFunction.CreateIndex>)
+  - [func \(i \*IndexFunction\) CreateOrPutAlias\(aliasName string, indexNames ...string\) error](<#IndexFunction.CreateOrPutAlias>)
+  - [func \(i \*IndexFunction\) DeleteAliasFromIndex\(indexName string, aliasName string\) error](<#IndexFunction.DeleteAliasFromIndex>)
+  - [func \(i \*IndexFunction\) DeleteIndex\(indexName string\) error](<#IndexFunction.DeleteIndex>)
+  - [func \(i \*IndexFunction\) GetIndexes\(pattern string\) \(\[\]string, error\)](<#IndexFunction.GetIndexes>)
+  - [func \(i \*IndexFunction\) GetIndexesForAlias\(aliasName string\) \(\[\]string, error\)](<#IndexFunction.GetIndexesForAlias>)
+  - [func \(i \*IndexFunction\) IndexExists\(indexName string\) \(bool, error\)](<#IndexFunction.IndexExists>)
+  - [func \(i \*IndexFunction\) IndexHasAlias\(indexNames \[\]string, aliasNames \[\]string\) \(bool, error\)](<#IndexFunction.IndexHasAlias>)
+  - [func \(i \*IndexFunction\) RemoveIndexesFromAlias\(indexesToRemove \[\]string, aliasName string\) error](<#IndexFunction.RemoveIndexesFromAlias>)
 - [type KeepJsonAsString](<#KeepJsonAsString>)
   - [func \(k \*KeepJsonAsString\) UnmarshalJSON\(data \[\]byte\) error](<#KeepJsonAsString.UnmarshalJSON>)
 - [type OpenSearchError](<#OpenSearchError>)
@@ -109,20 +110,12 @@ The client is configured using the following environment variables:
 - [type SearchResponseHit](<#SearchResponseHit>)
 - [type SearchResponseHits](<#SearchResponseHits>)
 - [type SearchResponseHitsTotal](<#SearchResponseHitsTotal>)
+- [type TokenReceiver](<#TokenReceiver>)
 - [type UpdateQueue](<#UpdateQueue>)
-  - [func NewRequestQueue\(openSearchProjectClient \*opensearch.Client, updateMaxRetries int, updateRetryDelay time.Duration\) \*UpdateQueue](<#NewRequestQueue>)
+  - [func NewRequestQueue\(openSearchClient \*opensearchapi.Client, updateMaxRetries int, updateRetryDelay time.Duration\) \*UpdateQueue](<#NewRequestQueue>)
   - [func \(q \*UpdateQueue\) Stop\(\)](<#UpdateQueue.Stop>)
   - [func \(q \*UpdateQueue\) Update\(indexName string, requestBody \[\]byte\) \(\[\]byte, error\)](<#UpdateQueue.Update>)
 
-
-<a name="GetResponseError"></a>
-## func [GetResponseError](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L168>)
-
-```go
-func GetResponseError(statusCode int, responseString []byte, indexName string) error
-```
-
-GetResponseError checks if a response from OpenSearch indicated success and returns an error if not.
 
 <a name="InitializeJson"></a>
 ## func [InitializeJson](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/json.go#L18>)
@@ -132,6 +125,15 @@ func InitializeJson(timeFormats []string)
 ```
 
 
+
+<a name="InjectAuthenticationIntoClient"></a>
+## func [InjectAuthenticationIntoClient](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/authenticator.go#L48-L50>)
+
+```go
+func InjectAuthenticationIntoClient(client *opensearchapi.Client, config config.OpensearchClientConfig, tokenReceiver TokenReceiver) error
+```
+
+InjectAuthenticationIntoClient is a function that sets up the authentication method for the OpenSearch client. client is the OpenSearch client to inject the authentication into. config is the configuration for the OpenSearch client. tokenReceiver is the token receiver for OpenID authentication and must implement the GetClientAccessToken function. It can be nil for basic authentication.
 
 <a name="NewOpenSearchErrorWithStack"></a>
 ## func [NewOpenSearchErrorWithStack](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/error.go#L40>)
@@ -146,7 +148,7 @@ func NewOpenSearchErrorWithStack(message string) error
 ## func [NewOpenSearchProjectClient](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/opensearchProjectClient.go#L25>)
 
 ```go
-func NewOpenSearchProjectClient(ctx context.Context, config config.OpensearchClientConfig) (*opensearch.Client, error)
+func NewOpenSearchProjectClient(ctx context.Context, config config.OpensearchClientConfig, tokenReceiver TokenReceiver) (*opensearchapi.Client, error)
 ```
 
 NewOpenSearchProjectClient creates a new official OpenSearch client \(package github.com/opensearch\-project/opensearch\-go\) for usage NewClient. It returns an error if the client couldn't be created or the connection couldn't be established.
@@ -172,7 +174,7 @@ func NewOpenSearchResourceNotFoundWithStack(message string) error
 
 
 <a name="SerializeDocumentsForBulkUpdate"></a>
-## func [SerializeDocumentsForBulkUpdate](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L124>)
+## func [SerializeDocumentsForBulkUpdate](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L128>)
 
 ```go
 func SerializeDocumentsForBulkUpdate[T any](indexName string, documents []T) ([]byte, error)
@@ -210,6 +212,26 @@ func UnmarshalWithoutValidation(data []byte, v any) error
 ```
 
 UnmarshalWithoutValidation unmarshalls data into v. It returns an error if the data can not be parsed.
+
+<a name="Authenticator"></a>
+## type [Authenticator](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/authenticator.go#L34-L39>)
+
+Authenticator is a struct that holds the necessary information for authenticating with OpenSearch.
+
+```go
+type Authenticator struct {
+    // contains filtered or unexported fields
+}
+```
+
+<a name="Authenticator.Perform"></a>
+### func \(\*Authenticator\) [Perform](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/authenticator.go#L116>)
+
+```go
+func (a *Authenticator) Perform(req *http.Request) (*http.Response, error)
+```
+
+Perform is a method that implements the opensearchtransport.Interface interface. It injects the authentication header into the request and then performs the request.
 
 <a name="Bucket"></a>
 ## type [Bucket](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/response.go#L50-L55>)
@@ -262,7 +284,7 @@ type Client struct {
 ### func [NewClient](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L34>)
 
 ```go
-func NewClient(openSearchProjectClient *opensearch.Client, updateMaxRetries int, updateRetryDelay time.Duration) *Client
+func NewClient(openSearchProjectClient *opensearchapi.Client, updateMaxRetries int, updateRetryDelay time.Duration) *Client
 ```
 
 NewClient creates a new OpenSearch client.
@@ -270,7 +292,7 @@ NewClient creates a new OpenSearch client.
 openSearchProjectClient is the official OpenSearch client to wrap. Use NewOpenSearchProjectClient to create it. updateMaxRetries is the number of retries for update requests. updateRetryDelay is the delay between retries.
 
 <a name="Client.AsyncDeleteByQuery"></a>
-### func \(\*Client\) [AsyncDeleteByQuery](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L87>)
+### func \(\*Client\) [AsyncDeleteByQuery](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L89>)
 
 ```go
 func (c *Client) AsyncDeleteByQuery(indexName string, requestBody []byte) error
@@ -281,7 +303,7 @@ AsyncDeleteByQuery updates documents in the given index asynchronously. It does 
 indexName is the name of the index to delete from. requestBody is the request body to send to OpenSearch to identify the documents to be deleted.
 
 <a name="Client.BulkUpdate"></a>
-### func \(\*Client\) [BulkUpdate](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L149>)
+### func \(\*Client\) [BulkUpdate](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L153>)
 
 ```go
 func (c *Client) BulkUpdate(indexName string, requestBody []byte) error
@@ -292,7 +314,7 @@ BulkUpdate performs a bulk update in the given index. It returns an error in cas
 indexName is the name of the index to update. requestBody is the request body to send to OpenSearch specifying the bulk update.
 
 <a name="Client.Close"></a>
-### func \(\*Client\) [Close](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L202>)
+### func \(\*Client\) [Close](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L172>)
 
 ```go
 func (c *Client) Close()
@@ -301,7 +323,7 @@ func (c *Client) Close()
 Close stops the underlying UpdateQueue allowing a graceful shutdown.
 
 <a name="Client.DeleteByQuery"></a>
-### func \(\*Client\) [DeleteByQuery](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L97>)
+### func \(\*Client\) [DeleteByQuery](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L99>)
 
 ```go
 func (c *Client) DeleteByQuery(indexName string, requestBody []byte) error
@@ -323,7 +345,7 @@ Search searches for documents in the given index.
 indexName is the name of the index to search in. requestBody is the request body to send to OpenSearch. It returns the response body as or an error in case something went wrong.
 
 <a name="Client.Update"></a>
-### func \(\*Client\) [Update](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L77>)
+### func \(\*Client\) [Update](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L79>)
 
 ```go
 func (c *Client) Update(indexName string, requestBody []byte) (responseBody []byte, err error)
@@ -410,6 +432,116 @@ type IndexError struct {
     Index DocumentError `json:"index"`
 }
 ```
+
+<a name="IndexFunction"></a>
+## type [IndexFunction](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L21-L23>)
+
+
+
+```go
+type IndexFunction struct {
+    // contains filtered or unexported fields
+}
+```
+
+<a name="NewIndexFunction"></a>
+### func [NewIndexFunction](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L25>)
+
+```go
+func NewIndexFunction(openSearchProjectClient *opensearchapi.Client) *IndexFunction
+```
+
+
+
+<a name="IndexFunction.AliasExists"></a>
+### func \(\*IndexFunction\) [AliasExists](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L178>)
+
+```go
+func (i *IndexFunction) AliasExists(aliasName string) (bool, error)
+```
+
+
+
+<a name="IndexFunction.CreateIndex"></a>
+### func \(\*IndexFunction\) [CreateIndex](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L30>)
+
+```go
+func (i *IndexFunction) CreateIndex(indexName string, indexSchema []byte) error
+```
+
+CreateIndex creates an index
+
+<a name="IndexFunction.CreateOrPutAlias"></a>
+### func \(\*IndexFunction\) [CreateOrPutAlias](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L127>)
+
+```go
+func (i *IndexFunction) CreateOrPutAlias(aliasName string, indexNames ...string) error
+```
+
+
+
+<a name="IndexFunction.DeleteAliasFromIndex"></a>
+### func \(\*IndexFunction\) [DeleteAliasFromIndex](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L143>)
+
+```go
+func (i *IndexFunction) DeleteAliasFromIndex(indexName string, aliasName string) error
+```
+
+
+
+<a name="IndexFunction.DeleteIndex"></a>
+### func \(\*IndexFunction\) [DeleteIndex](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L113>)
+
+```go
+func (i *IndexFunction) DeleteIndex(indexName string) error
+```
+
+
+
+<a name="IndexFunction.GetIndexes"></a>
+### func \(\*IndexFunction\) [GetIndexes](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L48>)
+
+```go
+func (i *IndexFunction) GetIndexes(pattern string) ([]string, error)
+```
+
+
+
+<a name="IndexFunction.GetIndexesForAlias"></a>
+### func \(\*IndexFunction\) [GetIndexesForAlias](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L201>)
+
+```go
+func (i *IndexFunction) GetIndexesForAlias(aliasName string) ([]string, error)
+```
+
+previously AliasPointsToIndex
+
+<a name="IndexFunction.IndexExists"></a>
+### func \(\*IndexFunction\) [IndexExists](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L89>)
+
+```go
+func (i *IndexFunction) IndexExists(indexName string) (bool, error)
+```
+
+
+
+<a name="IndexFunction.IndexHasAlias"></a>
+### func \(\*IndexFunction\) [IndexHasAlias](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L158>)
+
+```go
+func (i *IndexFunction) IndexHasAlias(indexNames []string, aliasNames []string) (bool, error)
+```
+
+
+
+<a name="IndexFunction.RemoveIndexesFromAlias"></a>
+### func \(\*IndexFunction\) [RemoveIndexesFromAlias](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L220>)
+
+```go
+func (i *IndexFunction) RemoveIndexesFromAlias(indexesToRemove []string, aliasName string) error
+```
+
+
 
 <a name="KeepJsonAsString"></a>
 ## type [KeepJsonAsString](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/response.go#L23>)
@@ -565,7 +697,7 @@ type OpensearchTestContainer struct {
 ```
 
 <a name="Request"></a>
-## type [Request](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/updateQueue.go#L26-L30>)
+## type [Request](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/updateQueue.go#L25-L29>)
 
 
 
@@ -578,7 +710,7 @@ type Request struct {
 ```
 
 <a name="Response"></a>
-## type [Response](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/updateQueue.go#L21-L24>)
+## type [Response](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/updateQueue.go#L20-L23>)
 
 
 
@@ -690,8 +822,19 @@ type SearchResponseHitsTotal struct {
 }
 ```
 
+<a name="TokenReceiver"></a>
+## type [TokenReceiver](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/authenticator.go#L29-L31>)
+
+TokenReceiver is an interface for receiving client access tokens.
+
+```go
+type TokenReceiver interface {
+    GetClientAccessToken(clientName, clientSecret string) (string, error)
+}
+```
+
 <a name="UpdateQueue"></a>
-## type [UpdateQueue](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/updateQueue.go#L33-L40>)
+## type [UpdateQueue](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/updateQueue.go#L32-L39>)
 
 UpdateQueue is a queue for OpenSearch update requests.
 
@@ -702,18 +845,18 @@ type UpdateQueue struct {
 ```
 
 <a name="NewRequestQueue"></a>
-### func [NewRequestQueue](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/updateQueue.go#L47>)
+### func [NewRequestQueue](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/updateQueue.go#L46>)
 
 ```go
-func NewRequestQueue(openSearchProjectClient *opensearch.Client, updateMaxRetries int, updateRetryDelay time.Duration) *UpdateQueue
+func NewRequestQueue(openSearchClient *opensearchapi.Client, updateMaxRetries int, updateRetryDelay time.Duration) *UpdateQueue
 ```
 
 NewRequestQueue creates a new update queue.
 
-openSearchProjectClient is the official OpenSearch client to wrap. Use NewOpenSearchProjectClient to create it. updateMaxRetries is the number of retries for update requests. updateRetryDelay is the delay between retries.
+openSearchClient is the official OpenSearch client. Use NewOpenSearchProjectClient to create it. updateMaxRetries is the number of retries for update requests. updateRetryDelay is the delay between retries.
 
 <a name="UpdateQueue.Stop"></a>
-### func \(\*UpdateQueue\) [Stop](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/updateQueue.go#L64>)
+### func \(\*UpdateQueue\) [Stop](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/updateQueue.go#L63>)
 
 ```go
 func (q *UpdateQueue) Stop()
@@ -722,7 +865,7 @@ func (q *UpdateQueue) Stop()
 
 
 <a name="UpdateQueue.Update"></a>
-### func \(\*UpdateQueue\) [Update](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/updateQueue.go#L79>)
+### func \(\*UpdateQueue\) [Update](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/updateQueue.go#L78>)
 
 ```go
 func (q *UpdateQueue) Update(indexName string, requestBody []byte) ([]byte, error)
