@@ -6,6 +6,7 @@ package openSearchClient
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,7 +15,7 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 
-	"github.com/opensearch-project/opensearch-go/v2"
+	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )
@@ -22,7 +23,7 @@ import (
 // Client is a client for OpenSearch designed to allow easy mocking in tests.
 // It is a wrapper around the official OpenSearch client github.com/opensearch-project/opensearch-go .
 type Client struct {
-	openSearchProjectClient *opensearch.Client
+	openSearchProjectClient *opensearchapi.Client
 	updateQueue             *UpdateQueue
 }
 
@@ -31,7 +32,7 @@ type Client struct {
 // openSearchProjectClient is the official OpenSearch client to wrap. Use NewOpenSearchProjectClient to create it.
 // updateMaxRetries is the number of retries for update requests.
 // updateRetryDelay is the delay between retries.
-func NewClient(openSearchProjectClient *opensearch.Client, updateMaxRetries int, updateRetryDelay time.Duration) *Client {
+func NewClient(openSearchProjectClient *opensearchapi.Client, updateMaxRetries int, updateRetryDelay time.Duration) *Client {
 	c := &Client{
 		openSearchProjectClient: openSearchProjectClient,
 	}
@@ -45,27 +46,33 @@ func NewClient(openSearchProjectClient *opensearch.Client, updateMaxRetries int,
 // requestBody is the request body to send to OpenSearch.
 // It returns the response body as or an error in case something went wrong.
 func (c *Client) Search(indexName string, requestBody []byte) (responseBody []byte, err error) {
-	log.Debug().Msgf("search requestBody: %s", string(requestBody))
-	searchResponse, err := c.openSearchProjectClient.Search(
-		c.openSearchProjectClient.Search.WithIndex(indexName),
-		c.openSearchProjectClient.Search.WithBody(bytes.NewReader(requestBody)),
+	log.Debug().Str("src", "opensearch").Msgf("request: %s", string(requestBody))
+
+	// TODO: Pass an actual context from caller instead of using `context.TODO()`.
+	req, err := c.openSearchProjectClient.Search(
+		context.TODO(),
+		&opensearchapi.SearchReq{
+			Indices: []string{indexName},
+			Body:    bytes.NewReader(requestBody),
+		},
 	)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
-	result, err := io.ReadAll(searchResponse.Body)
+	// Get the raw request body to return a byte array.
+	// TODO: Return `io.ReadCloser` instead of a `[]byte`.
+	body := req.Inspect().Response.Body
+	defer body.Close()
+
+	res, err := io.ReadAll(body)
 	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	log.Trace().Msgf("search response - statusCode:'%d' json:'%s'", searchResponse.StatusCode, result)
-
-	err = GetResponseError(searchResponse.StatusCode, result, indexName)
-	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
-	return result, nil
+	log.Trace().Str("src", "opensearch").Msgf("status: %d, json: %s", req.Inspect().Response.StatusCode, string(res))
+
+	return res, nil
 }
 
 // Update updates documents in the given index using UpdateQueue (which is also part of this package).
@@ -99,21 +106,24 @@ func (c *Client) DeleteByQuery(indexName string, requestBody []byte) error {
 }
 
 func (c *Client) deleteByQuery(indexName string, requestBody []byte, isAsync bool) error {
-	deleteResponse, err := c.openSearchProjectClient.DeleteByQuery(
-		[]string{indexName},
-		bytes.NewReader(requestBody),
-		c.openSearchProjectClient.DeleteByQuery.WithWaitForCompletion(!isAsync),
+	waitForCompletion := !isAsync
+
+	// TODO: Pass an actual context from caller instead of using `context.TODO()`.
+	_, err := c.openSearchProjectClient.Document.DeleteByQuery(
+		context.TODO(),
+		opensearchapi.DocumentDeleteByQueryReq{
+			Indices: []string{indexName},
+			Body:    bytes.NewReader(requestBody),
+			Params: opensearchapi.DocumentDeleteByQueryParams{
+				WaitForCompletion: &waitForCompletion,
+			},
+		},
 	)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
-	resultString, err := io.ReadAll(deleteResponse.Body)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	return GetResponseError(deleteResponse.StatusCode, resultString, indexName)
+	return nil
 }
 
 // SerializeDocumentsForBulkUpdate serializes documents for bulk update. Can be used in conjunction with BulkUpdate.
@@ -147,21 +157,21 @@ func SerializeDocumentsForBulkUpdate[T any](indexName string, documents []T) ([]
 // indexName is the name of the index to update.
 // requestBody is the request body to send to OpenSearch specifying the bulk update.
 func (c *Client) BulkUpdate(indexName string, requestBody []byte) error {
-	insertResponse, err := c.openSearchProjectClient.Bulk(
-		bytes.NewReader(requestBody),
-		c.openSearchProjectClient.Bulk.WithIndex(indexName),
-		c.openSearchProjectClient.Bulk.WithRefresh("true"),
+	_, err := c.openSearchProjectClient.Bulk(
+		context.TODO(),
+		opensearchapi.BulkReq{
+			Index: indexName,
+			Body:  bytes.NewReader(requestBody),
+			Params: opensearchapi.BulkParams{
+				Refresh: "true",
+			},
+		},
 	)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
-	resultString, err := io.ReadAll(insertResponse.Body)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	return GetResponseError(insertResponse.StatusCode, resultString, indexName)
+	return nil
 }
 
 // GetResponseError checks if a response from OpenSearch indicated success and returns an error if not.
