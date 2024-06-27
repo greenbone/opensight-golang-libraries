@@ -159,12 +159,12 @@ func (i *indexFunction) AliasExists(aliasName string) (bool, error) {
 		},
 	)
 
-	if len(req.Aliases) == 0 {
-		log.Debug().Str("src", "opensearch").Msgf("alias %s does not exist", aliasName)
+	if err != nil {
 		return false, errors.WithStack(err)
 	}
 
-	if err != nil {
+	if len(req.Aliases) == 0 {
+		log.Debug().Str("src", "opensearch").Msgf("alias %s does not exist", aliasName)
 		return false, errors.WithStack(err)
 	}
 
