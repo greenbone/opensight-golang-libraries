@@ -109,9 +109,8 @@ func (c *Client) DeleteByQuery(indexName string, requestBody []byte) error {
 func (c *Client) deleteByQuery(indexName string, requestBody []byte, isAsync bool) error {
 	waitForCompletion := !isAsync
 
-	// TODO: Pass an actual context from caller instead of using `context.TODO()`.
 	_, err := c.openSearchProjectClient.Document.DeleteByQuery(
-		context.TODO(),
+		context.Background(),
 		opensearchapi.DocumentDeleteByQueryReq{
 			Indices: []string{indexName},
 			Body:    bytes.NewReader(requestBody),
@@ -159,7 +158,7 @@ func SerializeDocumentsForBulkUpdate[T any](indexName string, documents []T) ([]
 // requestBody is the request body to send to OpenSearch specifying the bulk update.
 func (c *Client) BulkUpdate(indexName string, requestBody []byte) error {
 	_, err := c.openSearchProjectClient.Bulk(
-		context.TODO(),
+		context.Background(),
 		opensearchapi.BulkReq{
 			Index: indexName,
 			Body:  bytes.NewReader(requestBody),
