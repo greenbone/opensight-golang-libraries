@@ -50,7 +50,7 @@ func (c *Client) Search(indexName string, requestBody []byte) (responseBody []by
 
 	// TODO: Pass an actual context from caller instead of using `context.TODO()`.
 	req, err := c.openSearchProjectClient.Search(
-		context.TODO(),
+		context.Background(),
 		&opensearchapi.SearchReq{
 			Indices: []string{indexName},
 			Body:    bytes.NewReader(requestBody),
