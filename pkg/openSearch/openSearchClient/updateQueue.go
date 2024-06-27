@@ -153,7 +153,7 @@ func (q *UpdateQueue) update(indexName string, requestBody []byte) ([]byte, erro
 
 		res, err := io.ReadAll(body)
 		if err != nil {
-			log.Error().Str("src", "opensearch-queue").Msgf("status: %d, json: %s", err, res)
+			log.Error().Str("src", "opensearch-queue").Msgf("status: %d, json: %s", req.Inspect().Response.StatusCode, string(res))
 			time.Sleep(q.updateRetryDelay)
 			continue
 		}
