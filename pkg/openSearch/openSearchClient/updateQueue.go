@@ -130,7 +130,6 @@ func (q *UpdateQueue) update(indexName string, requestBody []byte) ([]byte, erro
 
 	var err error
 	for i := 0; i < q.updateMaxRetries; i++ {
-		// TODO: Pass an actual context from caller instead of using `context.TODO()`.
 		req, err := q.client.UpdateByQuery(
 			context.TODO(),
 			opensearchapi.UpdateByQueryReq{

@@ -48,7 +48,6 @@ func NewClient(openSearchProjectClient *opensearchapi.Client, updateMaxRetries i
 func (c *Client) Search(indexName string, requestBody []byte) (responseBody []byte, err error) {
 	log.Debug().Str("src", "opensearch").Msgf("request: %s", string(requestBody))
 
-	// TODO: Pass an actual context from caller instead of using `context.TODO()`.
 	req, err := c.openSearchProjectClient.Search(
 		context.Background(),
 		&opensearchapi.SearchReq{
@@ -61,7 +60,6 @@ func (c *Client) Search(indexName string, requestBody []byte) (responseBody []by
 	}
 
 	// Get the raw request body to return a byte array.
-	// TODO: Return `io.ReadCloser` instead of a `[]byte`.
 	body := req.Inspect().Response.Body
 	defer body.Close()
 
