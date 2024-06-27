@@ -57,7 +57,7 @@ func (c *Client) Search(indexName string, requestBody []byte) (responseBody []by
 		},
 	)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	// Get the raw request body to return a byte array.
@@ -67,10 +67,11 @@ func (c *Client) Search(indexName string, requestBody []byte) (responseBody []by
 
 	res, err := io.ReadAll(body)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
-	log.Trace().Str("src", "opensearch").Msgf("status: %d, json: %s", req.Inspect().Response.StatusCode, string(res))
+	log.Trace().Str("src", "opensearch").Msgf("status: %d, json: %s",
+		req.Inspect().Response.StatusCode, string(res))
 
 	return res, nil
 }
@@ -120,7 +121,7 @@ func (c *Client) deleteByQuery(indexName string, requestBody []byte, isAsync boo
 		},
 	)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	return nil
@@ -168,7 +169,7 @@ func (c *Client) BulkUpdate(indexName string, requestBody []byte) error {
 		},
 	)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	return nil

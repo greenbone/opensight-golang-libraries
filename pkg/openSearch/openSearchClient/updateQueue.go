@@ -141,9 +141,9 @@ func (q *UpdateQueue) update(indexName string, requestBody []byte) ([]byte, erro
 				},
 			},
 		)
-
 		if err != nil {
-			log.Error().Str("src", "opensearch-queue").Msgf("attempt %d: error in UpdateByQuery: %s", i+1, err)
+			log.Error().Str("src", "opensearch-queue").Msgf(
+				"attempt %d: error in UpdateByQuery: %s", i+1, err)
 			time.Sleep(q.updateRetryDelay)
 			continue
 		}
@@ -153,7 +153,8 @@ func (q *UpdateQueue) update(indexName string, requestBody []byte) ([]byte, erro
 
 		res, err := io.ReadAll(body)
 		if err != nil {
-			log.Error().Str("src", "opensearch-queue").Msgf("status: %d, json: %s", req.Inspect().Response.StatusCode, string(res))
+			log.Error().Str("src", "opensearch-queue").Msgf("status: %d, json: %s",
+				req.Inspect().Response.StatusCode, string(res))
 			time.Sleep(q.updateRetryDelay)
 			continue
 		}

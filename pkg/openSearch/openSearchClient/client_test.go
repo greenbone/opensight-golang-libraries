@@ -219,7 +219,7 @@ func searchAllVulnerabilities(c *assert.CollectT, client *Client) *SearchRespons
 }
 
 func TestGetResponseError(t *testing.T) {
-	//given
+	// given
 	testCases := map[string]struct {
 		givenStatusCode      int
 		givenResponse        string

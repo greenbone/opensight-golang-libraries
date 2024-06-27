@@ -10,7 +10,8 @@ import (
 	"testing"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/openSearch/openSearchClient/config"
-	"github.com/opensearch-project/opensearch-go/v2"
+	"github.com/opensearch-project/opensearch-go/v4"
+	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -150,9 +151,9 @@ func TestInjectAuthenticationHeader(t *testing.T) {
 			expectedError:  true,
 		},
 		{
-			name:           "returns error when undefined auth method is configured",
-			authMethod:     authMethod("undefined"),
-			expectedError:  true,
+			name:          "returns error when undefined auth method is configured",
+			authMethod:    authMethod("undefined"),
+			expectedError: true,
 		},
 	}
 
@@ -196,8 +197,10 @@ func TestInjectAuthenticationIntoClient(t *testing.T) {
 	mockTransport := new(MockTransport)
 	mockTransport.On("Perform").Return(&http.Response{}, nil)
 
-	client := &opensearch.Client{
-		Transport: mockTransport,
+	client := &opensearchapi.Client{
+		Client: &opensearch.Client{
+			Transport: mockTransport,
+		},
 	}
 
 	conf := config.OpensearchClientConfig{
@@ -214,7 +217,7 @@ func TestInjectAuthenticationIntoClient(t *testing.T) {
 
 	req, _ := http.NewRequest("GET", "http://localhost", nil)
 
-	_, err = client.Perform(req)
+	_, err = client.Client.Perform(req)
 	assert.NoError(t, err)
 
 	mockTransport.AssertCalled(t, "Perform")

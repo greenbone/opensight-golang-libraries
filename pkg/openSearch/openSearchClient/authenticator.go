@@ -11,8 +11,8 @@ import (
 	"strings"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/openSearch/openSearchClient/config"
-	"github.com/opensearch-project/opensearch-go/v2"
-	"github.com/opensearch-project/opensearch-go/v2/opensearchtransport"
+	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
+	"github.com/opensearch-project/opensearch-go/v4/opensearchtransport"
 	"github.com/rs/zerolog/log"
 )
 
@@ -45,7 +45,9 @@ var _ opensearchtransport.Interface = &Authenticator{}
 // client is the OpenSearch client to inject the authentication into.
 // config is the configuration for the OpenSearch client.
 // tokenReceiver is the token receiver for OpenID authentication and must implement the GetClientAccessToken function. It can be nil for basic authentication.
-func InjectAuthenticationIntoClient(client *opensearch.Client, config config.OpensearchClientConfig, tokenReceiver ITokenReceiver) error {
+func InjectAuthenticationIntoClient(client *opensearchapi.Client,
+	config config.OpensearchClientConfig, tokenReceiver ITokenReceiver,
+) error {
 	method, err := getAuthenticationMethod(config, tokenReceiver)
 	if err != nil {
 		return err
@@ -60,9 +62,9 @@ func InjectAuthenticationIntoClient(client *opensearch.Client, config config.Ope
 
 	// store the original Transport interface implementation of the opensearch client to be able to wrap it
 	// in the authenticator.Perform method
-	authenticator.clientTransport = client.Transport
+	authenticator.clientTransport = client.Client.Transport
 	// replace the original Transport interface implementation of the opensearch client with the wrapper
-	client.Transport = authenticator
+	client.Client.Transport = authenticator
 
 	return nil
 }
