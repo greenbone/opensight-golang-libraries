@@ -45,9 +45,8 @@ func NewClient(openSearchProjectClient *opensearchapi.Client, updateMaxRetries i
 // requestBody is the request body to send to OpenSearch.
 // It returns the response body as or an error in case something went wrong.
 func (c *Client) Search(indexName string, requestBody []byte) (responseBody []byte, err error) {
-	log.Debug().Str("src", "opensearch").Msgf("request: %s", string(requestBody))
-
-	req, err := c.openSearchProjectClient.Search(
+	log.Debug().Str("src", "opensearch").Msgf("search requestBody: %s", string(requestBody))
+	searchResponse, err := c.openSearchProjectClient.Search(
 		context.Background(),
 		&opensearchapi.SearchReq{
 			Indices: []string{indexName},
@@ -58,19 +57,17 @@ func (c *Client) Search(indexName string, requestBody []byte) (responseBody []by
 		return nil, errors.WithStack(err)
 	}
 
-	// Get the raw request body to return a byte array.
-	body := req.Inspect().Response.Body
-	defer body.Close()
-
-	res, err := io.ReadAll(body)
+	// Get the raw response body to return a byte array.
+	body := searchResponse.Inspect().Response.Body
+	result, err := io.ReadAll(body)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
-	log.Trace().Str("src", "opensearch").Msgf("status: %d, json: %s",
-		req.Inspect().Response.StatusCode, string(res))
+	log.Trace().Str("src", "opensearch").Msgf("search response - statusCode:'%d' json:'%s'",
+		searchResponse.Inspect().Response.StatusCode, string(result))
 
-	return res, nil
+	return result, nil
 }
 
 // Update updates documents in the given index using UpdateQueue (which is also part of this package).
