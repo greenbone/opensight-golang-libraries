@@ -17,6 +17,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+var (
+	ErrAliasDoesNotExist = errors.New("alias does not exist")
+)
+
 type indexFunction struct {
 	openSearchProjectClient *opensearchapi.Client
 }
@@ -86,7 +90,7 @@ func indexNameSliceOf(resultString []byte) ([]string, error) {
 func (i *indexFunction) IndexExists(indexName string) (bool, error) {
 	includeAlias := true
 
-	req, err := i.openSearchProjectClient.Indices.Exists(
+	_, err := i.openSearchProjectClient.Indices.Exists(
 		context.Background(),
 		opensearchapi.IndicesExistsReq{
 			Indices: []string{indexName},
@@ -95,8 +99,6 @@ func (i *indexFunction) IndexExists(indexName string) (bool, error) {
 			},
 		},
 	)
-
-	fmt.Printf("%v %v", req, err)
 
 	if err != nil {
 		return false, errors.WithStack(err)
@@ -120,7 +122,7 @@ func (i *indexFunction) DeleteIndex(indexName string) error {
 }
 
 func (i *indexFunction) CreateOrPutAlias(aliasName string, indexNames ...string) error {
-	req, err := i.openSearchProjectClient.Indices.Alias.Put(
+	_, err := i.openSearchProjectClient.Indices.Alias.Put(
 		context.Background(),
 		opensearchapi.AliasPutReq{
 			Indices: indexNames,
@@ -130,8 +132,6 @@ func (i *indexFunction) CreateOrPutAlias(aliasName string, indexNames ...string)
 	if err != nil {
 		return errors.WithStack(err)
 	}
-
-	fmt.Printf("%v %v", req, err)
 
 	return nil
 }
@@ -165,7 +165,7 @@ func (i *indexFunction) AliasExists(aliasName string) (bool, error) {
 
 	if len(req.Aliases) == 0 {
 		log.Debug().Str("src", "opensearch").Msgf("alias %s does not exist", aliasName)
-		return false, errors.WithStack(err)
+		return false, errors.WithStack(ErrAliasDoesNotExist)
 	}
 
 	return true, nil
