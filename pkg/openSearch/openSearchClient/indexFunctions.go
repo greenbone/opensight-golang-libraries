@@ -12,59 +12,53 @@ import (
 	"io"
 	"net/http"
 	"sort"
-	"strings"
 
-	"github.com/opensearch-project/opensearch-go/v2"
-	"github.com/opensearch-project/opensearch-go/v2/opensearchapi"
+	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )
 
 type indexFunction struct {
-	openSearchProjectClient *opensearch.Client
+	openSearchProjectClient *opensearchapi.Client
 }
 
-func NewIndexFunction(openSearchProjectClient *opensearch.Client) *indexFunction {
+func NewIndexFunction(openSearchProjectClient *opensearchapi.Client) *indexFunction {
 	return &indexFunction{openSearchProjectClient: openSearchProjectClient}
 }
 
 // CreateIndex creates an index
 func (i *indexFunction) CreateIndex(indexName string, indexSchema []byte) error {
-	res := opensearchapi.IndicesCreateRequest{
-		Index: indexName,
-		Body:  bytes.NewReader(indexSchema),
-	}
-	searchResponse, err := res.Do(context.Background(), i.openSearchProjectClient)
+	_, err := i.openSearchProjectClient.Indices.Create(
+		context.Background(),
+		opensearchapi.IndicesCreateReq{
+			Index: indexName,
+			Body:  bytes.NewReader(indexSchema),
+		},
+	)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	resultString, err := io.ReadAll(searchResponse.Body)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	return GetResponseError(searchResponse.StatusCode, resultString, indexName)
+	return nil
 }
 
 func (i *indexFunction) GetIndexes(pattern string) ([]string, error) {
-	request := opensearchapi.IndicesGetRequest{
-		Index:           []string{pattern},
-		ExpandWildcards: "open",
-	}
-
-	response, err := request.Do(context.Background(), i.openSearchProjectClient)
+	response, err := i.openSearchProjectClient.Indices.Get(
+		context.Background(),
+		opensearchapi.IndicesGetReq{
+			Indices: []string{pattern},
+			Params: opensearchapi.IndicesGetParams{
+				ExpandWildcards: "open",
+			},
+		},
+	)
 	if err != nil {
 		log.Debug().Msgf("Error while checking if index exists: %s", err)
 		return nil, errors.WithStack(err)
 	}
 
-	resultString, err := io.ReadAll(response.Body)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-
-	err = GetResponseError(response.StatusCode, resultString, "")
+	body := response.Inspect().Response.Body
+	resultString, err := io.ReadAll(body)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -91,49 +85,50 @@ func indexNameSliceOf(resultString []byte) ([]string, error) {
 
 func (i *indexFunction) IndexExists(indexName string) (bool, error) {
 	includeAlias := true
-	request := opensearchapi.IndicesExistsRequest{
-		Index:          []string{indexName},
-		AllowNoIndices: &includeAlias,
-	}
 
-	response, err := request.Do(context.Background(), i.openSearchProjectClient)
+	response, err := i.openSearchProjectClient.Indices.Exists(
+		context.Background(),
+		opensearchapi.IndicesExistsReq{
+			Indices: []string{indexName},
+			Params: opensearchapi.IndicesExistsParams{
+				AllowNoIndices: &includeAlias,
+			},
+		},
+	)
 	if err != nil {
+		if response.StatusCode == http.StatusNotFound {
+			return false, nil
+		}
+
 		log.Debug().Msgf("Error while checking if index exists: %s", err)
 		return false, errors.WithStack(err)
-	}
-
-	if response.StatusCode == http.StatusNotFound {
-		return false, nil
 	}
 
 	return true, nil
 }
 
 func (i *indexFunction) DeleteIndex(indexName string) error {
-	request := opensearchapi.IndicesDeleteRequest{
-		Index: []string{indexName},
-	}
-
-	response, err := request.Do(context.Background(), i.openSearchProjectClient)
+	_, err := i.openSearchProjectClient.Indices.Delete(
+		context.Background(),
+		opensearchapi.IndicesDeleteReq{
+			Indices: []string{indexName},
+		},
+	)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	resultString, err := io.ReadAll(response.Body)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	return GetResponseError(response.StatusCode, resultString, indexName)
+	return nil
 }
 
 func (i *indexFunction) CreateOrPutAlias(aliasName string, indexNames ...string) error {
-	request := opensearchapi.IndicesPutAliasRequest{
-		Index: indexNames,
-		Name:  aliasName,
-	}
-
-	_, err := request.Do(context.Background(), i.openSearchProjectClient)
+	_, err := i.openSearchProjectClient.Indices.Alias.Put(
+		context.Background(),
+		opensearchapi.AliasPutReq{
+			Indices: indexNames,
+			Alias:   aliasName,
+		},
+	)
 	if err != nil {
 		log.Debug().Msgf("Error while creating and putting alias: %s", err)
 		return errors.WithStack(err)
@@ -143,104 +138,89 @@ func (i *indexFunction) CreateOrPutAlias(aliasName string, indexNames ...string)
 }
 
 func (i *indexFunction) DeleteAliasFromIndex(indexName string, aliasName string) error {
-	request := opensearchapi.IndicesDeleteAliasRequest{
-		Index: []string{indexName},
-		Name:  []string{aliasName},
-	}
-
-	response, err := request.Do(context.Background(), i.openSearchProjectClient)
+	_, err := i.openSearchProjectClient.Indices.Alias.Delete(
+		context.Background(),
+		opensearchapi.AliasDeleteReq{
+			Indices: []string{indexName},
+			Alias:   []string{aliasName},
+		},
+	)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	resultString, err := io.ReadAll(response.Body)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	return GetResponseError(response.StatusCode, resultString, indexName)
+	return nil
 }
 
 func (i *indexFunction) AliasExists(aliasName string) (bool, error) {
-	request := opensearchapi.CatAliasesRequest{
-		Name: []string{aliasName},
-	}
-
-	response, err := request.Do(context.Background(), i.openSearchProjectClient)
+	response, err := i.openSearchProjectClient.Cat.Aliases(
+		context.Background(),
+		&opensearchapi.CatAliasesReq{
+			Aliases: []string{aliasName},
+		},
+	)
 	if err != nil {
+		if response.Inspect().Response.StatusCode == http.StatusNotFound {
+			return false, nil
+		}
 		return false, errors.WithStack(err)
 	}
 
-	if response.StatusCode == http.StatusNotFound {
+	if len(response.Aliases) == 0 {
+		log.Debug().Str("src", "opensearch").Msgf("alias %s does not exist", aliasName)
 		return false, nil
 	}
-	if response.Header.Get("Content-Length") == `0` {
-		log.Debug().Msgf("Alias %s does not exist", aliasName)
-		return false, nil
-	}
+
 	return true, nil
 }
 
 // previously AliasPointsToIndex
 func (i *indexFunction) GetIndexesForAlias(aliasName string) ([]string, error) {
 	data := make(map[string][]string)
-	request := &opensearchapi.CatAliasesRequest{
-		Name: []string{aliasName},
-	}
-
-	response, err := request.Do(context.Background(), i.openSearchProjectClient)
+	response, err := i.openSearchProjectClient.Cat.Aliases(
+		context.Background(),
+		&opensearchapi.CatAliasesReq{
+			Aliases: []string{aliasName},
+		},
+	)
 	if err != nil {
-		return []string{""}, err
+		return nil, errors.WithStack(err)
 	}
 
-	result, err := io.ReadAll(response.Body)
-	if err != nil {
-		return []string{""}, err
-	}
-
-	lines := strings.Split(string(result), "\n")
-
-	// Extract values line by line
-	for _, line := range lines {
-		parts := strings.Split(line, " ")
-
-		// Ignore empty lines
-		if len(parts) < 2 {
-			continue
-		}
-		alias := parts[0]
-		index := parts[1]
-		data[alias] = append(data[alias], index)
+	for _, alias := range response.Aliases {
+		data[alias.Alias] = append(data[alias.Alias], alias.Index)
 	}
 
 	return data[aliasName], nil
 }
 
 func (i *indexFunction) RemoveIndexesFromAlias(indexesToRemove []string, aliasName string) error {
-	if len(indexesToRemove) > 0 {
-		actions := i.createIndexRemovalActions(indexesToRemove, aliasName)
+	if len(indexesToRemove) <= 0 {
+		return nil
+	}
 
-		actionsBytes, err := json.Marshal(actions)
-		if err != nil {
-			log.Debug().Msgf("Error marshaling actions to remove indexes: %s", err)
-			return fmt.Errorf("error marshaling actions: %w", err)
-		}
+	actions := i.createIndexRemovalActions(indexesToRemove, aliasName)
 
-		res, err := i.openSearchProjectClient.Indices.UpdateAliases(bytes.NewReader(actionsBytes))
-		if err != nil {
-			return fmt.Errorf("error updating alias: %w", err)
-		}
-		defer func(Body io.ReadCloser) {
-			err := Body.Close()
-			if err != nil {
-				log.Debug().Msgf("Error closing response body: %s", err)
-			}
-		}(res.Body)
+	actionsBytes, err := json.Marshal(actions)
+	if err != nil {
+		log.Debug().Msgf("Error marshaling actions to remove indexes: %s", err)
+		return fmt.Errorf("error marshaling actions: %w", err)
+	}
 
-		if res.IsError() {
-			log.Debug().Msgf("Error removing non-compliant indexes from alias: %s", res.String())
-			return fmt.Errorf("error removing non-compliant indexes from alias: %s", res.String())
-		}
+	res, err := i.openSearchProjectClient.Client.Do(
+		context.Background(),
+		opensearchapi.AliasesReq{
+			Body: bytes.NewReader(actionsBytes),
+		},
+		nil,
+	)
+	if err != nil {
+		return fmt.Errorf("error updating alias: %w", err)
+	}
+
+	if res.IsError() {
+		log.Debug().Msgf("Error removing non-compliant indexes from alias: %s", res.String())
+		return fmt.Errorf("error removing non-compliant indexes from alias: %s", res.String())
 	}
 
 	log.Debug().Msg("All non-compliant indexes removed from the alias.")
