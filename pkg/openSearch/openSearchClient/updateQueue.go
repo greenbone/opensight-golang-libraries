@@ -40,12 +40,12 @@ type UpdateQueue struct {
 
 // NewRequestQueue creates a new update queue.
 //
-// client must implement the opensearchapi.Transport interface. This can be the official OpenSearch client. Use NewOpenSearchProjectClient to create it.
+// openSearchClient is the official OpenSearch client. Use NewOpenSearchProjectClient to create it.
 // updateMaxRetries is the number of retries for update requests.
 // updateRetryDelay is the delay between retries.
-func NewRequestQueue(client *opensearchapi.Client, updateMaxRetries int, updateRetryDelay time.Duration) *UpdateQueue {
+func NewRequestQueue(openSearchClient *opensearchapi.Client, updateMaxRetries int, updateRetryDelay time.Duration) *UpdateQueue {
 	rQueue := &UpdateQueue{
-		client:           client,
+		client:           openSearchClient,
 		queue:            make(chan *Request, 10),
 		stop:             make(chan bool),
 		updateMaxRetries: updateMaxRetries,
@@ -126,11 +126,14 @@ func (q *UpdateQueue) run() {
 }
 
 func (q *UpdateQueue) update(indexName string, requestBody []byte) ([]byte, error) {
-	log.Debug().Str("src", "opensearch-queue").Msgf("request: %s", string(requestBody))
+	log.Debug().Str("src", "opensearch-queue").Msgf("update requestBody: %s", string(requestBody))
 
+	var updateResponse *opensearchapi.UpdateByQueryResp
+	var result []byte
 	var err error
+
 	for i := 0; i < q.updateMaxRetries; i++ {
-		req, err := q.client.UpdateByQuery(
+		updateResponse, err = q.client.UpdateByQuery(
 			context.Background(),
 			opensearchapi.UpdateByQueryReq{
 				Indices: []string{indexName},
@@ -141,25 +144,24 @@ func (q *UpdateQueue) update(indexName string, requestBody []byte) ([]byte, erro
 			},
 		)
 		if err != nil {
-			log.Error().Str("src", "opensearch-queue").Msgf(
+			log.Warn().Str("src", "opensearch-queue").Msgf(
 				"attempt %d: error in UpdateByQuery: %s", i+1, err)
 			time.Sleep(q.updateRetryDelay)
 			continue
 		}
 
-		body := req.Inspect().Response.Body
-		defer body.Close()
-
-		res, err := io.ReadAll(body)
+		body := updateResponse.Inspect().Response.Body
+		result, err = io.ReadAll(body)
 		if err != nil {
-			log.Error().Str("src", "opensearch-queue").Msgf("status: %d, json: %s",
-				req.Inspect().Response.StatusCode, string(res))
+			log.Warn().Str("src", "opensearch-queue").Msgf(
+				"attempt %d: error in io.ReadAll: %s", i+1, err)
 			time.Sleep(q.updateRetryDelay)
 			continue
 		}
 
-		log.Debug().Str("src", "opensearch-queue").Msgf("attempt %d: request successful", i+1)
-		return res, nil
+		log.Debug().Str("src", "opensearch-queue").Msgf(
+			"attempt %d: Update request successful", i+1)
+		return result, nil
 	}
 
 	return nil, errors.WithStack(err)
