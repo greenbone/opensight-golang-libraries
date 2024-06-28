@@ -131,7 +131,7 @@ func (q *UpdateQueue) update(indexName string, requestBody []byte) ([]byte, erro
 	var err error
 	for i := 0; i < q.updateMaxRetries; i++ {
 		req, err := q.client.UpdateByQuery(
-			context.TODO(),
+			context.Background(),
 			opensearchapi.UpdateByQueryReq{
 				Indices: []string{indexName},
 				Body:    bytes.NewReader(requestBody),
