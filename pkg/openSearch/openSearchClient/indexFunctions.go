@@ -188,37 +188,39 @@ func (i *indexFunction) GetIndexesForAlias(aliasName string) ([]string, error) {
 }
 
 func (i *indexFunction) RemoveIndexesFromAlias(indexesToRemove []string, aliasName string) error {
-	if len(indexesToRemove) > 0 {
-		actions := i.createIndexRemovalActions(indexesToRemove, aliasName)
+	if len(indexesToRemove) <= 0 {
+		return nil
+	}
 
-		actionsBytes, err := json.Marshal(actions)
+	actions := i.createIndexRemovalActions(indexesToRemove, aliasName)
+
+	actionsBytes, err := json.Marshal(actions)
+	if err != nil {
+		log.Debug().Msgf("Error marshaling actions to remove indexes: %s", err)
+		return fmt.Errorf("error marshaling actions: %w", err)
+	}
+
+	res, err := i.openSearchProjectClient.Client.Do(
+		context.Background(),
+		opensearchapi.AliasesReq{
+			Body: bytes.NewReader(actionsBytes),
+		},
+		nil,
+	)
+	if err != nil {
+		return fmt.Errorf("error updating alias: %w", err)
+	}
+
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
 		if err != nil {
-			log.Debug().Msgf("Error marshaling actions to remove indexes: %s", err)
-			return fmt.Errorf("error marshaling actions: %w", err)
+			log.Debug().Msgf("Error closing response body: %s", err)
 		}
+	}(res.Body)
 
-		res, err := i.openSearchProjectClient.Client.Do(
-			context.Background(),
-			opensearchapi.AliasesReq{
-				Body: bytes.NewReader(actionsBytes),
-			},
-			nil,
-		)
-		if err != nil {
-			return fmt.Errorf("error updating alias: %w", err)
-		}
-
-		defer func(Body io.ReadCloser) {
-			err := Body.Close()
-			if err != nil {
-				log.Debug().Msgf("Error closing response body: %s", err)
-			}
-		}(res.Body)
-
-		if res.IsError() {
-			log.Debug().Msgf("Error removing non-compliant indexes from alias: %s", res.String())
-			return fmt.Errorf("error removing non-compliant indexes from alias: %s", res.String())
-		}
+	if res.IsError() {
+		log.Debug().Msgf("Error removing non-compliant indexes from alias: %s", res.String())
+		return fmt.Errorf("error removing non-compliant indexes from alias: %s", res.String())
 	}
 
 	log.Debug().Msg("All non-compliant indexes removed from the alias.")
