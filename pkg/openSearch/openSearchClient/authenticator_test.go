@@ -30,7 +30,7 @@ func TestGetAuthenticationMethod(t *testing.T) {
 	tests := []struct {
 		name           string
 		config         config.OpensearchClientConfig
-		tokenReceiver  ITokenReceiver
+		tokenReceiver  TokenReceiver
 		expectedMethod authMethod
 		expectedError  bool
 	}{

@@ -25,8 +25,8 @@ const (
 	openId authMethod = "openid"
 )
 
-// ITokenReceiver is an interface for receiving client access tokens.
-type ITokenReceiver interface {
+// TokenReceiver is an interface for receiving client access tokens.
+type TokenReceiver interface {
 	GetClientAccessToken(clientName, clientSecret string) (string, error)
 }
 
@@ -34,7 +34,7 @@ type ITokenReceiver interface {
 type Authenticator struct {
 	clientTransport opensearchtransport.Interface
 	config          config.OpensearchClientConfig
-	tokenReceiver   ITokenReceiver
+	tokenReceiver   TokenReceiver
 	authMethod      authMethod
 }
 
@@ -46,7 +46,7 @@ var _ opensearchtransport.Interface = &Authenticator{}
 // config is the configuration for the OpenSearch client.
 // tokenReceiver is the token receiver for OpenID authentication and must implement the GetClientAccessToken function. It can be nil for basic authentication.
 func InjectAuthenticationIntoClient(client *opensearchapi.Client,
-	config config.OpensearchClientConfig, tokenReceiver ITokenReceiver,
+	config config.OpensearchClientConfig, tokenReceiver TokenReceiver,
 ) error {
 	method, err := getAuthenticationMethod(config, tokenReceiver)
 	if err != nil {
@@ -70,7 +70,7 @@ func InjectAuthenticationIntoClient(client *opensearchapi.Client,
 }
 
 // getAuthenticationMethod is a helper function that determines the authentication method based on the provided configuration.
-func getAuthenticationMethod(conf config.OpensearchClientConfig, tokenReceiver ITokenReceiver) (authMethod, error) {
+func getAuthenticationMethod(conf config.OpensearchClientConfig, tokenReceiver TokenReceiver) (authMethod, error) {
 	if conf.AuthUsername == "" || conf.AuthPassword == "" {
 		return "", fmt.Errorf("username and password must be set in configuration")
 	}
