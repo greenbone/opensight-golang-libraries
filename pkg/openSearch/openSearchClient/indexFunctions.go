@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"sort"
 
 	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
@@ -42,7 +43,7 @@ func (i *indexFunction) CreateIndex(indexName string, indexSchema []byte) error 
 }
 
 func (i *indexFunction) GetIndexes(pattern string) ([]string, error) {
-	req, err := i.openSearchProjectClient.Indices.Get(
+	response, err := i.openSearchProjectClient.Indices.Get(
 		context.Background(),
 		opensearchapi.IndicesGetReq{
 			Indices: []string{pattern},
@@ -52,18 +53,17 @@ func (i *indexFunction) GetIndexes(pattern string) ([]string, error) {
 		},
 	)
 	if err != nil {
+		log.Debug().Msgf("Error while checking if index exists: %s", err)
 		return nil, errors.WithStack(err)
 	}
 
-	body := req.Inspect().Response.Body
-	defer body.Close()
-
-	res, err := io.ReadAll(body)
+	body := response.Inspect().Response.Body
+	resultString, err := io.ReadAll(body)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
-	return indexNameSliceOf(res)
+	return indexNameSliceOf(resultString)
 }
 
 func indexNameSliceOf(resultString []byte) ([]string, error) {
@@ -86,7 +86,7 @@ func indexNameSliceOf(resultString []byte) ([]string, error) {
 func (i *indexFunction) IndexExists(indexName string) (bool, error) {
 	includeAlias := true
 
-	_, err := i.openSearchProjectClient.Indices.Exists(
+	response, err := i.openSearchProjectClient.Indices.Exists(
 		context.Background(),
 		opensearchapi.IndicesExistsReq{
 			Indices: []string{indexName},
@@ -97,6 +97,11 @@ func (i *indexFunction) IndexExists(indexName string) (bool, error) {
 	)
 
 	if err != nil {
+		if response.StatusCode == http.StatusNotFound {
+			return false, nil
+		}
+
+		log.Debug().Msgf("Error while checking if index exists: %s", err)
 		return false, errors.WithStack(err)
 	}
 
@@ -126,6 +131,7 @@ func (i *indexFunction) CreateOrPutAlias(aliasName string, indexNames ...string)
 		},
 	)
 	if err != nil {
+		log.Debug().Msgf("Error while creating and putting alias: %s", err)
 		return errors.WithStack(err)
 	}
 
@@ -148,7 +154,7 @@ func (i *indexFunction) DeleteAliasFromIndex(indexName string, aliasName string)
 }
 
 func (i *indexFunction) AliasExists(aliasName string) (bool, error) {
-	req, err := i.openSearchProjectClient.Cat.Aliases(
+	response, err := i.openSearchProjectClient.Cat.Aliases(
 		context.Background(),
 		&opensearchapi.CatAliasesReq{
 			Aliases: []string{aliasName},
@@ -156,10 +162,13 @@ func (i *indexFunction) AliasExists(aliasName string) (bool, error) {
 	)
 
 	if err != nil {
+		if response.Inspect().Response.StatusCode == http.StatusNotFound {
+			return false, nil
+		}
 		return false, errors.WithStack(err)
 	}
 
-	if len(req.Aliases) == 0 {
+	if len(response.Aliases) == 0 {
 		log.Debug().Str("src", "opensearch").Msgf("alias %s does not exist", aliasName)
 		return false, nil
 	}
@@ -169,7 +178,8 @@ func (i *indexFunction) AliasExists(aliasName string) (bool, error) {
 
 // previously AliasPointsToIndex
 func (i *indexFunction) GetIndexesForAlias(aliasName string) ([]string, error) {
-	req, err := i.openSearchProjectClient.Cat.Aliases(
+	data := make(map[string][]string)
+	response, err := i.openSearchProjectClient.Cat.Aliases(
 		context.Background(),
 		&opensearchapi.CatAliasesReq{
 			Aliases: []string{aliasName},
@@ -179,12 +189,11 @@ func (i *indexFunction) GetIndexesForAlias(aliasName string) ([]string, error) {
 		return nil, errors.WithStack(err)
 	}
 
-	aliases := []string{}
-	for _, alias := range req.Aliases {
-		aliases = append(aliases, alias.Alias)
+	for _, alias := range response.Aliases {
+		data[alias.Alias] = append(data[alias.Alias], alias.Index)
 	}
 
-	return aliases, nil
+	return data[aliasName], nil
 }
 
 func (i *indexFunction) RemoveIndexesFromAlias(indexesToRemove []string, aliasName string) error {
@@ -210,13 +219,6 @@ func (i *indexFunction) RemoveIndexesFromAlias(indexesToRemove []string, aliasNa
 	if err != nil {
 		return fmt.Errorf("error updating alias: %w", err)
 	}
-
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			log.Debug().Msgf("Error closing response body: %s", err)
-		}
-	}(res.Body)
 
 	if res.IsError() {
 		log.Debug().Msgf("Error removing non-compliant indexes from alias: %s", res.String())

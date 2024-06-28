@@ -60,7 +60,8 @@ func TestIndexCheck(t *testing.T) {
 	iFunc := NewIndexFunction(client)
 
 	// There shall be no index at the beginning
-	doesNotExists, _ := iFunc.IndexExists("test")
+	doesNotExists, err := iFunc.IndexExists("test")
+	require.NoError(t, err)
 	assert.Equal(t, false, doesNotExists)
 
 	err = iFunc.CreateIndex("testindex", []byte(testIndex))
@@ -100,6 +101,8 @@ func TestIndexCheck(t *testing.T) {
 	indexes, err := iFunc.GetIndexesForAlias("aliasName")
 	assert.NoError(t, err)
 	assert.True(t, len(indexes) == 2)
+	assert.Contains(t, indexes, "testindex")
+	assert.Contains(t, indexes, "testindex2")
 
 	// Now get the indexes by pattern
 	getIndexes, err := iFunc.GetIndexes("testinde*")
@@ -123,9 +126,11 @@ func TestIndexCheck(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Now check if the indexes are deleted
-	doesNotExists, _ = iFunc.IndexExists("testindex")
+	doesNotExists, err = iFunc.IndexExists("testindex")
+	require.NoError(t, err)
 	assert.Equal(t, false, doesNotExists)
 
-	doesNotExists, _ = iFunc.IndexExists("testindex2")
+	doesNotExists, err = iFunc.IndexExists("testindex2")
+	require.NoError(t, err)
 	assert.Equal(t, false, doesNotExists)
 }
