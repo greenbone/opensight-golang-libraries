@@ -17,10 +17,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var (
-	ErrAliasDoesNotExist = errors.New("alias does not exist")
-)
-
 type indexFunction struct {
 	openSearchProjectClient *opensearchapi.Client
 }
