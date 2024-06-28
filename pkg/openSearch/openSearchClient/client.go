@@ -168,7 +168,6 @@ func (c *Client) BulkUpdate(indexName string, requestBody []byte) error {
 	return nil
 }
 
-
 // Close stops the underlying UpdateQueue allowing a graceful shutdown.
 func (c *Client) Close() {
 	c.updateQueue.Stop()

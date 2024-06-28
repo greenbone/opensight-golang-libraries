@@ -95,7 +95,6 @@ func (i *indexFunction) IndexExists(indexName string) (bool, error) {
 			},
 		},
 	)
-
 	if err != nil {
 		if response.StatusCode == http.StatusNotFound {
 			return false, nil
@@ -160,7 +159,6 @@ func (i *indexFunction) AliasExists(aliasName string) (bool, error) {
 			Aliases: []string{aliasName},
 		},
 	)
-
 	if err != nil {
 		if response.Inspect().Response.StatusCode == http.StatusNotFound {
 			return false, nil
