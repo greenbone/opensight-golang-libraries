@@ -9,7 +9,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net/http"
 	"strings"
 	"time"
 
@@ -172,39 +171,6 @@ func (c *Client) BulkUpdate(indexName string, requestBody []byte) error {
 	return nil
 }
 
-// GetResponseError checks if a response from OpenSearch indicated success and returns an error if not.
-func GetResponseError(statusCode int, responseString []byte, indexName string) error {
-	if statusCode >= 200 && statusCode < 300 {
-		errorResponse := &BulkResponse{}
-		err := jsoniter.Unmarshal(responseString, errorResponse)
-		if err != nil {
-			return errors.WithStack(err)
-		}
-
-		if errorResponse.HasError {
-			return errors.Errorf("request error %s", string(responseString))
-		}
-
-		return nil
-	}
-
-	if statusCode == http.StatusBadRequest {
-		openSearchErrorResponse := &OpenSearchErrorResponse{}
-		err := jsoniter.Unmarshal(responseString, openSearchErrorResponse)
-		if err != nil {
-			return errors.WithStack(err)
-		}
-
-		if openSearchErrorResponse.Error.Type == "resource_already_exists_exception" {
-			return NewOpenSearchResourceAlreadyExistsWithStack(
-				fmt.Sprintf("Resource '%s' already exists", indexName))
-		} else {
-			return NewOpenSearchErrorWithStack(openSearchErrorResponse.Error.Reason)
-		}
-	} else {
-		return NewOpenSearchErrorWithStack(string(responseString))
-	}
-}
 
 // Close stops the underlying UpdateQueue allowing a graceful shutdown.
 func (c *Client) Close() {
