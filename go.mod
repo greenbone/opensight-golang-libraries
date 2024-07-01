@@ -14,7 +14,7 @@ require (
 	github.com/opensearch-project/opensearch-go/v4 v4.0.0
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.33.0
-	github.com/samber/lo v1.39.0
+	github.com/samber/lo v1.44.0
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
 	github.com/testcontainers/testcontainers-go v0.31.0
