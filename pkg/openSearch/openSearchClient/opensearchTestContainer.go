@@ -50,9 +50,12 @@ func StartOpensearchTestContainer(ctx context.Context) (testcontainers.Container
 	localPort, _ := opensearchContainer.MappedPort(ctx, openSearchTestDefaultHttpPort)
 
 	conf := config.OpensearchClientConfig{
-		Host:  host,
-		Port:  localPort.Int(),
-		Https: false,
+		Host:         host,
+		Port:         localPort.Int(),
+		Https:        false,
+		AuthMethod:   "basic",
+		AuthUsername: "user",
+		AuthPassword: "password",
 	}
 
 	return opensearchContainer, conf, nil
