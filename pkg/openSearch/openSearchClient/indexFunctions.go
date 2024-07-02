@@ -103,10 +103,6 @@ func (i *IndexFunction) IndexExists(indexName string) (bool, error) {
 			return false, nil
 		}
 
-		if response != nil && response.StatusCode != http.StatusOK {
-			return false, fmt.Errorf(response.String())
-		}
-
 		log.Debug().Msgf("Error while checking if index exists: %s", err)
 		return false, errors.WithStack(err)
 	}

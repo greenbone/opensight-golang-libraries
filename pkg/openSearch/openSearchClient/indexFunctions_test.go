@@ -53,7 +53,7 @@ func TestIndexCheck(t *testing.T) {
 	}()
 
 	// Init OpenSearch
-	client, err := NewOpenSearchProjectClient(context.Background(), conf)
+	client, err := NewOpenSearchProjectClient(context.Background(), conf, nil)
 	require.NoError(t, err)
 
 	// Init Index
