@@ -36,6 +36,9 @@ func (i *indexFunction) CreateIndex(indexName string, indexSchema []byte) error 
 		},
 	)
 	if err != nil {
+		// If the error is due to a lack of disk space or memory, we should log it as a warning
+		// see details in https://repost.aws/knowledge-center/opensearch-403-clusterblockexception
+		log.Err(err).Msgf("Error while creating index: please check disk space and memory usage")
 		return errors.WithStack(err)
 	}
 
@@ -96,8 +99,12 @@ func (i *indexFunction) IndexExists(indexName string) (bool, error) {
 		},
 	)
 	if err != nil {
-		if response.StatusCode == http.StatusNotFound {
+		if response != nil && response.StatusCode == http.StatusNotFound {
 			return false, nil
+		}
+
+		if response != nil && response.StatusCode != http.StatusOK {
+			return false, fmt.Errorf(response.String())
 		}
 
 		log.Debug().Msgf("Error while checking if index exists: %s", err)
