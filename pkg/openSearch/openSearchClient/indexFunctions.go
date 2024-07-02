@@ -18,16 +18,16 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type indexFunction struct {
+type IndexFunction struct {
 	openSearchProjectClient *opensearchapi.Client
 }
 
-func NewIndexFunction(openSearchProjectClient *opensearchapi.Client) *indexFunction {
-	return &indexFunction{openSearchProjectClient: openSearchProjectClient}
+func NewIndexFunction(openSearchProjectClient *opensearchapi.Client) *IndexFunction {
+	return &IndexFunction{openSearchProjectClient: openSearchProjectClient}
 }
 
 // CreateIndex creates an index
-func (i *indexFunction) CreateIndex(indexName string, indexSchema []byte) error {
+func (i *IndexFunction) CreateIndex(indexName string, indexSchema []byte) error {
 	_, err := i.openSearchProjectClient.Indices.Create(
 		context.Background(),
 		opensearchapi.IndicesCreateReq{
@@ -45,7 +45,7 @@ func (i *indexFunction) CreateIndex(indexName string, indexSchema []byte) error 
 	return nil
 }
 
-func (i *indexFunction) GetIndexes(pattern string) ([]string, error) {
+func (i *IndexFunction) GetIndexes(pattern string) ([]string, error) {
 	response, err := i.openSearchProjectClient.Indices.Get(
 		context.Background(),
 		opensearchapi.IndicesGetReq{
@@ -86,7 +86,7 @@ func indexNameSliceOf(resultString []byte) ([]string, error) {
 	return indexSlice, nil
 }
 
-func (i *indexFunction) IndexExists(indexName string) (bool, error) {
+func (i *IndexFunction) IndexExists(indexName string) (bool, error) {
 	includeAlias := true
 
 	response, err := i.openSearchProjectClient.Indices.Exists(
@@ -114,7 +114,7 @@ func (i *indexFunction) IndexExists(indexName string) (bool, error) {
 	return true, nil
 }
 
-func (i *indexFunction) DeleteIndex(indexName string) error {
+func (i *IndexFunction) DeleteIndex(indexName string) error {
 	_, err := i.openSearchProjectClient.Indices.Delete(
 		context.Background(),
 		opensearchapi.IndicesDeleteReq{
@@ -128,7 +128,7 @@ func (i *indexFunction) DeleteIndex(indexName string) error {
 	return nil
 }
 
-func (i *indexFunction) CreateOrPutAlias(aliasName string, indexNames ...string) error {
+func (i *IndexFunction) CreateOrPutAlias(aliasName string, indexNames ...string) error {
 	_, err := i.openSearchProjectClient.Indices.Alias.Put(
 		context.Background(),
 		opensearchapi.AliasPutReq{
@@ -144,7 +144,7 @@ func (i *indexFunction) CreateOrPutAlias(aliasName string, indexNames ...string)
 	return nil
 }
 
-func (i *indexFunction) DeleteAliasFromIndex(indexName string, aliasName string) error {
+func (i *IndexFunction) DeleteAliasFromIndex(indexName string, aliasName string) error {
 	_, err := i.openSearchProjectClient.Indices.Alias.Delete(
 		context.Background(),
 		opensearchapi.AliasDeleteReq{
@@ -159,7 +159,27 @@ func (i *indexFunction) DeleteAliasFromIndex(indexName string, aliasName string)
 	return nil
 }
 
-func (i *indexFunction) AliasExists(aliasName string) (bool, error) {
+func (i *IndexFunction) IndexHasAlias(indexNames []string, aliasNames []string) (bool, error) {
+	response, err := i.openSearchProjectClient.Indices.Alias.Exists(
+		context.Background(),
+		opensearchapi.AliasExistsReq{
+			Indices: indexNames,
+			Alias:   aliasNames,
+		},
+	)
+	if err != nil {
+		if response != nil && response.StatusCode == http.StatusNotFound {
+			return false, nil
+		}
+
+		log.Debug().Msgf("Error while checking the index alias: %s", err)
+		return false, errors.WithStack(err)
+	}
+
+	return true, nil
+}
+
+func (i *IndexFunction) AliasExists(aliasName string) (bool, error) {
 	response, err := i.openSearchProjectClient.Cat.Aliases(
 		context.Background(),
 		&opensearchapi.CatAliasesReq{
@@ -167,7 +187,7 @@ func (i *indexFunction) AliasExists(aliasName string) (bool, error) {
 		},
 	)
 	if err != nil {
-		if response.Inspect().Response.StatusCode == http.StatusNotFound {
+		if response != nil && response.Inspect().Response.StatusCode == http.StatusNotFound {
 			return false, nil
 		}
 		return false, errors.WithStack(err)
@@ -182,7 +202,7 @@ func (i *indexFunction) AliasExists(aliasName string) (bool, error) {
 }
 
 // previously AliasPointsToIndex
-func (i *indexFunction) GetIndexesForAlias(aliasName string) ([]string, error) {
+func (i *IndexFunction) GetIndexesForAlias(aliasName string) ([]string, error) {
 	data := make(map[string][]string)
 	response, err := i.openSearchProjectClient.Cat.Aliases(
 		context.Background(),
@@ -201,7 +221,7 @@ func (i *indexFunction) GetIndexesForAlias(aliasName string) ([]string, error) {
 	return data[aliasName], nil
 }
 
-func (i *indexFunction) RemoveIndexesFromAlias(indexesToRemove []string, aliasName string) error {
+func (i *IndexFunction) RemoveIndexesFromAlias(indexesToRemove []string, aliasName string) error {
 	if len(indexesToRemove) <= 0 {
 		return nil
 	}
@@ -234,7 +254,7 @@ func (i *indexFunction) RemoveIndexesFromAlias(indexesToRemove []string, aliasNa
 	return nil
 }
 
-func (i *indexFunction) createIndexRemovalActions(indexesToRemove []string, aliasName string) map[string]interface{} {
+func (i *IndexFunction) createIndexRemovalActions(indexesToRemove []string, aliasName string) map[string]interface{} {
 	var actions []map[string]map[string]string
 	for _, idx := range indexesToRemove {
 		action := map[string]map[string]string{
