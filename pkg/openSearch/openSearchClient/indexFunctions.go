@@ -36,6 +36,9 @@ func (i *indexFunction) CreateIndex(indexName string, indexSchema []byte) error 
 		},
 	)
 	if err != nil {
+		// If the error is due to a lack of disk space or memory, we should log it as a warning
+		// see details in https://repost.aws/knowledge-center/opensearch-403-clusterblockexception
+		log.Err(err).Msgf("Error while creating index: please check disk space and memory usage")
 		return errors.WithStack(err)
 	}
 
