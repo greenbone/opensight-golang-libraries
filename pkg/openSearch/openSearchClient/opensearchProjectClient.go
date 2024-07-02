@@ -22,7 +22,7 @@ import (
 //
 // ctx is the context to use for the connection.
 // config is the configuration for the client.
-func NewOpenSearchProjectClient(ctx context.Context, config config.OpensearchClientConfig) (*opensearchapi.Client, error) {
+func NewOpenSearchProjectClient(ctx context.Context, config config.OpensearchClientConfig, tokenReceiver TokenReceiver) (*opensearchapi.Client, error) {
 	protocol := "http"
 	if config.Https {
 		protocol = "https"
@@ -48,6 +48,11 @@ func NewOpenSearchProjectClient(ctx context.Context, config config.OpensearchCli
 			)
 			if err != nil {
 				return fmt.Errorf("search client couldn't be created: %w", err)
+			}
+
+			err = InjectAuthenticationIntoClient(c, config, tokenReceiver)
+			if err != nil {
+				return fmt.Errorf("error injecting authentication into OpenSearch client: %w", err)
 			}
 
 			_, err = c.Ping(ctx, &opensearchapi.PingReq{})

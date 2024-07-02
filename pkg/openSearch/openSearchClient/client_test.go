@@ -162,7 +162,7 @@ func TestClient(t *testing.T) {
 		opensearchContainer.Terminate(ctx)
 	}()
 
-	opensearchProjectClient, err := NewOpenSearchProjectClient(context.Background(), conf)
+	opensearchProjectClient, err := NewOpenSearchProjectClient(context.Background(), conf, nil)
 	require.NoError(t, err)
 	require.NotNil(t, opensearchProjectClient)
 
