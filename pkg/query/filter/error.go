@@ -22,10 +22,6 @@ func NewValidationError(format string, value ...any) *ValidationError {
 	}
 }
 
-func NewValidationErrorWithStack(format string, value ...any) error {
-	return NewValidationError(format, value...)
-}
-
 type InvalidFilterFieldError struct {
 	message string
 }
