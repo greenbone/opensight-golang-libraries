@@ -11,24 +11,19 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pkg/errors"
+	"errors"
 )
 
 const (
-
-	// AggregateMetricSum represents an aggregate metric of type sum.
+	// AggregateMetricSum is a AggregateMetric of type sum.
 	AggregateMetricSum AggregateMetric = "sum"
-
-	// AggregateMetricMin
+	// AggregateMetricMin is a AggregateMetric of type min.
 	AggregateMetricMin AggregateMetric = "min"
-
-	// AggregateMetricMax is a constant of type AggregateMetric that represents the maximum aggregation metric.
+	// AggregateMetricMax is a AggregateMetric of type max.
 	AggregateMetricMax AggregateMetric = "max"
-
-	// AggregateMetricAvg is a constant of type AggregateMetric representing the average aggregate metric.
+	// AggregateMetricAvg is a AggregateMetric of type avg.
 	AggregateMetricAvg AggregateMetric = "avg"
-
-	// AggregateMetricValueCount is a constant of type AggregateMetric with a value of "valueCount".
+	// AggregateMetricValueCount is a AggregateMetric of type valueCount.
 	AggregateMetricValueCount AggregateMetric = "valueCount"
 )
 

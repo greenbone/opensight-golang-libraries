@@ -4,8 +4,6 @@
 
 package openSearchClient
 
-import "github.com/pkg/errors"
-
 type OpenSearchErrors struct {
 	Reasons []OpenSearchRootCause
 	Type    string
@@ -37,10 +35,6 @@ func NewOpenSearchError(message string) *OpenSearchError {
 	}
 }
 
-func NewOpenSearchErrorWithStack(message string) error {
-	return errors.WithStack(NewOpenSearchError(message))
-}
-
 // OpenSearchResourceAlreadyExists openSearch resource already exists
 type OpenSearchResourceAlreadyExists struct {
 	Message string
@@ -56,10 +50,6 @@ func NewOpenSearchResourceAlreadyExists(message string) *OpenSearchResourceAlrea
 	}
 }
 
-func NewOpenSearchResourceAlreadyExistsWithStack(message string) error {
-	return errors.WithStack(NewOpenSearchResourceAlreadyExists(message))
-}
-
 // OpenSearchResourceNotFound openSearch resource already exists
 type OpenSearchResourceNotFound struct {
 	Message string
@@ -73,10 +63,6 @@ func NewOpenSearchResourceNotFound(message string) *OpenSearchResourceNotFound {
 	return &OpenSearchResourceNotFound{
 		Message: message,
 	}
-}
-
-func NewOpenSearchResourceNotFoundWithStack(message string) error {
-	return errors.WithStack(NewOpenSearchResourceNotFound(message))
 }
 
 type IndexError struct {

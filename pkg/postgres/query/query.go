@@ -9,9 +9,10 @@ import (
 	"reflect"
 	"strings"
 
+	"errors"
+
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
 	"github.com/lib/pq"
-	"github.com/pkg/errors"
 )
 
 func getQuotedName(fieldName string) (string, error) {
@@ -38,7 +39,7 @@ func simpleOperatorCondition(
 ) (conditionTemplate string, err error) {
 	quotedName, err := getQuotedName(field.Name)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to parse quoted name")
+		return "", fmt.Errorf("failed to parse quoted name: %w", err)
 	}
 
 	if valueIsList {
@@ -62,7 +63,7 @@ func checkFieldValueType(field filter.RequestField) (valueIsList bool, valueList
 	if reflect.TypeOf(field.Value).Kind() == reflect.Slice {
 		valueList, valueIsList = field.Value.([]any)
 		if !valueIsList {
-			err = errors.Errorf("list field '%s' must have type []any, got %T", field.Name, field.Value)
+			err = fmt.Errorf("list field '%s' must have type []any, got %T", field.Name, field.Value)
 			return false, nil, err
 		}
 	} else {
@@ -81,7 +82,7 @@ func likeOperatorCondition(
 ) (conditionTemplate string, err error) {
 	quotedName, err := getQuotedName(field.Name)
 	if err != nil {
-		return "", errors.Wrap(err, "could not get quoted name")
+		return "", fmt.Errorf("could not get quoted name: %w", err)
 	}
 
 	if valueIsList {
@@ -92,7 +93,7 @@ func likeOperatorCondition(
 		}
 		for _, element := range valueList {
 			if _, ok := element.(string); !ok {
-				err = errors.Errorf(
+				err = fmt.Errorf(
 					"operator '%s' requires string values, got %T",
 					field.Operator, element,
 				)
@@ -105,7 +106,7 @@ func likeOperatorCondition(
 		if _, ok := field.Value.(string); ok {
 			conditionTemplate = singleLikeTemplate(quotedName, negate, beginsWith)
 		} else {
-			err = errors.Errorf("operator '%s' requires a string value", field.Operator)
+			err = fmt.Errorf("operator '%s' requires a string value", field.Operator)
 			return "", err
 		}
 	}
@@ -156,16 +157,16 @@ func simpleSingleStringValueOperatorCondition(
 	field filter.RequestField, valueIsList bool, singleValueTemplate string,
 ) (conditionTemplate string, err error) {
 	if valueIsList {
-		err = errors.Errorf("operator '%s' does not support multi-select", field.Operator)
+		err = fmt.Errorf("operator '%s' does not support multi-select", field.Operator)
 		return "", err
 	} else if _, ok := field.Value.(string); ok {
 		quotedName, err := getQuotedName(field.Name)
 		if err != nil {
-			return "", errors.Wrap(err, "could not get quoted name")
+			return "", fmt.Errorf("could not get quoted name: %w", err)
 		}
 		conditionTemplate = fmt.Sprintf(singleValueTemplate, quotedName)
 	} else {
-		err = errors.Errorf("operator '%s' requires a string value", field.Operator)
+		err = fmt.Errorf("operator '%s' requires a string value", field.Operator)
 		return "", err
 	}
 	return conditionTemplate, nil

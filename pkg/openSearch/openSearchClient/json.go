@@ -10,9 +10,10 @@ import (
 	"time"
 	"unsafe"
 
+	"errors"
+
 	"github.com/go-playground/validator/v10"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/pkg/errors"
 )
 
 func InitializeJson(timeFormats []string) {
@@ -29,7 +30,7 @@ func InitializeJson(timeFormats []string) {
 		}
 
 		if err != nil {
-			iter.Error = errors.WithStack(err)
+			iter.Error = err
 			return
 		}
 	})
@@ -68,8 +69,9 @@ func validateStruct(v any) error {
 	}
 
 	var validationErrors validator.ValidationErrors
+
 	if errors.As(err, &validationErrors) {
-		return errors.WithStack(err)
+		return err
 	}
 
 	return nil
@@ -79,7 +81,7 @@ func validateStruct(v any) error {
 func UnmarshalWithoutValidation(data []byte, v any) error {
 	reportUpdatedEvent := v
 	if err := jsoniter.Unmarshal(data, &reportUpdatedEvent); err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 	return nil
 }

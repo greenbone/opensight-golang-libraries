@@ -5,8 +5,9 @@
 package query
 
 import (
+	"fmt"
+
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
-	"github.com/pkg/errors"
 )
 
 // composeQuery takes a field mapping, a filter request field, a flag indicating whether the value is a list,
@@ -72,7 +73,7 @@ func composeQuery(
 			" date_trunc('day'::text, %s) > date_trunc('day'::text, ?::timestamp)",
 		)
 	default:
-		err = errors.Errorf("field '%s' with unknown operator '%s'", field.Name, field.Operator)
+		err = fmt.Errorf("field '%s' with unknown operator '%s'", field.Name, field.Operator)
 	}
 	return conditionTemplate, err
 }

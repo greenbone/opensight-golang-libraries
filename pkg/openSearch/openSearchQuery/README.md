@@ -17,13 +17,13 @@ Query(q.Build()).
 MarshalJSON()
 
 if err != nil {
-    return nil, errors.WithStack(err)
+    return nil, err
 }
 
 responseBody, err := v.openSearchClient.Search(openSearchModels.VulnerabilityIndexName, request)
 
 if err != nil {
-    return nil, errors.WithStack(err)
+    return nil, err
 }
 ```
 

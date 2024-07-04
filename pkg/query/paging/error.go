@@ -2,8 +2,6 @@ package paging
 
 import (
 	"fmt"
-
-	"github.com/pkg/errors"
 )
 
 type Error struct {
@@ -15,7 +13,7 @@ func (e *Error) Error() string {
 }
 
 func NewPagingError(format string, value ...any) error {
-	return errors.WithStack(&Error{
+	return &Error{
 		Msg: fmt.Sprintf(format, value...),
-	})
+	}
 }
