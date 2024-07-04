@@ -44,6 +44,12 @@ func (o *OpenSearchResourceAlreadyExists) Error() string {
 	return o.Message
 }
 
+func NewOpenSearchResourceAlreadyExists(message string) *OpenSearchResourceAlreadyExists {
+	return &OpenSearchResourceAlreadyExists{
+		Message: message,
+	}
+}
+
 // OpenSearchResourceNotFound openSearch resource already exists
 type OpenSearchResourceNotFound struct {
 	Message string
@@ -51,6 +57,12 @@ type OpenSearchResourceNotFound struct {
 
 func (o *OpenSearchResourceNotFound) Error() string {
 	return o.Message
+}
+
+func NewOpenSearchResourceNotFound(message string) *OpenSearchResourceNotFound {
+	return &OpenSearchResourceNotFound{
+		Message: message,
+	}
 }
 
 type IndexError struct {
