@@ -1,7 +1,8 @@
 package sorting
 
 import (
-	"github.com/pkg/errors"
+	"fmt"
+
 	"gorm.io/gorm"
 )
 
@@ -105,7 +106,7 @@ func DetermineEffectiveSortingParams(model SortingSettingsInterface, sortingReq 
 	// If there is an error in the request for sorting, get the defaults and apply them.
 	sortingDefaults, pdErr := GetSortDefaults(model)
 	if pdErr != nil {
-		err := errors.Wrap(pdErr, "failed to get sorting defaults")
+		err := fmt.Errorf("failed to get sorting defaults: %w", pdErr)
 		sortingReq.SortColumn = ""
 		sortingReq.SortDirection = DirectionDescending
 		return paramsOf(*sortingReq), err

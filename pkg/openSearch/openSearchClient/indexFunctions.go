@@ -14,7 +14,6 @@ import (
 	"sort"
 
 	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
-	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )
 
@@ -39,7 +38,7 @@ func (i *IndexFunction) CreateIndex(indexName string, indexSchema []byte) error 
 		// If the error is due to a lack of disk space or memory, we should log it as a warning
 		// see details in https://repost.aws/knowledge-center/opensearch-403-clusterblockexception
 		log.Err(err).Msgf("Error while creating index: please check disk space and memory usage")
-		return errors.WithStack(err)
+		return err
 	}
 
 	return nil
@@ -57,13 +56,13 @@ func (i *IndexFunction) GetIndexes(pattern string) ([]string, error) {
 	)
 	if err != nil {
 		log.Debug().Msgf("Error while checking if index exists: %s", err)
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	body := response.Inspect().Response.Body
 	resultString, err := io.ReadAll(body)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	return indexNameSliceOf(resultString)
@@ -73,7 +72,7 @@ func indexNameSliceOf(resultString []byte) ([]string, error) {
 	indexMap := make(map[string]interface{})
 	err := json.Unmarshal(resultString, &indexMap)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	indexSlice := make([]string, 0, len(indexMap))
@@ -104,7 +103,7 @@ func (i *IndexFunction) IndexExists(indexName string) (bool, error) {
 		}
 
 		log.Debug().Msgf("Error while checking if index exists: %s", err)
-		return false, errors.WithStack(err)
+		return false, err
 	}
 
 	return true, nil
@@ -118,7 +117,7 @@ func (i *IndexFunction) DeleteIndex(indexName string) error {
 		},
 	)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	return nil
@@ -134,7 +133,7 @@ func (i *IndexFunction) CreateOrPutAlias(aliasName string, indexNames ...string)
 	)
 	if err != nil {
 		log.Debug().Msgf("Error while creating and putting alias: %s", err)
-		return errors.WithStack(err)
+		return err
 	}
 
 	return nil
@@ -149,7 +148,7 @@ func (i *IndexFunction) DeleteAliasFromIndex(indexName string, aliasName string)
 		},
 	)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	return nil
@@ -169,7 +168,7 @@ func (i *IndexFunction) IndexHasAlias(indexNames []string, aliasNames []string) 
 		}
 
 		log.Debug().Msgf("Error while checking the index alias: %s", err)
-		return false, errors.WithStack(err)
+		return false, err
 	}
 
 	return true, nil
@@ -186,7 +185,7 @@ func (i *IndexFunction) AliasExists(aliasName string) (bool, error) {
 		if response != nil && response.Inspect().Response.StatusCode == http.StatusNotFound {
 			return false, nil
 		}
-		return false, errors.WithStack(err)
+		return false, err
 	}
 
 	if len(response.Aliases) == 0 {
@@ -207,7 +206,7 @@ func (i *IndexFunction) GetIndexesForAlias(aliasName string) ([]string, error) {
 		},
 	)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	for _, alias := range response.Aliases {

@@ -5,7 +5,7 @@
 package filter
 
 import (
-	stderrors "errors"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -85,7 +85,7 @@ func TestRequestOptionValidation(t *testing.T) {
 			},
 		}, requestOptions)
 		var validationError *ValidationError
-		assert.True(t, stderrors.As(err, &validationError))
+		assert.True(t, errors.As(err, &validationError))
 		assert.Equal(t, validationError.Error(), "field 'optionNameOne' must be from type '[]string'")
 	})
 
@@ -103,7 +103,7 @@ func TestRequestOptionValidation(t *testing.T) {
 			},
 		}, requestOptions)
 		var validationError *ValidationError
-		assert.True(t, stderrors.As(err, &validationError))
+		assert.True(t, errors.As(err, &validationError))
 		assert.Equal(t, validationError.Error(), "field 'optionNameOne' can not have the operator 'invalidOperator'")
 	})
 
@@ -121,7 +121,7 @@ func TestRequestOptionValidation(t *testing.T) {
 			},
 		}, requestOptions)
 		var validationError *ValidationError
-		assert.True(t, stderrors.As(err, &validationError))
+		assert.True(t, errors.As(err, &validationError))
 		assert.Equal(t, validationError.Error(), "field 'optionNameOne' can not have the operator ''")
 	})
 
@@ -139,7 +139,7 @@ func TestRequestOptionValidation(t *testing.T) {
 			},
 		}, requestOptions)
 		var validationError *ValidationError
-		assert.True(t, stderrors.As(err, &validationError))
+		assert.True(t, errors.As(err, &validationError))
 		assert.Equal(t, validationError.Error(), "field name '' is invalid")
 	})
 
@@ -173,7 +173,7 @@ func TestRequestOptionValidation(t *testing.T) {
 			},
 		}, requestOptions)
 		var validationError *ValidationError
-		assert.True(t, stderrors.As(err, &validationError))
+		assert.True(t, errors.As(err, &validationError))
 		assert.Equal(t, "field name 'invalidName' is invalid", validationError.Error())
 	})
 
@@ -239,7 +239,7 @@ func TestCascadeRequestOption(t *testing.T) {
 			},
 		}, requestOptions)
 		var validationError *ValidationError
-		assert.True(t, stderrors.As(err, &validationError))
+		assert.True(t, errors.As(err, &validationError))
 		assert.Equal(t, "field 'tag' must not be empty", validationError.Error())
 	})
 
@@ -258,7 +258,7 @@ func TestCascadeRequestOption(t *testing.T) {
 			},
 		}, requestOptions)
 		var validationError *ValidationError
-		assert.True(t, stderrors.As(err, &validationError))
+		assert.True(t, errors.As(err, &validationError))
 		assert.Equal(t, "field 'tag' must not be empty", validationError.Error())
 	})
 
@@ -276,7 +276,7 @@ func TestCascadeRequestOption(t *testing.T) {
 			},
 		}, requestOptions)
 		var validationError *ValidationError
-		assert.True(t, stderrors.As(err, &validationError))
+		assert.True(t, errors.As(err, &validationError))
 		assert.Equal(t, "field 'tag' must not be empty", validationError.Error())
 	})
 
@@ -295,7 +295,7 @@ func TestCascadeRequestOption(t *testing.T) {
 			},
 		}, requestOptions)
 		var validationError *ValidationError
-		assert.True(t, stderrors.As(err, &validationError))
+		assert.True(t, errors.As(err, &validationError))
 		assert.Equal(t, "field 'tag' must not be empty", validationError.Error())
 	})
 
@@ -314,7 +314,7 @@ func TestCascadeRequestOption(t *testing.T) {
 			},
 		}, requestOptions)
 		var validationError *ValidationError
-		assert.True(t, stderrors.As(err, &validationError))
+		assert.True(t, errors.As(err, &validationError))
 		assert.Equal(t, "field 'tag' number of keys must be 1", validationError.Error())
 	})
 
@@ -333,7 +333,7 @@ func TestCascadeRequestOption(t *testing.T) {
 			},
 		}, requestOptions)
 		var validationError *ValidationError
-		assert.True(t, stderrors.As(err, &validationError))
+		assert.True(t, errors.As(err, &validationError))
 		assert.Equal(t, "for the field 'tag' the value must be 'yes' or 'no'", validationError.Error())
 	})
 
@@ -414,7 +414,7 @@ func TestEnumRequestOption(t *testing.T) {
 			},
 		}, requestOptions)
 		var validationError *ValidationError
-		assert.True(t, stderrors.As(err, &validationError))
+		assert.True(t, errors.As(err, &validationError))
 		assert.Equal(t, validationError.Error(), "field 'optionName' can not have the value 'invalid'")
 	})
 }
@@ -458,7 +458,7 @@ func TestStringRequestOption(t *testing.T) {
 			},
 		}, requestOptions)
 		var validationError *ValidationError
-		assert.True(t, stderrors.As(err, &validationError))
+		assert.True(t, errors.As(err, &validationError))
 		assert.Equal(t, validationError.Error(), "field 'optionName' must be from type 'string'")
 	})
 }
@@ -502,7 +502,7 @@ func TestIntegerRequestOption(t *testing.T) {
 			},
 		}, requestOptions)
 		var validationError *ValidationError
-		assert.True(t, stderrors.As(err, &validationError))
+		assert.True(t, errors.As(err, &validationError))
 		assert.Equal(t, validationError.Error(), "field 'optionName' must be from type 'integer'")
 	})
 }
@@ -546,7 +546,7 @@ func TestFloatRequestOption(t *testing.T) {
 			},
 		}, requestOptions)
 		var validationError *ValidationError
-		assert.True(t, stderrors.As(err, &validationError))
+		assert.True(t, errors.As(err, &validationError))
 		assert.Equal(t, validationError.Error(), "field 'optionName' must be from type 'float'")
 	})
 }

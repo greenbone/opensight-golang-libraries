@@ -6,7 +6,6 @@ package openSearchClient
 
 import (
 	jsoniter "github.com/json-iterator/go"
-	"github.com/pkg/errors"
 )
 
 type SearchResponseHit[T any] struct {
@@ -37,7 +36,7 @@ func UnmarshalSearchResponse[T any](data []byte) (*SearchResponse[T], error) {
 	var results SearchResponse[T]
 
 	if err := jsoniter.Unmarshal(data, &results); err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 	return &results, nil
 }

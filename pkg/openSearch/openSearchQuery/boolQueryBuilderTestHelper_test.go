@@ -6,7 +6,6 @@ package openSearchQuery
 
 import (
 	"github.com/aquasecurity/esquery"
-	"github.com/pkg/errors"
 )
 
 // Aggregation is an interface for all aggregations that can be converted to an esquery.Aggregation.
@@ -59,7 +58,7 @@ func (q *testBoolQueryBuilderWrapper) toJson() (json string, err error) {
 	}
 
 	if err1 != nil {
-		return "", errors.WithStack(err1)
+		return "", err1
 	}
 	return string(jsonByte), nil
 }

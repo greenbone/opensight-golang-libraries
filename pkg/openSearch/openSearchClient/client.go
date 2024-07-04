@@ -15,7 +15,6 @@ import (
 	jsoniter "github.com/json-iterator/go"
 
 	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
-	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )
 
@@ -54,14 +53,14 @@ func (c *Client) Search(indexName string, requestBody []byte) (responseBody []by
 		},
 	)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	// Get the raw response body to return a byte array.
 	body := searchResponse.Inspect().Response.Body
 	result, err := io.ReadAll(body)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	log.Trace().Str("src", "opensearch").Msgf("search response - statusCode:'%d' json:'%s'",
@@ -114,7 +113,7 @@ func (c *Client) deleteByQuery(indexName string, requestBody []byte, isAsync boo
 		},
 	)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	return nil
@@ -138,7 +137,7 @@ func SerializeDocumentsForBulkUpdate[T any](indexName string, documents []T) ([]
 			indexName) + "\n")
 		documentJson, err := jsoniter.Marshal(document)
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 		body.WriteString(string(documentJson) + "\n")
 	}
@@ -162,7 +161,7 @@ func (c *Client) BulkUpdate(indexName string, requestBody []byte) error {
 		},
 	)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	return nil

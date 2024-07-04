@@ -10,7 +10,6 @@ import (
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/paging"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/sorting"
-	"github.com/pkg/errors"
 
 	"github.com/aquasecurity/esquery"
 )
@@ -47,7 +46,7 @@ func AddOrder(aggregation *esquery.TermsAggregation, sortingRequest *sorting.Req
 	if sortingRequest != nil {
 		field, err := effectiveSortFieldOf(*sortingRequest)
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 		return aggregation.Order(map[string]string{field.aggregationValue: sortingRequest.SortDirection.String()}), nil
 	}
@@ -61,7 +60,7 @@ func AddMaxAggForSorting(aggs []esquery.Aggregation, sortingRequest *sorting.Req
 
 	field, err := effectiveSortFieldOf(*sortingRequest)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	// refers to an existing aggregation that does not need to be created
@@ -84,12 +83,12 @@ func BucketSortAgg(sortingRequest *sorting.Request, pagingRequest *paging.Reques
 	if sortingRequest != nil {
 		field, err := effectiveSortFieldOf(*sortingRequest)
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 
 		order, err := getOrder(sortingRequest)
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 
 		sorting = map[string]interface{}{
@@ -117,7 +116,7 @@ func AddBucketSortAgg(aggs []esquery.Aggregation, sortingRequest *sorting.Reques
 ) ([]esquery.Aggregation, error) {
 	agg, err := BucketSortAgg(sortingRequest, pagingRequest)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	if agg == nil {

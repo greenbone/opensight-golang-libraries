@@ -9,11 +9,12 @@ import (
 	"fmt"
 	"strings"
 
+	"errors"
+
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/paging"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/sorting"
-	"github.com/pkg/errors"
 )
 
 // Settings is a configuration struct used to customize the behavior of the query builder.

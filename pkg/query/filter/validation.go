@@ -8,9 +8,10 @@ import (
 	"strings"
 	"time"
 
+	"errors"
+
 	"github.com/google/uuid"
 	"github.com/greenbone/opensight-golang-libraries/pkg/slices"
-	"github.com/pkg/errors"
 )
 
 // ValidateFilter validates the filter in the request

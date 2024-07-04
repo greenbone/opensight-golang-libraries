@@ -8,12 +8,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"sync"
 	"time"
 
 	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
-	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )
 
@@ -93,12 +93,12 @@ func (q *UpdateQueue) Update(indexName string, requestBody []byte) ([]byte, erro
 
 	var responseMap map[string]interface{}
 	if err := json.Unmarshal(response.Body, &responseMap); err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	if _, ok := responseMap["failures"]; ok {
 		if len(responseMap["failures"].([]interface{})) > 0 {
-			return response.Body, errors.Errorf("Update failed - even after retries: %s", string(response.Body))
+			return response.Body, fmt.Errorf("Update failed - even after retries: %s", string(response.Body))
 		}
 	}
 
@@ -164,5 +164,5 @@ func (q *UpdateQueue) update(indexName string, requestBody []byte) ([]byte, erro
 		return result, nil
 	}
 
-	return nil, errors.WithStack(err)
+	return nil, err
 }

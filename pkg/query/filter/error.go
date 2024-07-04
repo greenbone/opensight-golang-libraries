@@ -6,8 +6,6 @@ package filter
 
 import (
 	"fmt"
-
-	"github.com/pkg/errors"
 )
 
 type ValidationError struct {
@@ -25,7 +23,7 @@ func NewValidationError(format string, value ...any) *ValidationError {
 }
 
 func NewValidationErrorWithStack(format string, value ...any) error {
-	return errors.WithStack(NewValidationError(format, value...))
+	return NewValidationError(format, value...)
 }
 
 type InvalidFilterFieldError struct {
@@ -37,9 +35,9 @@ func (i *InvalidFilterFieldError) Error() string {
 }
 
 func NewInvalidFilterFieldError(format string, value ...any) error {
-	return errors.WithStack(&InvalidFilterFieldError{
+	return &InvalidFilterFieldError{
 		message: fmt.Sprintf(format, value...),
-	})
+	}
 }
 
 type UuidValidationError struct {

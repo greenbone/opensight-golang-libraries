@@ -5,9 +5,10 @@
 package openSearchQuery
 
 import (
+	"fmt"
+
 	"github.com/aquasecurity/esquery"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
-	"github.com/pkg/errors"
 )
 
 // BoolQueryBuilder is a builder for an OpenSearch bool query.
@@ -164,7 +165,7 @@ func (q *BoolQueryBuilder) AddFilterRequest(request *filter.Request) error {
 
 	effectiveRequest, err := effectiveFilterFields(*request, q.querySettings.FilterFieldMapping)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	operatorMapping := q.createOperatorMapping()
@@ -173,7 +174,7 @@ func (q *BoolQueryBuilder) AddFilterRequest(request *filter.Request) error {
 		if handler, ok := operatorMapping[field.Operator]; ok {
 			handler(field.Name, field.Keys, field.Value)
 		} else {
-			return errors.Errorf("field '%s' with unknown operator '%s'", field.Name, field.Operator)
+			return fmt.Errorf("field '%s' with unknown operator '%s'", field.Name, field.Operator)
 		}
 	}
 	switch effectiveRequest.Operator {
@@ -199,7 +200,7 @@ func (q *BoolQueryBuilder) AddFilterRequest(request *filter.Request) error {
 		}
 		return nil
 	default:
-		return errors.Errorf("unknown operator '%s'", effectiveRequest.Operator)
+		return fmt.Errorf("unknown operator '%s'", effectiveRequest.Operator)
 	}
 }
 
