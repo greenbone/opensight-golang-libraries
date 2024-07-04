@@ -7,6 +7,15 @@ on:
   pull_request:
 
 jobs:
+  check-generated-files:
+    name: check if docs were generated
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/go-setup
+      - name: "generate docs and check if there is a diff"
+        run: make generate_docs && git diff --exit-code || (echo "::error ::generated docs are outdated, please regenerate them" ; return 1)
+
   lint:
     name: lint
     runs-on: ubuntu-latest
