@@ -40,7 +40,7 @@ transaction: The GORM database transaction. request: The request object containi
 Returns the modified transaction with the pagination applied.
 
 <a name="NewPagingError"></a>
-## func [NewPagingError](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/error.go#L17>)
+## func [NewPagingError](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/error.go#L15>)
 
 ```go
 func NewPagingError(format string, value ...any) error
@@ -49,7 +49,7 @@ func NewPagingError(format string, value ...any) error
 
 
 <a name="Error"></a>
-## type [Error](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/error.go#L9-L11>)
+## type [Error](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/error.go#L7-L9>)
 
 
 
@@ -60,7 +60,7 @@ type Error struct {
 ```
 
 <a name="Error.Error"></a>
-### func \(\*Error\) [Error](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/error.go#L13>)
+### func \(\*Error\) [Error](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/error.go#L11>)
 
 ```go
 func (e *Error) Error() string

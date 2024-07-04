@@ -18,7 +18,6 @@ import "github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
 - [func ControlTypeNames\(\) \[\]string](<#ControlTypeNames>)
 - [func LogicOperatorNames\(\) \[\]string](<#LogicOperatorNames>)
 - [func NewInvalidFilterFieldError\(format string, value ...any\) error](<#NewInvalidFilterFieldError>)
-- [func NewValidationErrorWithStack\(format string, value ...any\) error](<#NewValidationErrorWithStack>)
 - [func ValidateFilter\(request \*Request, requestOptions \[\]RequestOption\) error](<#ValidateFilter>)
 - [type AggregateMetric](<#AggregateMetric>)
   - [func ParseAggregateMetric\(name string\) \(AggregateMetric, error\)](<#ParseAggregateMetric>)
@@ -94,7 +93,7 @@ var ErrInvalidLogicOperator = fmt.Errorf("not a valid LogicOperator, try [%s]", 
 ```
 
 <a name="AggregateMetricNames"></a>
-## func [AggregateMetricNames](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L46>)
+## func [AggregateMetricNames](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L41>)
 
 ```go
 func AggregateMetricNames() []string
@@ -103,7 +102,7 @@ func AggregateMetricNames() []string
 AggregateMetricNames returns a list of possible string values of AggregateMetric.
 
 <a name="CompareOperatorNames"></a>
-## func [CompareOperatorNames](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L201>)
+## func [CompareOperatorNames](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L196>)
 
 ```go
 func CompareOperatorNames() []string
@@ -112,7 +111,7 @@ func CompareOperatorNames() []string
 CompareOperatorNames returns a list of possible string values of CompareOperator.
 
 <a name="ControlTypeNames"></a>
-## func [ControlTypeNames](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L334>)
+## func [ControlTypeNames](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L329>)
 
 ```go
 func ControlTypeNames() []string
@@ -121,7 +120,7 @@ func ControlTypeNames() []string
 ControlTypeNames returns a list of possible string values of ControlType.
 
 <a name="LogicOperatorNames"></a>
-## func [LogicOperatorNames](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L440>)
+## func [LogicOperatorNames](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L435>)
 
 ```go
 func LogicOperatorNames() []string
@@ -130,7 +129,7 @@ func LogicOperatorNames() []string
 LogicOperatorNames returns a list of possible string values of LogicOperator.
 
 <a name="NewInvalidFilterFieldError"></a>
-## func [NewInvalidFilterFieldError](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/error.go#L39>)
+## func [NewInvalidFilterFieldError](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/error.go#L33>)
 
 ```go
 func NewInvalidFilterFieldError(format string, value ...any) error
@@ -138,17 +137,8 @@ func NewInvalidFilterFieldError(format string, value ...any) error
 
 
 
-<a name="NewValidationErrorWithStack"></a>
-## func [NewValidationErrorWithStack](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/error.go#L27>)
-
-```go
-func NewValidationErrorWithStack(format string, value ...any) error
-```
-
-
-
 <a name="ValidateFilter"></a>
-## func [ValidateFilter](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/validation.go#L17>)
+## func [ValidateFilter](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/validation.go#L18>)
 
 ```go
 func ValidateFilter(request *Request, requestOptions []RequestOption) error
@@ -180,26 +170,21 @@ type AggregateMetric string
 
 ```go
 const (
-
-    // AggregateMetricSum represents an aggregate metric of type sum.
+    // AggregateMetricSum is a AggregateMetric of type sum.
     AggregateMetricSum AggregateMetric = "sum"
-
-    // AggregateMetricMin
+    // AggregateMetricMin is a AggregateMetric of type min.
     AggregateMetricMin AggregateMetric = "min"
-
-    // AggregateMetricMax is a constant of type AggregateMetric that represents the maximum aggregation metric.
+    // AggregateMetricMax is a AggregateMetric of type max.
     AggregateMetricMax AggregateMetric = "max"
-
-    // AggregateMetricAvg is a constant of type AggregateMetric representing the average aggregate metric.
+    // AggregateMetricAvg is a AggregateMetric of type avg.
     AggregateMetricAvg AggregateMetric = "avg"
-
-    // AggregateMetricValueCount is a constant of type AggregateMetric with a value of "valueCount".
+    // AggregateMetricValueCount is a AggregateMetric of type valueCount.
     AggregateMetricValueCount AggregateMetric = "valueCount"
 )
 ```
 
 <a name="ParseAggregateMetric"></a>
-### func [ParseAggregateMetric](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L73>)
+### func [ParseAggregateMetric](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L68>)
 
 ```go
 func ParseAggregateMetric(name string) (AggregateMetric, error)
@@ -208,7 +193,7 @@ func ParseAggregateMetric(name string) (AggregateMetric, error)
 ParseAggregateMetric attempts to convert a string to a AggregateMetric.
 
 <a name="AggregateMetric.IsValid"></a>
-### func \(AggregateMetric\) [IsValid](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L59>)
+### func \(AggregateMetric\) [IsValid](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L54>)
 
 ```go
 func (x AggregateMetric) IsValid() bool
@@ -217,7 +202,7 @@ func (x AggregateMetric) IsValid() bool
 IsValid provides a quick way to determine if the typed value is part of the allowed enumerated values
 
 <a name="AggregateMetric.MarshalText"></a>
-### func \(AggregateMetric\) [MarshalText](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L81>)
+### func \(AggregateMetric\) [MarshalText](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L76>)
 
 ```go
 func (x AggregateMetric) MarshalText() ([]byte, error)
@@ -226,7 +211,7 @@ func (x AggregateMetric) MarshalText() ([]byte, error)
 MarshalText implements the text marshaller method.
 
 <a name="AggregateMetric.Scan"></a>
-### func \(\*AggregateMetric\) [Scan](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L98>)
+### func \(\*AggregateMetric\) [Scan](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L93>)
 
 ```go
 func (x *AggregateMetric) Scan(value interface{}) (err error)
@@ -235,7 +220,7 @@ func (x *AggregateMetric) Scan(value interface{}) (err error)
 Scan implements the Scanner interface.
 
 <a name="AggregateMetric.String"></a>
-### func \(AggregateMetric\) [String](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L53>)
+### func \(AggregateMetric\) [String](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L48>)
 
 ```go
 func (x AggregateMetric) String() string
@@ -244,7 +229,7 @@ func (x AggregateMetric) String() string
 String implements the Stringer interface.
 
 <a name="AggregateMetric.UnmarshalText"></a>
-### func \(\*AggregateMetric\) [UnmarshalText](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L86>)
+### func \(\*AggregateMetric\) [UnmarshalText](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L81>)
 
 ```go
 func (x *AggregateMetric) UnmarshalText(text []byte) error
@@ -253,7 +238,7 @@ func (x *AggregateMetric) UnmarshalText(text []byte) error
 UnmarshalText implements the text unmarshaller method.
 
 <a name="AggregateMetric.Value"></a>
-### func \(AggregateMetric\) [Value](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L131>)
+### func \(AggregateMetric\) [Value](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L126>)
 
 ```go
 func (x AggregateMetric) Value() (driver.Value, error)
@@ -344,7 +329,7 @@ const (
 ```
 
 <a name="ParseCompareOperator"></a>
-### func [ParseCompareOperator](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L242>)
+### func [ParseCompareOperator](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L237>)
 
 ```go
 func ParseCompareOperator(name string) (CompareOperator, error)
@@ -353,7 +338,7 @@ func ParseCompareOperator(name string) (CompareOperator, error)
 ParseCompareOperator attempts to convert a string to a CompareOperator.
 
 <a name="CompareOperator.IsValid"></a>
-### func \(CompareOperator\) [IsValid](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L214>)
+### func \(CompareOperator\) [IsValid](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L209>)
 
 ```go
 func (x CompareOperator) IsValid() bool
@@ -362,7 +347,7 @@ func (x CompareOperator) IsValid() bool
 IsValid provides a quick way to determine if the typed value is part of the allowed enumerated values
 
 <a name="CompareOperator.MarshalText"></a>
-### func \(CompareOperator\) [MarshalText](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L250>)
+### func \(CompareOperator\) [MarshalText](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L245>)
 
 ```go
 func (x CompareOperator) MarshalText() ([]byte, error)
@@ -371,7 +356,7 @@ func (x CompareOperator) MarshalText() ([]byte, error)
 MarshalText implements the text marshaller method.
 
 <a name="CompareOperator.Scan"></a>
-### func \(\*CompareOperator\) [Scan](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L267>)
+### func \(\*CompareOperator\) [Scan](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L262>)
 
 ```go
 func (x *CompareOperator) Scan(value interface{}) (err error)
@@ -380,7 +365,7 @@ func (x *CompareOperator) Scan(value interface{}) (err error)
 Scan implements the Scanner interface.
 
 <a name="CompareOperator.String"></a>
-### func \(CompareOperator\) [String](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L208>)
+### func \(CompareOperator\) [String](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L203>)
 
 ```go
 func (x CompareOperator) String() string
@@ -389,7 +374,7 @@ func (x CompareOperator) String() string
 String implements the Stringer interface.
 
 <a name="CompareOperator.UnmarshalText"></a>
-### func \(\*CompareOperator\) [UnmarshalText](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L255>)
+### func \(\*CompareOperator\) [UnmarshalText](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L250>)
 
 ```go
 func (x *CompareOperator) UnmarshalText(text []byte) error
@@ -398,7 +383,7 @@ func (x *CompareOperator) UnmarshalText(text []byte) error
 UnmarshalText implements the text unmarshaller method.
 
 <a name="CompareOperator.Value"></a>
-### func \(CompareOperator\) [Value](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L300>)
+### func \(CompareOperator\) [Value](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L295>)
 
 ```go
 func (x CompareOperator) Value() (driver.Value, error)
@@ -449,7 +434,7 @@ const (
 ```
 
 <a name="ParseControlType"></a>
-### func [ParseControlType](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L363>)
+### func [ParseControlType](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L358>)
 
 ```go
 func ParseControlType(name string) (ControlType, error)
@@ -458,7 +443,7 @@ func ParseControlType(name string) (ControlType, error)
 ParseControlType attempts to convert a string to a ControlType.
 
 <a name="ControlType.IsValid"></a>
-### func \(ControlType\) [IsValid](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L347>)
+### func \(ControlType\) [IsValid](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L342>)
 
 ```go
 func (x ControlType) IsValid() bool
@@ -467,7 +452,7 @@ func (x ControlType) IsValid() bool
 IsValid provides a quick way to determine if the typed value is part of the allowed enumerated values
 
 <a name="ControlType.MarshalText"></a>
-### func \(ControlType\) [MarshalText](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L371>)
+### func \(ControlType\) [MarshalText](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L366>)
 
 ```go
 func (x ControlType) MarshalText() ([]byte, error)
@@ -476,7 +461,7 @@ func (x ControlType) MarshalText() ([]byte, error)
 MarshalText implements the text marshaller method.
 
 <a name="ControlType.Scan"></a>
-### func \(\*ControlType\) [Scan](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L388>)
+### func \(\*ControlType\) [Scan](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L383>)
 
 ```go
 func (x *ControlType) Scan(value interface{}) (err error)
@@ -485,7 +470,7 @@ func (x *ControlType) Scan(value interface{}) (err error)
 Scan implements the Scanner interface.
 
 <a name="ControlType.String"></a>
-### func \(ControlType\) [String](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L341>)
+### func \(ControlType\) [String](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L336>)
 
 ```go
 func (x ControlType) String() string
@@ -494,7 +479,7 @@ func (x ControlType) String() string
 String implements the Stringer interface.
 
 <a name="ControlType.UnmarshalText"></a>
-### func \(\*ControlType\) [UnmarshalText](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L376>)
+### func \(\*ControlType\) [UnmarshalText](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L371>)
 
 ```go
 func (x *ControlType) UnmarshalText(text []byte) error
@@ -503,7 +488,7 @@ func (x *ControlType) UnmarshalText(text []byte) error
 UnmarshalText implements the text unmarshaller method.
 
 <a name="ControlType.Value"></a>
-### func \(ControlType\) [Value](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L421>)
+### func \(ControlType\) [Value](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L416>)
 
 ```go
 func (x ControlType) Value() (driver.Value, error)
@@ -512,7 +497,7 @@ func (x ControlType) Value() (driver.Value, error)
 Value implements the driver Valuer interface.
 
 <a name="InvalidFilterFieldError"></a>
-## type [InvalidFilterFieldError](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/error.go#L31-L33>)
+## type [InvalidFilterFieldError](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/error.go#L25-L27>)
 
 
 
@@ -523,7 +508,7 @@ type InvalidFilterFieldError struct {
 ```
 
 <a name="InvalidFilterFieldError.Error"></a>
-### func \(\*InvalidFilterFieldError\) [Error](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/error.go#L35>)
+### func \(\*InvalidFilterFieldError\) [Error](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/error.go#L29>)
 
 ```go
 func (i *InvalidFilterFieldError) Error() string
@@ -559,7 +544,7 @@ const (
 ```
 
 <a name="ParseLogicOperator"></a>
-### func [ParseLogicOperator](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L464>)
+### func [ParseLogicOperator](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L459>)
 
 ```go
 func ParseLogicOperator(name string) (LogicOperator, error)
@@ -568,7 +553,7 @@ func ParseLogicOperator(name string) (LogicOperator, error)
 ParseLogicOperator attempts to convert a string to a LogicOperator.
 
 <a name="LogicOperator.IsValid"></a>
-### func \(LogicOperator\) [IsValid](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L453>)
+### func \(LogicOperator\) [IsValid](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L448>)
 
 ```go
 func (x LogicOperator) IsValid() bool
@@ -577,7 +562,7 @@ func (x LogicOperator) IsValid() bool
 IsValid provides a quick way to determine if the typed value is part of the allowed enumerated values
 
 <a name="LogicOperator.MarshalText"></a>
-### func \(LogicOperator\) [MarshalText](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L472>)
+### func \(LogicOperator\) [MarshalText](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L467>)
 
 ```go
 func (x LogicOperator) MarshalText() ([]byte, error)
@@ -586,7 +571,7 @@ func (x LogicOperator) MarshalText() ([]byte, error)
 MarshalText implements the text marshaller method.
 
 <a name="LogicOperator.Scan"></a>
-### func \(\*LogicOperator\) [Scan](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L489>)
+### func \(\*LogicOperator\) [Scan](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L484>)
 
 ```go
 func (x *LogicOperator) Scan(value interface{}) (err error)
@@ -595,7 +580,7 @@ func (x *LogicOperator) Scan(value interface{}) (err error)
 Scan implements the Scanner interface.
 
 <a name="LogicOperator.String"></a>
-### func \(LogicOperator\) [String](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L447>)
+### func \(LogicOperator\) [String](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L442>)
 
 ```go
 func (x LogicOperator) String() string
@@ -604,7 +589,7 @@ func (x LogicOperator) String() string
 String implements the Stringer interface.
 
 <a name="LogicOperator.UnmarshalText"></a>
-### func \(\*LogicOperator\) [UnmarshalText](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L477>)
+### func \(\*LogicOperator\) [UnmarshalText](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L472>)
 
 ```go
 func (x *LogicOperator) UnmarshalText(text []byte) error
@@ -613,7 +598,7 @@ func (x *LogicOperator) UnmarshalText(text []byte) error
 UnmarshalText implements the text unmarshaller method.
 
 <a name="LogicOperator.Value"></a>
-### func \(LogicOperator\) [Value](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L522>)
+### func \(LogicOperator\) [Value](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/type_enum.go#L517>)
 
 ```go
 func (x LogicOperator) Value() (driver.Value, error)
@@ -691,7 +676,7 @@ type RequestOptionType struct {
 ```
 
 <a name="UuidValidationError"></a>
-## type [UuidValidationError](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/error.go#L45-L47>)
+## type [UuidValidationError](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/error.go#L39-L41>)
 
 
 
@@ -702,7 +687,7 @@ type UuidValidationError struct {
 ```
 
 <a name="NewUuidValidationError"></a>
-### func [NewUuidValidationError](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/error.go#L53>)
+### func [NewUuidValidationError](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/error.go#L47>)
 
 ```go
 func NewUuidValidationError(format string, value ...any) *UuidValidationError
@@ -711,7 +696,7 @@ func NewUuidValidationError(format string, value ...any) *UuidValidationError
 
 
 <a name="UuidValidationError.Error"></a>
-### func \(\*UuidValidationError\) [Error](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/error.go#L49>)
+### func \(\*UuidValidationError\) [Error](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/error.go#L43>)
 
 ```go
 func (v *UuidValidationError) Error() string
@@ -720,7 +705,7 @@ func (v *UuidValidationError) Error() string
 
 
 <a name="ValidationError"></a>
-## type [ValidationError](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/error.go#L13-L15>)
+## type [ValidationError](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/error.go#L11-L13>)
 
 
 
@@ -731,7 +716,7 @@ type ValidationError struct {
 ```
 
 <a name="NewValidationError"></a>
-### func [NewValidationError](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/error.go#L21>)
+### func [NewValidationError](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/error.go#L19>)
 
 ```go
 func NewValidationError(format string, value ...any) *ValidationError
@@ -740,7 +725,7 @@ func NewValidationError(format string, value ...any) *ValidationError
 
 
 <a name="ValidationError.Error"></a>
-### func \(\*ValidationError\) [Error](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/error.go#L17>)
+### func \(\*ValidationError\) [Error](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/filter/error.go#L15>)
 
 ```go
 func (v *ValidationError) Error() string
