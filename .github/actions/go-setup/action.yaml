@@ -10,7 +10,3 @@ runs:
         cache: true
         cache-dependency-path: go.sum
         go-version-file: go.mod
-    - run: go mod download
-      shell: bash
-      env:
-        GOPRIVATE: github.com/greenbone
