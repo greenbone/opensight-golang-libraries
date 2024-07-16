@@ -266,3 +266,43 @@ func (i *IndexFunction) createIndexRemovalActions(indexesToRemove []string, alia
 	}
 	return wrappedActions
 }
+
+func (i *IndexFunction) EnableQueryCaching(indexName string) error {
+	log.Debug().Msgf("Enabling query caching for index %s", indexName)
+	return i.applyIndexSettings(indexName, `{"index.queries.cache.enabled": true}`)
+}
+
+func (i *IndexFunction) EnableRequestCaching(indexName string) error {
+	log.Debug().Msgf("Enabling request caching for index %s", indexName)
+	return i.applyIndexSettings(indexName, `{"index.requests.cache.enable": true}`)
+}
+
+func (i *IndexFunction) applyIndexSettings(indexName, setting string) error {
+	// close index to apply settings
+	_, err := i.openSearchProjectClient.Indices.Close(context.Background(),
+		opensearchapi.IndicesCloseReq{
+			Index: indexName,
+		})
+	if err != nil {
+		return err
+	}
+
+	// open index after applying settings
+	defer func() {
+		_, err = i.openSearchProjectClient.Indices.Open(context.Background(),
+			opensearchapi.IndicesOpenReq{
+				Index: indexName,
+			})
+		if err != nil {
+			log.Error().Err(err).Msgf("Error while opening index")
+		}
+	}()
+
+	// apply settings
+	_, err = i.openSearchProjectClient.Indices.Settings.Put(context.Background(),
+		opensearchapi. SettingsPutReq{
+			Indices: []string{indexName},
+			Body:    bytes.NewReader([]byte(setting)),
+		})
+	return err
+}
