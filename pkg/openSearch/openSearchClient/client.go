@@ -43,13 +43,16 @@ func NewClient(openSearchProjectClient *opensearchapi.Client, updateMaxRetries i
 // indexName is the name of the index to search in.
 // requestBody is the request body to send to OpenSearch.
 // It returns the response body as or an error in case something went wrong.
-func (c *Client) Search(indexName string, requestBody []byte) (responseBody []byte, err error) {
+func (c *Client) Search(indexName string, requestBody []byte, cache bool) (responseBody []byte, err error) {
 	log.Debug().Str("src", "opensearch").Msgf("search requestBody: %s", string(requestBody))
 	searchResponse, err := c.openSearchProjectClient.Search(
 		context.Background(),
 		&opensearchapi.SearchReq{
 			Indices: []string{indexName},
 			Body:    bytes.NewReader(requestBody),
+			Params:  opensearchapi.SearchParams{
+				RequestCache:               &cache,
+			},
 		},
 	)
 	if err != nil {

@@ -131,7 +131,7 @@ func TestClient(t *testing.T) {
 
 			// when
 			query := `{"query":{"bool":{"filter":[{"term":{"oid":{"value":"1.3.6.1.4.1.25623.1.0.117842"}}}]}}}`
-			responseBody, err := client.Search(indexName, []byte(query))
+			responseBody, err := client.Search(indexName, []byte(query), false)
 
 			// then
 			require.NoError(t, err)
@@ -143,7 +143,7 @@ func TestClient(t *testing.T) {
 
 			// when
 			query = `{"query":{"bool":{"filter":[{"term":{"oid":{"value":"doesNotExist"}}}]}}}`
-			responseBody, err = client.Search(indexName, []byte(query))
+			responseBody, err = client.Search(indexName, []byte(query), false)
 
 			// then
 			require.NoError(t, err)
@@ -210,7 +210,7 @@ func createDataInIndex(t *testing.T, client *Client, vulnerabilities []*Vulnerab
 }
 
 func searchAllVulnerabilities(c *assert.CollectT, client *Client) *SearchResponse[*Vulnerability] {
-	responseBody, err := client.Search(indexName, []byte(``))
+	responseBody, err := client.Search(indexName, []byte(``), false)
 	require.NoError(c, err)
 
 	searchResponse, err := UnmarshalSearchResponse[*Vulnerability](responseBody)
