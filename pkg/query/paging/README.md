@@ -109,7 +109,7 @@ Response represents a response object containing information about pagination an
 - PageIndex: The index of the page \(starting from 0\). This is required.
 - PageSize: The number of records per page. This is required.
 - TotalDisplayableResults: The total number of results that can be displayed. This is required.
-- TotalResults: The total number of results, including those that may not be displayed. This is optional and will be omitted if empty.
+- TotalResults: The total number of results, including those that may not be displayed. This is optional and must not be set if the value does not differ from \`TotalDisplayableResults\`
 
 ```go
 type Response struct {
