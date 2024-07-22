@@ -20,7 +20,8 @@ import "github.com/greenbone/opensight-golang-libraries/pkg/query/paging"
 - [type Request](<#Request>)
   - [func ValidateAndApplyPagingRules\(model PagingSettingsInterface, request \*Request\) \(\*Request, error\)](<#ValidateAndApplyPagingRules>)
 - [type Response](<#Response>)
-  - [func NewResponse\(request \*Request, totalDisplayableResults, totalResults uint64\) \*Response](<#NewResponse>)
+  - [func NewResponse\(request \*Request, totalDisplayableResults uint64\) \*Response](<#NewResponse>)
+  - [func NewResponseWithTotalResults\(request \*Request, totalDisplayableResults, totalResults uint64\) \*Response](<#NewResponseWithTotalResults>)
 
 
 <a name="AddRequest"></a>
@@ -123,7 +124,16 @@ type Response struct {
 ### func [NewResponse](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/response.go#L15>)
 
 ```go
-func NewResponse(request *Request, totalDisplayableResults, totalResults uint64) *Response
+func NewResponse(request *Request, totalDisplayableResults uint64) *Response
+```
+
+
+
+<a name="NewResponseWithTotalResults"></a>
+### func [NewResponseWithTotalResults](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/response.go#L27>)
+
+```go
+func NewResponseWithTotalResults(request *Request, totalDisplayableResults, totalResults uint64) *Response
 ```
 
 
