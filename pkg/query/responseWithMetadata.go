@@ -30,7 +30,7 @@ type Metadata struct {
 	Sorting *sorting.Request `json:"sorting,omitempty"`
 }
 
-func NewMetadata(resultSelector ResultSelector, totalRowCount uint64) Metadata {
+func NewMetadata(resultSelector ResultSelector, totalDisplayableResults, totalResults uint64) Metadata {
 	if resultSelector.Filter != nil {
 		for i, field := range resultSelector.Filter.Fields {
 			if field.Keys == nil {
@@ -40,7 +40,7 @@ func NewMetadata(resultSelector ResultSelector, totalRowCount uint64) Metadata {
 	}
 	return Metadata{
 		Filter:  resultSelector.Filter,
-		Paging:  paging.NewResponse(resultSelector.Paging, totalRowCount),
+		Paging:  paging.NewResponse(resultSelector.Paging, totalDisplayableResults, totalResults),
 		Sorting: resultSelector.Sorting,
 	}
 }

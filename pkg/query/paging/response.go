@@ -4,19 +4,21 @@ package paging
 //   - PageIndex: The index of the page (starting from 0).
 //   - PageSize: The number of records per page.
 type Response struct {
-	PageIndex     int    `json:"index"`
-	PageSize      int    `json:"size"`
-	TotalRowCount uint64 `json:"total"`
+	PageIndex               int    `json:"index" binding:"required"`
+	PageSize                int    `json:"size" binding:"required"`
+	TotalDisplayableResults uint64 `json:"totalDisplayableResults" binding:"required"`
+	TotalResults            uint64 `json:"totalResults,omitempty"`
 }
 
-func NewResponse(request *Request, totalRowCount uint64) *Response {
+func NewResponse(request *Request, totalDisplayableResults, totalResults uint64) *Response {
 	if request == nil {
 		return nil
 	}
 
 	return &Response{
-		PageIndex:     request.PageIndex,
-		PageSize:      request.PageSize,
-		TotalRowCount: totalRowCount,
+		PageIndex:               request.PageIndex,
+		PageSize:                request.PageSize,
+		TotalDisplayableResults: totalDisplayableResults,
+		TotalResults:            totalResults,
 	}
 }
