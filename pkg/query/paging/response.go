@@ -29,6 +29,10 @@ func NewResponseWithTotalResults(request *Request, totalDisplayableResults, tota
 		return nil
 	}
 
+	if totalDisplayableResults == totalResults {
+		return NewResponse(request, totalDisplayableResults)
+	}
+
 	return &Response{
 		PageIndex:               request.PageIndex,
 		PageSize:                request.PageSize,
