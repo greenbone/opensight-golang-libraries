@@ -20,7 +20,7 @@ import "github.com/greenbone/opensight-golang-libraries/pkg/query/paging"
 - [type Request](<#Request>)
   - [func ValidateAndApplyPagingRules\(model PagingSettingsInterface, request \*Request\) \(\*Request, error\)](<#ValidateAndApplyPagingRules>)
 - [type Response](<#Response>)
-  - [func NewResponse\(request \*Request, totalRowCount uint64\) \*Response](<#NewResponse>)
+  - [func NewResponse\(request \*Request, totalDisplayableResults, totalResults uint64\) \*Response](<#NewResponse>)
 
 
 <a name="AddRequest"></a>
@@ -101,7 +101,7 @@ func ValidateAndApplyPagingRules(model PagingSettingsInterface, request *Request
 ValidateAndApplyPagingRules performs a validation of the original request and adds correct the correct values \(defaults\) if needed
 
 <a name="Response"></a>
-## type [Response](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/response.go#L6-L10>)
+## type [Response](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/response.go#L6-L11>)
 
 Response represents a response object containing information about pagination and total count of records.
 
@@ -110,17 +110,18 @@ Response represents a response object containing information about pagination an
 
 ```go
 type Response struct {
-    PageIndex     int    `json:"index"`
-    PageSize      int    `json:"size"`
-    TotalRowCount uint64 `json:"total"`
+    PageIndex               int    `json:"index" binding:"required"`
+    PageSize                int    `json:"size" binding:"required"`
+    TotalDisplayableResults uint64 `json:"totalDisplayableResults" binding:"required"`
+    TotalResults            uint64 `json:"totalResults,omitempty"`
 }
 ```
 
 <a name="NewResponse"></a>
-### func [NewResponse](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/response.go#L12>)
+### func [NewResponse](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/response.go#L13>)
 
 ```go
-func NewResponse(request *Request, totalRowCount uint64) *Response
+func NewResponse(request *Request, totalDisplayableResults, totalResults uint64) *Response
 ```
 
 

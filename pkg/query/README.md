@@ -25,7 +25,7 @@ import "github.com/greenbone/opensight-golang-libraries/pkg/query"
 
 - [type FilterOption](<#FilterOption>)
 - [type Metadata](<#Metadata>)
-  - [func NewMetadata\(resultSelector ResultSelector, totalRowCount uint64\) Metadata](<#NewMetadata>)
+  - [func NewMetadata\(resultSelector ResultSelector, totalDisplayableResults, totalResults uint64\) Metadata](<#NewMetadata>)
 - [type ResponseListWithMetadata](<#ResponseListWithMetadata>)
 - [type ResponseWithMetadata](<#ResponseWithMetadata>)
 - [type ResultSelector](<#ResultSelector>)
@@ -65,7 +65,7 @@ type Metadata struct {
 ### func [NewMetadata](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/responseWithMetadata.go#L33>)
 
 ```go
-func NewMetadata(resultSelector ResultSelector, totalRowCount uint64) Metadata
+func NewMetadata(resultSelector ResultSelector, totalDisplayableResults, totalResults uint64) Metadata
 ```
 
 
