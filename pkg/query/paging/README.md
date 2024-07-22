@@ -101,12 +101,14 @@ func ValidateAndApplyPagingRules(model PagingSettingsInterface, request *Request
 ValidateAndApplyPagingRules performs a validation of the original request and adds correct the correct values \(defaults\) if needed
 
 <a name="Response"></a>
-## type [Response](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/response.go#L6-L11>)
+## type [Response](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/response.go#L8-L13>)
 
 Response represents a response object containing information about pagination and total count of records.
 
-- PageIndex: The index of the page \(starting from 0\).
-- PageSize: The number of records per page.
+- PageIndex: The index of the page \(starting from 0\). This is required.
+- PageSize: The number of records per page. This is required.
+- TotalDisplayableResults: The total number of results that can be displayed. This is required.
+- TotalResults: The total number of results, including those that may not be displayed. This is optional and will be omitted if empty.
 
 ```go
 type Response struct {
@@ -118,7 +120,7 @@ type Response struct {
 ```
 
 <a name="NewResponse"></a>
-### func [NewResponse](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/response.go#L13>)
+### func [NewResponse](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/response.go#L15>)
 
 ```go
 func NewResponse(request *Request, totalDisplayableResults, totalResults uint64) *Response
