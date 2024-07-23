@@ -53,7 +53,7 @@ func InjectAuthenticationIntoClient(client *opensearchapi.Client,
 		return err
 	}
 	log.Debug().
-		Str("opensearch_auth_method", fmt.Sprintf("%s", method)).
+		Str("opensearch_auth_method", string(method)).
 		Msgf("set up auth method for opensearch client: %s", method)
 
 	authenticator := &Authenticator{
