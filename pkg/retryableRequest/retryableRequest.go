@@ -20,7 +20,9 @@ import (
 // ExecuteRequestWithRetry executes the given request via the passed http client and retries on failures.
 // An error is only returned if there was a non retryable error or the maximum number of retries was reached.
 // It uses the retry policy of [retryablehttp.ErrorPropagatedRetryPolicy] and exponential backoff from [retryablehttp.DefaultBackoff].
-func ExecuteRequestWithRetry(ctx context.Context, client *http.Client, request *http.Request, maxRetries int, retryWaitMin, retryWaitMax time.Duration) (*http.Response, error) {
+func ExecuteRequestWithRetry(ctx context.Context, client *http.Client, request *http.Request,
+	maxRetries int, retryWaitMin, retryWaitMax time.Duration,
+) (*http.Response, error) {
 	var errList []error
 	for attempt := range maxRetries + 1 {
 		requestCopy, err := DeepCopyRequest(request)
@@ -36,19 +38,22 @@ func ExecuteRequestWithRetry(ctx context.Context, client *http.Client, request *
 
 		// collect errors
 		if err != nil {
-			errList = append(errList, fmt.Errorf("attempt %d: failed to send request: %w", attempt+1, err)) // humans prefer to read one indexed
+			errList = append(errList, fmt.Errorf("attempt %d: failed to send request: %w",
+				attempt+1, err)) // humans prefer to read one indexed
 		} else {
 			responseBody, err := io.ReadAll(response.Body)
 			response.Body.Close()
 			if err != nil {
 				responseBody = []byte("can't display error details, failed to read response body: " + err.Error())
 			}
-			errList = append(errList, fmt.Errorf("attempt %d: request returned error: %s, %s", attempt+1, response.Status, string(responseBody)))
+			errList = append(errList, fmt.Errorf("attempt %d: request returned error: %s, %s",
+				attempt+1, response.Status, string(responseBody)))
 		}
 
 		retry, retryErr := retryablehttp.ErrorPropagatedRetryPolicy(ctx, response, err)
 		if !retry {
-			return nil, fmt.Errorf("failed to execute request to %s, stop retrying after %d attempts due to %w, encountered errors: %w", request.URL.String(), attempt+1, retryErr, errors.Join(errList...))
+			return nil, fmt.Errorf("failed to execute request to %s, stop retrying after %d attempts due to %w, encountered errors: %w",
+				request.URL.String(), attempt+1, retryErr, errors.Join(errList...))
 		}
 
 		if attempt < maxRetries {
@@ -56,7 +61,8 @@ func ExecuteRequestWithRetry(ctx context.Context, client *http.Client, request *
 			time.Sleep(waitTime)
 		}
 	}
-	return nil, fmt.Errorf("failed to execute request to %s after maximum number of %d attempts, encountered errors: %w", request.URL.String(), maxRetries+1, errors.Join(errList...))
+	return nil, fmt.Errorf("failed to execute request to %s after maximum number of %d attempts, encountered errors: %w",
+		request.URL.String(), maxRetries+1, errors.Join(errList...))
 }
 
 // DeepCopyRequest returns a deep copy of the request. The context of the original request is placed by [context.Background].

@@ -5,12 +5,11 @@
 package openSearchClient
 
 import (
+	"errors"
 	"reflect"
 	"strings"
 	"time"
 	"unsafe"
-
-	"errors"
 
 	"github.com/go-playground/validator/v10"
 	jsoniter "github.com/json-iterator/go"

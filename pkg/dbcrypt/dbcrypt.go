@@ -18,8 +18,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const prefix = "ENC:"
-const prefixLen = len(prefix)
+const (
+	prefix    = "ENC:"
+	prefixLen = len(prefix)
+)
 
 type DBCrypt[T any] struct {
 	config config.CryptoConfig
