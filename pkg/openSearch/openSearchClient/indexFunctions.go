@@ -37,7 +37,7 @@ func (i *IndexFunction) CreateIndex(indexName string, indexSchema []byte) error 
 	if err != nil {
 		// If the error is due to a lack of disk space or memory, we should log it as a warning
 		// see details in https://repost.aws/knowledge-center/opensearch-403-clusterblockexception
-		log.Err(err).Msgf("error while creating index: please check disk space and memory usage")
+		log.Err(err).Msg("error while creating index: please check disk space and memory usage")
 		return err
 	}
 
@@ -102,7 +102,7 @@ func (i *IndexFunction) IndexExists(indexName string) (bool, error) {
 			return false, nil
 		}
 
-		log.Debug().Err(err).Msgf("error while checking if index exists")
+		log.Debug().Err(err).Msg("error while checking if index exists")
 		return false, err
 	}
 
@@ -132,7 +132,7 @@ func (i *IndexFunction) CreateOrPutAlias(aliasName string, indexNames ...string)
 		},
 	)
 	if err != nil {
-		log.Debug().Err(err).Msgf("error while creating and putting alias")
+		log.Debug().Err(err).Msg("error while creating and putting alias")
 		return err
 	}
 
