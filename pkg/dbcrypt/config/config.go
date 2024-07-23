@@ -26,6 +26,9 @@ func Read() (config CryptoConfig, err error) {
 	if err != nil {
 		return config, err
 	}
-	log.Debug().Msgf("CryptoConfig: %+v", config)
+	log.Debug().
+		Str("crypto_config_v1_password", config.ReportEncryptionV1Password).
+		Str("crypto_config_v1_salt", config.ReportEncryptionV1Salt).
+		Msgf("CryptoConfig: %+v", config)
 	return config, nil
 }

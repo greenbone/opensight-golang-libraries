@@ -57,7 +57,7 @@ func ReadEnvVarsIntoStruct(s any) (any, error) {
 				if intValue == 0 && envValue != "" {
 					intV, err := strconv.Atoi(envValue)
 					if err != nil {
-						log.Error().Msgf("unable to convert %s to int: %s", envValue, err.Error())
+						log.Error().Err(err).Msgf("unable to convert %s to int", envValue)
 					}
 					intValue = int64(intV)
 				}
@@ -108,7 +108,7 @@ func ReadEnvVarsIntoStruct(s any) (any, error) {
 
 	validate := validator.New()
 	if err := validate.Struct(s); err != nil {
-		log.Debug().Msgf("Validation error: %v", err)
+		log.Debug().Err(err).Msg("validation error")
 		return nil, err
 	}
 

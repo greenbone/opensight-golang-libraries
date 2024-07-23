@@ -43,7 +43,7 @@ func StartOpensearchTestContainer(ctx context.Context) (testcontainers.Container
 		Started:          true,
 	})
 	if err != nil {
-		log.Debug().Msgf("failed to create container: %s", err.Error())
+		log.Debug().Err(err).Msg("failed to create container")
 	}
 
 	host, _ := opensearchContainer.Host(ctx)

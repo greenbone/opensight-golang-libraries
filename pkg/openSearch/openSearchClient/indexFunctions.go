@@ -37,7 +37,7 @@ func (i *IndexFunction) CreateIndex(indexName string, indexSchema []byte) error 
 	if err != nil {
 		// If the error is due to a lack of disk space or memory, we should log it as a warning
 		// see details in https://repost.aws/knowledge-center/opensearch-403-clusterblockexception
-		log.Err(err).Msgf("Error while creating index: please check disk space and memory usage")
+		log.Err(err).Msgf("error while creating index: please check disk space and memory usage")
 		return err
 	}
 
@@ -55,7 +55,7 @@ func (i *IndexFunction) GetIndexes(pattern string) ([]string, error) {
 		},
 	)
 	if err != nil {
-		log.Debug().Msgf("Error while checking if index exists: %s", err)
+		log.Debug().Err(err).Msg("error while checking if index exists")
 		return nil, err
 	}
 
@@ -102,7 +102,7 @@ func (i *IndexFunction) IndexExists(indexName string) (bool, error) {
 			return false, nil
 		}
 
-		log.Debug().Msgf("Error while checking if index exists: %s", err)
+		log.Debug().Err(err).Msgf("error while checking if index exists")
 		return false, err
 	}
 
@@ -132,7 +132,7 @@ func (i *IndexFunction) CreateOrPutAlias(aliasName string, indexNames ...string)
 		},
 	)
 	if err != nil {
-		log.Debug().Msgf("Error while creating and putting alias: %s", err)
+		log.Debug().Err(err).Msgf("error while creating and putting alias")
 		return err
 	}
 
@@ -167,7 +167,7 @@ func (i *IndexFunction) IndexHasAlias(indexNames []string, aliasNames []string) 
 			return false, nil
 		}
 
-		log.Debug().Msgf("Error while checking the index alias: %s", err)
+		log.Debug().Err(err).Msg("error while checking the index alias")
 		return false, err
 	}
 
@@ -189,7 +189,7 @@ func (i *IndexFunction) AliasExists(aliasName string) (bool, error) {
 	}
 
 	if len(response.Aliases) == 0 {
-		log.Debug().Str("src", "opensearch").Msgf("alias %s does not exist", aliasName)
+		log.Debug().Msgf("alias %s does not exist", aliasName)
 		return false, nil
 	}
 
@@ -225,7 +225,7 @@ func (i *IndexFunction) RemoveIndexesFromAlias(indexesToRemove []string, aliasNa
 
 	actionsBytes, err := json.Marshal(actions)
 	if err != nil {
-		log.Debug().Msgf("Error marshaling actions to remove indexes: %s", err)
+		log.Debug().Err(err).Msg("error marshaling actions to remove indexes")
 		return fmt.Errorf("error marshaling actions: %w", err)
 	}
 
@@ -241,11 +241,11 @@ func (i *IndexFunction) RemoveIndexesFromAlias(indexesToRemove []string, aliasNa
 	}
 
 	if res.IsError() {
-		log.Debug().Msgf("Error removing non-compliant indexes from alias: %s", res.String())
+		log.Debug().Msgf("error removing non-compliant indexes from alias: %s", res.String())
 		return fmt.Errorf("error removing non-compliant indexes from alias: %s", res.String())
 	}
 
-	log.Debug().Msg("All non-compliant indexes removed from the alias.")
+	log.Debug().Msg("all non-compliant indexes removed from the alias.")
 	return nil
 }
 

@@ -126,7 +126,7 @@ func (q *UpdateQueue) run() {
 }
 
 func (q *UpdateQueue) update(indexName string, requestBody []byte) ([]byte, error) {
-	log.Debug().Str("src", "opensearch-queue").Msgf("update requestBody: %s", string(requestBody))
+	log.Debug().Msgf("update requestBody: %s", string(requestBody))
 
 	var updateResponse *opensearchapi.UpdateByQueryResp
 	var result []byte
@@ -144,8 +144,7 @@ func (q *UpdateQueue) update(indexName string, requestBody []byte) ([]byte, erro
 			},
 		)
 		if err != nil {
-			log.Warn().Str("src", "opensearch-queue").Msgf(
-				"attempt %d: error in UpdateByQuery: %s", i+1, err)
+			log.Warn().Err(err).Msgf("attempt %d: error in UpdateByQuery", i+1)
 			time.Sleep(q.updateRetryDelay)
 			continue
 		}
@@ -153,14 +152,12 @@ func (q *UpdateQueue) update(indexName string, requestBody []byte) ([]byte, erro
 		body := updateResponse.Inspect().Response.Body
 		result, err = io.ReadAll(body)
 		if err != nil {
-			log.Warn().Str("src", "opensearch-queue").Msgf(
-				"attempt %d: error in io.ReadAll: %s", i+1, err)
+			log.Warn().Err(err).Msgf("attempt %d: error in io.ReadAll", i+1)
 			time.Sleep(q.updateRetryDelay)
 			continue
 		}
 
-		log.Debug().Str("src", "opensearch-queue").Msgf(
-			"attempt %d: Update request successful", i+1)
+		log.Debug().Msgf("attempt %d: update request successful", i+1)
 		return result, nil
 	}
 
