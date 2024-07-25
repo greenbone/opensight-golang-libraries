@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Greenbone AG <https://greenbone.net>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 package paging
 
 // ValidateAndApplyPagingRules performs a validation of the original request and adds correct the correct values (defaults) if needed
