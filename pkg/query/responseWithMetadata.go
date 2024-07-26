@@ -34,7 +34,8 @@ type Metadata struct {
 	Sorting *sorting.Request `json:"sorting,omitempty"`
 }
 
-func NewMetadata(resultSelector ResultSelector, totalRowCount uint64) Metadata {
+// NewMetadata creates a new Metadata object based on the provided ResultSelector and totalResults.
+func NewMetadata(resultSelector ResultSelector, totalResults uint64) Metadata {
 	if resultSelector.Filter != nil {
 		for i, field := range resultSelector.Filter.Fields {
 			if field.Keys == nil {
@@ -44,7 +45,7 @@ func NewMetadata(resultSelector ResultSelector, totalRowCount uint64) Metadata {
 	}
 	return Metadata{
 		Filter:  resultSelector.Filter,
-		Paging:  paging.NewResponse(resultSelector.Paging, totalRowCount),
+		Paging:  paging.NewResponse(resultSelector.Paging, totalResults),
 		Sorting: resultSelector.Sorting,
 	}
 }
