@@ -49,3 +49,19 @@ func NewMetadata(resultSelector ResultSelector, totalResults uint64) Metadata {
 		Sorting: resultSelector.Sorting,
 	}
 }
+
+// NewMetadataWithTotalResults creates a new Metadata object based on the provided ResultSelector and totalResults.
+func NewMetadataWithTotalResults(resultSelector ResultSelector, totalResults, resultLimit uint64) Metadata {
+	if resultSelector.Filter != nil {
+		for i, field := range resultSelector.Filter.Fields {
+			if field.Keys == nil {
+				resultSelector.Filter.Fields[i].Keys = []string{}
+			}
+		}
+	}
+	return Metadata{
+		Filter:  resultSelector.Filter,
+		Paging:  paging.NewResponseWithTotalResults(resultSelector.Paging, totalResults, resultLimit),
+		Sorting: resultSelector.Sorting,
+	}
+}

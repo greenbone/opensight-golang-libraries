@@ -4,10 +4,6 @@
 
 package paging
 
-const (
-	opensearchQueryLimit = 10000
-)
-
 // Response represents a response object containing information about pagination and total count of records.
 //   - PageIndex: The index of the page (starting from 0). This is required.
 //   - PageSize: The number of records per page. This is required.
@@ -20,16 +16,28 @@ type Response struct {
 	TotalResults            uint64 `json:"totalResults,omitempty"`
 }
 
-func NewResponse(request *Request, totalResults uint64) *Response {
+func NewResponse(request *Request, totalDisplayableResults uint64) *Response {
 	if request == nil {
 		return nil
 	}
 
-	if totalResults > opensearchQueryLimit {
+	return &Response{
+		PageIndex:               request.PageIndex,
+		PageSize:                request.PageSize,
+		TotalDisplayableResults: totalDisplayableResults,
+	}
+}
+
+func NewResponseWithTotalResults(request *Request, totalResults, resultLimit uint64) *Response {
+	if request == nil {
+		return nil
+	}
+
+	if totalResults > resultLimit {
 		return &Response{
 			PageIndex:               request.PageIndex,
 			PageSize:                request.PageSize,
-			TotalDisplayableResults: opensearchQueryLimit,
+			TotalDisplayableResults: resultLimit,
 			TotalResults:            totalResults,
 		}
 	}
