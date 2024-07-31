@@ -154,7 +154,7 @@ func (qb *Builder) Build(resultSelector query.ResultSelector) (query string, arg
 	if resultSelector.Sorting != nil {
 		sortingErr := qb.addSorting(resultSelector.Sorting)
 		if sortingErr != nil {
-			err = fmt.Errorf("error adding sort query: %w", err)
+			err = fmt.Errorf("error adding sort query: %w", sortingErr)
 			return
 		}
 	}
