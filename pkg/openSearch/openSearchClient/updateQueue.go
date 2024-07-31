@@ -98,7 +98,7 @@ func (q *UpdateQueue) Update(indexName string, requestBody []byte) ([]byte, erro
 
 	if _, ok := responseMap["failures"]; ok {
 		if len(responseMap["failures"].([]interface{})) > 0 {
-			return response.Body, fmt.Errorf("Update failed - even after retries: %s", string(response.Body))
+			return response.Body, fmt.Errorf("update failed - even after retries: %s", string(response.Body))
 		}
 	}
 
@@ -113,7 +113,7 @@ func (q *UpdateQueue) run() {
 		case request := <-q.queue:
 			responseBody, err := q.update(request.IndexName, request.RequestBody)
 			if err != nil {
-				log.Error().Err(err).Msgf("Update request failed %v", responseBody)
+				log.Error().Err(err).Msgf("update request failed %v", responseBody)
 				request.Response <- Response{Err: err}
 				continue
 			}
