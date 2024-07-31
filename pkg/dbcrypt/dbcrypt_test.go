@@ -26,7 +26,7 @@ var cryptor = DBCrypt[MyTable]{}
 func (a *MyTable) encrypt(tx *gorm.DB) (err error) {
 	err = cryptor.EncryptStruct(a)
 	if err != nil {
-		err := tx.AddError(fmt.Errorf("Unable to encrypt password %v", err))
+		err := tx.AddError(fmt.Errorf("unable to encrypt password %v", err))
 		if err != nil {
 			return err
 		}
@@ -50,7 +50,7 @@ func (a *MyTable) BeforeSave(tx *gorm.DB) (err error) {
 func (a *MyTable) AfterFind(tx *gorm.DB) (err error) {
 	err = cryptor.DecryptStruct(a)
 	if err != nil {
-		err := tx.AddError(fmt.Errorf("Unable to decrypt password %v", err))
+		err := tx.AddError(fmt.Errorf("unable to decrypt password %v", err))
 		if err != nil {
 			return err
 		}
@@ -80,7 +80,7 @@ func TestEncryptDecrypt(t *testing.T) {
 		Field1:   "111111111",
 		PwdField: "ThePassword",
 	}
-	var originalPw string = clearData.PwdField
+	var originalPw = clearData.PwdField
 
 	cryptor := DBCrypt[MyTable]{}
 	err := cryptor.EncryptStruct(clearData)
