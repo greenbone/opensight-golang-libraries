@@ -6,7 +6,6 @@ package config
 
 import (
 	"github.com/greenbone/opensight-golang-libraries/pkg/configReader"
-	"github.com/rs/zerolog/log"
 )
 
 // CryptoConfig defines the configuration for service-wide cryptography options.
@@ -26,9 +25,5 @@ func Read() (config CryptoConfig, err error) {
 	if err != nil {
 		return config, err
 	}
-	log.Debug().
-		Str("crypto_config_v1_password", config.ReportEncryptionV1Password).
-		Str("crypto_config_v1_salt", config.ReportEncryptionV1Salt).
-		Msgf("CryptoConfig: %+v", config)
 	return config, nil
 }
