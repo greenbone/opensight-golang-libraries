@@ -64,6 +64,7 @@ func (c *Client) Search(indexName string, requestBody []byte) (responseBody []by
 	}
 
 	log.Trace().
+		Int("status_code", searchResponse.Inspect().Response.StatusCode).
 		Msgf(
 			"search response - statusCode:'%d' json:'%s'",
 			searchResponse.Inspect().Response.StatusCode, string(result),
