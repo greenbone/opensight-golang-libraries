@@ -108,7 +108,6 @@ func ReadEnvVarsIntoStruct(s any) (any, error) {
 
 	validate := validator.New()
 	if err := validate.Struct(s); err != nil {
-		log.Debug().Err(err).Msg("validation error")
 		return nil, err
 	}
 
