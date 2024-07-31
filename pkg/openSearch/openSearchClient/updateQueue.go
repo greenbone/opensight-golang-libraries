@@ -144,7 +144,9 @@ func (q *UpdateQueue) update(indexName string, requestBody []byte) ([]byte, erro
 			},
 		)
 		if err != nil {
-			log.Warn().Err(err).Msgf("attempt %d: error in UpdateByQuery", i+1)
+			log.Warn().Err(err).
+				Int("attempt_number", i+1).
+				Msgf("attempt %d: error in UpdateByQuery", i+1)
 			time.Sleep(q.updateRetryDelay)
 			continue
 		}
@@ -152,7 +154,9 @@ func (q *UpdateQueue) update(indexName string, requestBody []byte) ([]byte, erro
 		body := updateResponse.Inspect().Response.Body
 		result, err = io.ReadAll(body)
 		if err != nil {
-			log.Warn().Err(err).Msgf("attempt %d: error in io.ReadAll", i+1)
+			log.Warn().Err(err).
+				Int("attempt_number", i+1).
+				Msgf("attempt %d: error in io.ReadAll", i+1)
 			time.Sleep(q.updateRetryDelay)
 			continue
 		}
