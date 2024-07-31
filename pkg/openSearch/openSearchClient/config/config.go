@@ -30,9 +30,9 @@ func ReadOpensearchClientConfig() (OpensearchClientConfig, error) {
 		Int("opensearch_client_config_port", config.Port).
 		Bool("opensearch_client_config_https", config.Https).
 		Str("opensearch_client_config_auth_username", config.AuthUsername).
-		Str("opensearch_client_config_auth_password", config.AuthPassword).
+		Bool("opensearch_client_config_auth_password_set", config.AuthPassword != "").
 		Str("opensearch_client_config_auth_method", config.AuthMethod).
-		Msgf("OpenSearch Config: %+v", config)
+		Msg("OpenSearch Config")
 
 	return *config, nil
 }
