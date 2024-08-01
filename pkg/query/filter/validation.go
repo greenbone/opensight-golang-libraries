@@ -5,10 +5,9 @@
 package filter
 
 import (
+	"errors"
 	"strings"
 	"time"
-
-	"errors"
 
 	"github.com/google/uuid"
 	"github.com/greenbone/opensight-golang-libraries/pkg/slices"

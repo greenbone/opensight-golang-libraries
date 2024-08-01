@@ -17,8 +17,10 @@ import (
 	"github.com/greenbone/opensight-golang-libraries/pkg/retryableRequest"
 )
 
-const basePath = "/api/notification-service"
-const createNotificationPath = "/notifications"
+const (
+	basePath               = "/api/notification-service"
+	createNotificationPath = "/notifications"
+)
 
 // Client can be used to send notifications
 type Client struct {
@@ -66,12 +68,14 @@ func (c *Client) CreateNotification(ctx context.Context, notification Notificati
 		return fmt.Errorf("invalid url '%s': %w", c.notificationServiceAddress, err)
 	}
 
-	request, err := http.NewRequest(http.MethodPost, createNotificationEndpoint, bytes.NewReader(notificationSerialized))
+	request, err := http.NewRequest(http.MethodPost, createNotificationEndpoint,
+		bytes.NewReader(notificationSerialized))
 	if err != nil {
 		return fmt.Errorf("failed to build request: %w", err)
 	}
 
-	response, err := retryableRequest.ExecuteRequestWithRetry(ctx, c.httpClient, request, c.maxRetries, c.retryWaitMin, c.retryWaitMax)
+	response, err := retryableRequest.ExecuteRequestWithRetry(ctx, c.httpClient, request,
+		c.maxRetries, c.retryWaitMin, c.retryWaitMax)
 	if err == nil {
 		// note: the successful response returns the notification object, but we don't care about its values and omit parsing the body here
 		response.Body.Close()

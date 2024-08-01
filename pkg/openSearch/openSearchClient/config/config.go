@@ -24,6 +24,14 @@ func ReadOpensearchClientConfig() (OpensearchClientConfig, error) {
 	if err != nil {
 		return *config, err
 	}
-	log.Debug().Msgf("OpenSearch Config: %+v", config)
+
+	log.Debug().
+		Str("opensearch_client_config_host", config.Host).
+		Int("opensearch_client_config_port", config.Port).
+		Bool("opensearch_client_config_https", config.Https).
+		Str("opensearch_client_config_auth_username", config.AuthUsername).
+		Str("opensearch_client_config_auth_method", config.AuthMethod).
+		Msg("OpenSearch Config")
+
 	return *config, nil
 }
