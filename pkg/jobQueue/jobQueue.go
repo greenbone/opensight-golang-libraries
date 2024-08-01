@@ -57,11 +57,11 @@ func (q *JobQueue) processRequests() {
 		select {
 		case <-q.context.Done():
 			close(q.reqChan)
-			log.Info().Msgf("closing JobQueue and consumer")
+			log.Info().Msg("closing JobQueue and consumer")
 			return
 		case req, ok := <-q.reqChan:
 			if !ok {
-				log.Warn().Msgf("<-q.reqChan returned not ok")
+				log.Warn().Msg("<-q.reqChan returned not ok")
 				return
 			}
 
@@ -80,11 +80,17 @@ func (q *JobQueue) processRequests() {
 }
 
 func (q *JobQueue) execute(req Request) {
-	log.Debug().Msgf("Executing queue request ID: %s\n", req.ID)
+	log.Debug().
+		Str("request_id", req.ID).
+		Msgf("executing queue request id: %s", req.ID)
 	// Call the function
 	err := q.execFunc()
 	if err != nil {
-		log.Error().Msgf("Error executing queue request ID: %s %v\n", req.ID, err)
+		log.Error().Err(err).
+			Str("request_id", req.ID).
+			Msgf("error executing queue request id: %s", req.ID)
 	}
-	log.Debug().Msgf("Finished queue request ID: %s\n", req.ID)
+	log.Debug().
+		Str("request_id", req.ID).
+		Msgf("finished queue request id: %s", req.ID)
 }

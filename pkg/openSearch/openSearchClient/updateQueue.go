@@ -98,7 +98,7 @@ func (q *UpdateQueue) Update(indexName string, requestBody []byte) ([]byte, erro
 
 	if _, ok := responseMap["failures"]; ok {
 		if len(responseMap["failures"].([]interface{})) > 0 {
-			return response.Body, fmt.Errorf("Update failed - even after retries: %s", string(response.Body))
+			return response.Body, fmt.Errorf("update failed - even after retries: %s", string(response.Body))
 		}
 	}
 
@@ -113,7 +113,7 @@ func (q *UpdateQueue) run() {
 		case request := <-q.queue:
 			responseBody, err := q.update(request.IndexName, request.RequestBody)
 			if err != nil {
-				log.Error().Err(err).Msgf("Update request failed %v", responseBody)
+				log.Error().Err(err).Msgf("update request failed %v", responseBody)
 				request.Response <- Response{Err: err}
 				continue
 			}
@@ -126,7 +126,7 @@ func (q *UpdateQueue) run() {
 }
 
 func (q *UpdateQueue) update(indexName string, requestBody []byte) ([]byte, error) {
-	log.Debug().Str("src", "opensearch-queue").Msgf("update requestBody: %s", string(requestBody))
+	log.Debug().Msgf("update requestBody: %s", string(requestBody))
 
 	var updateResponse *opensearchapi.UpdateByQueryResp
 	var result []byte
@@ -144,8 +144,9 @@ func (q *UpdateQueue) update(indexName string, requestBody []byte) ([]byte, erro
 			},
 		)
 		if err != nil {
-			log.Warn().Str("src", "opensearch-queue").Msgf(
-				"attempt %d: error in UpdateByQuery: %s", i+1, err)
+			log.Warn().Err(err).
+				Int("attempt_number", i+1).
+				Msgf("attempt %d: error in UpdateByQuery", i+1)
 			time.Sleep(q.updateRetryDelay)
 			continue
 		}
@@ -153,14 +154,14 @@ func (q *UpdateQueue) update(indexName string, requestBody []byte) ([]byte, erro
 		body := updateResponse.Inspect().Response.Body
 		result, err = io.ReadAll(body)
 		if err != nil {
-			log.Warn().Str("src", "opensearch-queue").Msgf(
-				"attempt %d: error in io.ReadAll: %s", i+1, err)
+			log.Warn().Err(err).
+				Int("attempt_number", i+1).
+				Msgf("attempt %d: error in io.ReadAll", i+1)
 			time.Sleep(q.updateRetryDelay)
 			continue
 		}
 
-		log.Debug().Str("src", "opensearch-queue").Msgf(
-			"attempt %d: Update request successful", i+1)
+		log.Debug().Msgf("attempt %d: update request successful", i+1)
 		return result, nil
 	}
 

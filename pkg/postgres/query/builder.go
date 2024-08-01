@@ -6,10 +6,9 @@
 package query
 
 import (
+	"errors"
 	"fmt"
 	"strings"
-
-	"errors"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"

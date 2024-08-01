@@ -44,7 +44,7 @@ func NewClient(openSearchProjectClient *opensearchapi.Client, updateMaxRetries i
 // requestBody is the request body to send to OpenSearch.
 // It returns the response body as or an error in case something went wrong.
 func (c *Client) Search(indexName string, requestBody []byte) (responseBody []byte, err error) {
-	log.Debug().Str("src", "opensearch").Msgf("search requestBody: %s", string(requestBody))
+	log.Debug().Msgf("search requestBody: %s", string(requestBody))
 	searchResponse, err := c.openSearchProjectClient.Search(
 		context.Background(),
 		&opensearchapi.SearchReq{
@@ -63,8 +63,12 @@ func (c *Client) Search(indexName string, requestBody []byte) (responseBody []by
 		return nil, err
 	}
 
-	log.Trace().Str("src", "opensearch").Msgf("search response - statusCode:'%d' json:'%s'",
-		searchResponse.Inspect().Response.StatusCode, string(result))
+	log.Trace().
+		Int("status_code", searchResponse.Inspect().Response.StatusCode).
+		Msgf(
+			"search response - statusCode:'%d' json:'%s'",
+			searchResponse.Inspect().Response.StatusCode, string(result),
+		)
 
 	return result, nil
 }
