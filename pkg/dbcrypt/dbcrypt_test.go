@@ -50,7 +50,7 @@ func (a *MyTable) BeforeSave(tx *gorm.DB) (err error) {
 func (a *MyTable) AfterFind(tx *gorm.DB) (err error) {
 	err = cryptor.DecryptStruct(a)
 	if err != nil {
-		err := tx.AddError(fmt.Errorf("unable to decrypt password %v", err))
+		err := tx.AddError(fmt.Errorf("unable to decrypt password %w", err))
 		if err != nil {
 			return err
 		}
