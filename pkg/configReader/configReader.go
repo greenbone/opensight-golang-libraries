@@ -57,7 +57,7 @@ func ReadEnvVarsIntoStruct(s any) (any, error) {
 				if intValue == 0 && envValue != "" {
 					intV, err := strconv.Atoi(envValue)
 					if err != nil {
-						log.Error().Err(err).Msgf("unable to convert %s to int", envValue)
+						log.Error().Err(err).Msgf("unable to convert environment variable to int: %s", envValue)
 					}
 					intValue = int64(intV)
 				}
