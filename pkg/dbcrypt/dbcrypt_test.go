@@ -26,7 +26,7 @@ var cryptor = DBCrypt[MyTable]{}
 func (a *MyTable) encrypt(tx *gorm.DB) (err error) {
 	err = cryptor.EncryptStruct(a)
 	if err != nil {
-		err := tx.AddError(fmt.Errorf("unable to encrypt password %v", err))
+		err := tx.AddError(fmt.Errorf("unable to encrypt password %w", err))
 		if err != nil {
 			return err
 		}
