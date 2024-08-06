@@ -20,7 +20,8 @@ import "github.com/greenbone/opensight-golang-libraries/pkg/query/paging"
 - [type Request](<#Request>)
   - [func ValidateAndApplyPagingRules\(model PagingSettingsInterface, request \*Request\) \(\*Request, error\)](<#ValidateAndApplyPagingRules>)
 - [type Response](<#Response>)
-  - [func NewResponse\(request \*Request, totalRowCount uint64\) \*Response](<#NewResponse>)
+  - [func NewResponse\(request \*Request, totalDisplayableResults uint64\) \*Response](<#NewResponse>)
+  - [func NewResponseWithTotalResults\(request \*Request, totalDisplayableResults, totalResults uint64\) \*Response](<#NewResponseWithTotalResults>)
 
 
 <a name="AddRequest"></a>
@@ -101,26 +102,38 @@ func ValidateAndApplyPagingRules(model PagingSettingsInterface, request *Request
 ValidateAndApplyPagingRules performs a validation of the original request and adds correct the correct values \(defaults\) if needed
 
 <a name="Response"></a>
-## type [Response](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/response.go#L6-L10>)
+## type [Response](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/response.go#L8-L13>)
 
 Response represents a response object containing information about pagination and total count of records.
 
-- PageIndex: The index of the page \(starting from 0\).
-- PageSize: The number of records per page.
+- PageIndex: The index of the page \(starting from 0\). This is required.
+- PageSize: The number of records per page. This is required.
+- TotalDisplayableResults: The total number of results that can be paginated. Due to database restrictions, in case of large number of results, some of the results cannot be retrieved. In such cases, this number will be lower than the \`TotalResults\`. This is required.
+- TotalResults: The total count of results as it exists in database, including those that may not be retrieved. This is optional and must not be set if the value does not differ from \`TotalDisplayableResults\`
 
 ```go
 type Response struct {
-    PageIndex     int    `json:"index"`
-    PageSize      int    `json:"size"`
-    TotalRowCount uint64 `json:"total"`
+    PageIndex               int    `json:"index" binding:"required"`
+    PageSize                int    `json:"size" binding:"required"`
+    TotalDisplayableResults uint64 `json:"totalDisplayableResults" binding:"required"`
+    TotalResults            uint64 `json:"totalResults,omitempty"`
 }
 ```
 
 <a name="NewResponse"></a>
-### func [NewResponse](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/response.go#L12>)
+### func [NewResponse](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/response.go#L15>)
 
 ```go
-func NewResponse(request *Request, totalRowCount uint64) *Response
+func NewResponse(request *Request, totalDisplayableResults uint64) *Response
+```
+
+
+
+<a name="NewResponseWithTotalResults"></a>
+### func [NewResponseWithTotalResults](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/paging/response.go#L27>)
+
+```go
+func NewResponseWithTotalResults(request *Request, totalDisplayableResults, totalResults uint64) *Response
 ```
 
 

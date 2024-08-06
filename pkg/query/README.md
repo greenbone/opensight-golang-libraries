@@ -25,7 +25,8 @@ import "github.com/greenbone/opensight-golang-libraries/pkg/query"
 
 - [type FilterOption](<#FilterOption>)
 - [type Metadata](<#Metadata>)
-  - [func NewMetadata\(resultSelector ResultSelector, totalRowCount uint64\) Metadata](<#NewMetadata>)
+  - [func NewMetadata\(resultSelector ResultSelector, totalResults uint64\) Metadata](<#NewMetadata>)
+  - [func NewMetadataWithTotalResults\(resultSelector ResultSelector, totalDisplayableResults, totalResults uint64\) Metadata](<#NewMetadataWithTotalResults>)
 - [type ResponseListWithMetadata](<#ResponseListWithMetadata>)
 - [type ResponseWithMetadata](<#ResponseWithMetadata>)
 - [type ResultSelector](<#ResultSelector>)
@@ -62,13 +63,22 @@ type Metadata struct {
 ```
 
 <a name="NewMetadata"></a>
-### func [NewMetadata](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/responseWithMetadata.go#L33>)
+### func [NewMetadata](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/responseWithMetadata.go#L34>)
 
 ```go
-func NewMetadata(resultSelector ResultSelector, totalRowCount uint64) Metadata
+func NewMetadata(resultSelector ResultSelector, totalResults uint64) Metadata
 ```
 
+NewMetadata creates a new Metadata object based on the provided ResultSelector and totalResults.
 
+<a name="NewMetadataWithTotalResults"></a>
+### func [NewMetadataWithTotalResults](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/responseWithMetadata.go#L50>)
+
+```go
+func NewMetadataWithTotalResults(resultSelector ResultSelector, totalDisplayableResults, totalResults uint64) Metadata
+```
+
+NewMetadataWithTotalResults creates a new Metadata object based on the provided ResultSelector, totalDisplayableResults, and totalResults.
 
 <a name="ResponseListWithMetadata"></a>
 ## type [ResponseListWithMetadata](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/responseWithMetadata.go#L12-L15>)
