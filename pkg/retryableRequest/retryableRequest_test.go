@@ -96,11 +96,13 @@ func Test_ExecuteRequestWithRetry(t *testing.T) {
 			req, err := http.NewRequest(http.MethodPost, server.URL+urlPath, strings.NewReader(bodyContent))
 			require.NoError(t, err, "could not build request")
 
-			response, err := ExecuteRequestWithRetry(context.Background(), http.DefaultClient, req, maxRetries, retryWaitMin, retryWaitMax)
+			response, err := ExecuteRequestWithRetry(context.Background(),
+				http.DefaultClient, req, maxRetries, retryWaitMin, retryWaitMax)
 
 			require.True(t, serverCallCount.Load() > 0, "server was not called")
 			if tt.serverErrors.fatalFail {
-				require.True(t, serverCallCount.Load() < int32(maxRetries+1), "did not stop retrying of fatal failure")
+				require.True(t, serverCallCount.Load() < int32(maxRetries+1),
+					"did not stop retrying of fatal failure")
 			}
 
 			if tt.wantErr {
@@ -118,7 +120,6 @@ func Test_ExecuteRequestWithRetry(t *testing.T) {
 }
 
 func Test_ExecuteRequestWithRetry_Cancel(t *testing.T) {
-
 	// config
 	maxRetries := 5
 	retryWaitMin := time.Microsecond // keep test short
@@ -138,7 +139,6 @@ func Test_ExecuteRequestWithRetry_Cancel(t *testing.T) {
 		}
 
 		w.WriteHeader(http.StatusTooManyRequests)
-
 	}))
 	defer server.Close()
 
@@ -148,7 +148,8 @@ func Test_ExecuteRequestWithRetry_Cancel(t *testing.T) {
 	_, err = ExecuteRequestWithRetry(ctx, http.DefaultClient, req, maxRetries, retryWaitMin, retryWaitMax)
 	assert.True(t, errors.Is(err, context.Canceled), "we should return an error which indicates the cancellation")
 
-	assert.Equal(t, serverCallCount.Load(), int32(cancelInAttempt), "there was a retry after cancellation or not enough retries were attempted")
+	assert.Equal(t, serverCallCount.Load(), int32(cancelInAttempt),
+		"there was a retry after cancellation or not enough retries were attempted")
 }
 
 func Test_DeepCopyRequest(t *testing.T) {

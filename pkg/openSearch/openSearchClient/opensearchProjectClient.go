@@ -22,7 +22,9 @@ import (
 //
 // ctx is the context to use for the connection.
 // config is the configuration for the client.
-func NewOpenSearchProjectClient(ctx context.Context, config config.OpensearchClientConfig, tokenReceiver TokenReceiver) (*opensearchapi.Client, error) {
+func NewOpenSearchProjectClient(ctx context.Context, config config.OpensearchClientConfig,
+	tokenReceiver TokenReceiver,
+) (*opensearchapi.Client, error) {
 	protocol := "http"
 	if config.Https {
 		protocol = "https"

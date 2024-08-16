@@ -89,7 +89,8 @@ func TestClient_CreateNotification(t *testing.T) {
 				// check body
 				requestBody, err := io.ReadAll(r.Body)
 				require.NoError(t, err, "failed to read request body")
-				assert.JSONEq(t, string(wantNotificationSerialized), string(requestBody), "request body is not set properly")
+				assert.JSONEq(t, string(wantNotificationSerialized),
+					string(requestBody), "request body is not set properly")
 
 				// error simulation (fail on first attempt, if configured)
 				if serverCallCount.Load() == 1 {
