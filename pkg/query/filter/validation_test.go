@@ -550,3 +550,47 @@ func TestFloatRequestOption(t *testing.T) {
 		assert.Equal(t, validationError.Error(), "field 'optionName' must be from type 'float'")
 	})
 }
+
+func TestBoolRequestOption(t *testing.T) {
+	var requestOptions []RequestOption
+
+	setup := func(t *testing.T) {
+		requestOptions = []RequestOption{
+			{
+				Name: ReadableValue[string]{
+					Value: "optionName",
+				},
+				Control: RequestOptionType{
+					Type: ControlTypeBool,
+				},
+				Operators: []ReadableValue[CompareOperator]{
+					{
+						Value: CompareOperatorContains,
+					},
+					{
+						Value: CompareOperatorDoesNotContain,
+					},
+				},
+				MultiSelect: false,
+			},
+		}
+	}
+
+	t.Run("shouldReturnErrorOnInvalidValueDataType", func(t *testing.T) {
+		setup(t)
+
+		err := ValidateFilter(&Request{
+			Operator: LogicOperatorAnd,
+			Fields: []RequestField{
+				{
+					Name:     "optionName",
+					Operator: CompareOperatorContains,
+					Value:    "0",
+				},
+			},
+		}, requestOptions)
+		var validationError *ValidationError
+		assert.True(t, errors.As(err, &validationError))
+		assert.Equal(t, validationError.Error(), "field 'optionName' must be from type 'bool'")
+	})
+}

@@ -9,6 +9,7 @@ package filter
 /*
 ControlType ENUM(
 
+	bool
 	enum
 	float
 	integer
