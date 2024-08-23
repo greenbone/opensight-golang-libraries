@@ -13,7 +13,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO free from JSON generation for easier testing?
+var querySettings = QuerySettings{
+	FilterFieldMapping: map[string]string{"testName": "testName"},
+}
+
 func TestBoolQueryBuilder(t *testing.T) {
 	var (
 		query  testBoolQueryBuilderWrapper
@@ -21,9 +24,6 @@ func TestBoolQueryBuilder(t *testing.T) {
 	)
 
 	setup := func(t *testing.T) {
-		querySettings := QuerySettings{
-			FilterFieldMapping: map[string]string{"testName": "testName"},
-		}
 		query = testBoolQueryBuilderWrapper{}
 		query.BoolQueryBuilder = NewBoolQueryBuilder(&querySettings)
 		folder = testFolder.NewTestFolder()
@@ -69,11 +69,7 @@ func TestBoolQueryBuilder(t *testing.T) {
 	})
 }
 
-func TestFilterQueryOperatorAnd(t *testing.T) {
-	querySettings := QuerySettings{
-		FilterFieldMapping: map[string]string{"testName": "testName"},
-	}
-
+func TestFilterQueryOperatorAndMultiValue(t *testing.T) {
 	mixedTests := map[string]struct {
 		file     string
 		operator filter.CompareOperator
@@ -150,7 +146,9 @@ func TestFilterQueryOperatorAnd(t *testing.T) {
 			assert.JSONEq(t, expectedJson, json)
 		})
 	}
+}
 
+func TestFilterQueryOperatorAndSingleValue(t *testing.T) {
 	singleValueTests := map[string]struct {
 		file     string
 		operator filter.CompareOperator
@@ -196,11 +194,7 @@ func TestFilterQueryOperatorAnd(t *testing.T) {
 	}
 }
 
-func TestFilterQueryOperatorOr(t *testing.T) {
-	querySettings := QuerySettings{
-		FilterFieldMapping: map[string]string{"testName": "testName"},
-	}
-
+func TestFilterQueryOperatorOrMultiValue(t *testing.T) {
 	mixedTests := map[string]struct {
 		file     string
 		operator filter.CompareOperator
@@ -281,7 +275,9 @@ func TestFilterQueryOperatorOr(t *testing.T) {
 				GetContent(t, tc.file), json)
 		})
 	}
+}
 
+func TestFilterQueryOperatorOrSingleValue(t *testing.T) {
 	singleValueTests := map[string]struct {
 		file     string
 		operator filter.CompareOperator
