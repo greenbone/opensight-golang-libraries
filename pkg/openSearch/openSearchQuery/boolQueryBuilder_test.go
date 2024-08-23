@@ -250,8 +250,11 @@ func TestFilterQueryOperatorOrMultiValue(t *testing.T) {
 	}
 	for name, tc := range mixedTests {
 		t.Run(name, func(t *testing.T) {
+			// given
 			query := testBoolQueryBuilderWrapper{}
 			query.BoolQueryBuilder = NewBoolQueryBuilder(&querySettings)
+
+			// when
 			err := query.AddFilterRequest(&filter.Request{
 				Operator: filter.LogicOperatorOr,
 				Fields: []filter.RequestField{
@@ -262,6 +265,8 @@ func TestFilterQueryOperatorOrMultiValue(t *testing.T) {
 					},
 				},
 			})
+
+			//then
 			require.NoError(t, err)
 			json, err := query.toJson()
 			require.NoError(t, err)
