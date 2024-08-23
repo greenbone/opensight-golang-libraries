@@ -8,8 +8,8 @@
             "must_not": [
               {
                 "term": {
-                  "testName.keyword": {
-                    "value": "5"
+                  "testName": {
+                    "value": 5
                   }
                 }
               }

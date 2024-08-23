@@ -101,6 +101,14 @@ func TestFilterQueryOperatorAnd(t *testing.T) {
 			operator: filter.CompareOperatorIsStringNotEqualTo, value: []interface{}{5, 6},
 		},
 		// single value
+		"shouldReturnJsonForOperatorAfterDate": {
+			file:     "testdata/And/singleValue/AfterDate.json",
+			operator: filter.CompareOperatorAfterDate, value: "2024-08-23T00:00:00.000+02:00",
+		},
+		"shouldReturnJsonForOperatorBeforeDate": {
+			file:     "testdata/And/singleValue/BeforeDate.json",
+			operator: filter.CompareOperatorBeforeDate, value: "2024-08-23T00:00:00.000+02:00",
+		},
 		"shouldReturnJsonForOperatorBeginsWithSingleValue": {
 			file:     "testdata/And/singleValue/BeginsWith.json",
 			operator: filter.CompareOperatorBeginsWith, value: 5,
@@ -116,6 +124,10 @@ func TestFilterQueryOperatorAnd(t *testing.T) {
 			file:     "testdata/And/singleValue/DoesNotContain.json",
 			operator: filter.CompareOperatorDoesNotContain, value: "test",
 		},
+		"shouldReturnJsonForOperatorIsEqualToSingleValue": {
+			file:     "testdata/And/singleValue/IsEqualTo.json",
+			operator: filter.CompareOperatorIsEqualTo, value: "5",
+		},
 		"shouldReturnJsonForOperatorIsGreaterThan": {
 			file:     "testdata/And/singleValue/IsGreaterThan.json",
 			operator: filter.CompareOperatorIsGreaterThan, value: 5,
@@ -124,6 +136,14 @@ func TestFilterQueryOperatorAnd(t *testing.T) {
 			file:     "testdata/And/singleValue/IsGreaterThanOrEqualTo.json",
 			operator: filter.CompareOperatorIsGreaterThanOrEqualTo, value: 5,
 		},
+		"shouldReturnJsonForOperatorIsIpEqualToSingleValue": {
+			file:     "testdata/And/singleValue/IsIpEqualTo.json",
+			operator: filter.CompareOperatorIsIpEqualTo, value: "127.0.0.1",
+		},
+		"shouldReturnJsonForOperatorIsIpNotEqualToSingleValue": {
+			file:     "testdata/And/singleValue/IsIpNotEqualTo.json",
+			operator: filter.CompareOperatorIsIpNotEqualTo, value: "127.0.0.1",
+		},
 		"shouldReturnJsonForOperatorIsLessThan": {
 			file:     "testdata/And/singleValue/IsLessThan.json",
 			operator: filter.CompareOperatorIsLessThan, value: 5,
@@ -131,6 +151,18 @@ func TestFilterQueryOperatorAnd(t *testing.T) {
 		"shouldReturnJsonForOperatorIsLessThanOrEqualTo": {
 			file:     "testdata/And/singleValue/IsLessThanOrEqualTo.json",
 			operator: filter.CompareOperatorIsLessThanOrEqualTo, value: 5,
+		},
+		"shouldReturnJsonForOperatorIsNotEqualToSingleValue": {
+			file:     "testdata/And/singleValue/IsNotEqualTo.json",
+			operator: filter.CompareOperatorIsNotEqualTo, value: "5",
+		},
+		"shouldReturnJsonForOperatorIsNumberEqualToSingleValue": {
+			file:     "testdata/And/singleValue/IsNumberEqualTo.json",
+			operator: filter.CompareOperatorIsNumberEqualTo, value: "5",
+		},
+		"shouldReturnJsonForOperatorIsNumberNotEqualToSingleValue": {
+			file:     "testdata/And/singleValue/IsNumberNotEqualTo.json",
+			operator: filter.CompareOperatorIsNumberNotEqualTo, value: "5",
 		},
 		"shouldReturnJsonForOperatorIsStringEqualToSingleValue": {
 			file:     "testdata/And/singleValue/IsStringEqualTo.json",
@@ -206,6 +238,14 @@ func TestFilterQueryOperatorOrMultiValue(t *testing.T) {
 			operator: filter.CompareOperatorIsStringNotEqualTo, value: []interface{}{5, 6},
 		},
 		// single value
+		"shouldReturnJsonForOperatorAfterDate": {
+			file:     "testdata/Or/singleValue/AfterDate.json",
+			operator: filter.CompareOperatorAfterDate, value: "2024-08-23T00:00:00.000+02:00",
+		},
+		"shouldReturnJsonForOperatorBeforeDate": {
+			file:     "testdata/Or/singleValue/BeforeDate.json",
+			operator: filter.CompareOperatorBeforeDate, value: "2024-08-23T00:00:00.000+02:00",
+		},
 		"shouldReturnJsonForOperatorBeginsWithSingleValue": {
 			file: "testdata/Or/singleValue/BeginsWith.json", operator: filter.CompareOperatorBeginsWith, value: 5,
 		},
@@ -227,6 +267,14 @@ func TestFilterQueryOperatorOrMultiValue(t *testing.T) {
 			file:     "testdata/Or/singleValue/IsGreaterThanOrEqualTo.json",
 			operator: filter.CompareOperatorIsGreaterThanOrEqualTo, value: 5,
 		},
+		"shouldReturnJsonForOperatorIsIpEqualToSingleValue": {
+			file:     "testdata/Or/singleValue/IsIpEqualTo.json",
+			operator: filter.CompareOperatorIsIpEqualTo, value: "127.0.0.1",
+		},
+		"shouldReturnJsonForOperatorIsIpNotEqualToSingleValue": {
+			file:     "testdata/Or/singleValue/IsIpNotEqualTo.json",
+			operator: filter.CompareOperatorIsIpNotEqualTo, value: "127.0.0.1",
+		},
 		"shouldReturnJsonForOperatorIsLessThan": {
 			file:     "testdata/Or/singleValue/IsLessThan.json",
 			operator: filter.CompareOperatorIsLessThan, value: 5,
@@ -239,13 +287,21 @@ func TestFilterQueryOperatorOrMultiValue(t *testing.T) {
 			file:     "testdata/Or/singleValue/IsNotEqualTo.json",
 			operator: filter.CompareOperatorIsNotEqualTo, value: 5,
 		},
+		"shouldReturnJsonForOperatorIsNumberEqualToSingleValue": {
+			file:     "testdata/Or/singleValue/IsNumberEqualTo.json",
+			operator: filter.CompareOperatorIsNumberEqualTo, value: 5,
+		},
+		"shouldReturnJsonForOperatorIsNumberNotEqualToSingleValue": {
+			file:     "testdata/Or/singleValue/IsNumberNotEqualTo.json",
+			operator: filter.CompareOperatorIsNumberNotEqualTo, value: 5,
+		},
 		"shouldReturnJsonForOperatorIsStringEqualToSingleValue": {
 			file:     "testdata/Or/singleValue/IsStringEqualTo.json",
 			operator: filter.CompareOperatorIsStringEqualTo, value: "test",
 		},
 		"shouldReturnJsonForOperatorIsStringNotEqualToSingleValue": {
 			file:     "testdata/Or/singleValue/IsStringNotEqualTo.json",
-			operator: filter.CompareOperatorIsStringNotEqualTo, value: 5,
+			operator: filter.CompareOperatorIsStringNotEqualTo, value: "5",
 		},
 	}
 	for name, tc := range mixedTests {
