@@ -31,19 +31,12 @@ func (q *testBoolQueryBuilderWrapper) addAggregation(aggregation Aggregation) *t
 //
 // Only used for testing. Do not use in production code due to dubious size setting. Better create custom implementation.
 func (q *testBoolQueryBuilderWrapper) toJson() (json string, err error) {
-	size := q.size
-	if size == 0 {
-		// TODO: 15.08.2022 stolksdorf - current default size is 100 until we get paging
-		size = 100
-	}
-
 	var jsonByte []byte
 	var err1 error
 
 	if q.aggregations == nil {
 		jsonByte, err1 = esquery.Search().
 			Query(q.query).
-			Size(size).
 			MarshalJSON()
 	} else {
 		var aggregations []esquery.Aggregation
@@ -53,7 +46,6 @@ func (q *testBoolQueryBuilderWrapper) toJson() (json string, err error) {
 		jsonByte, err1 = esquery.Search().
 			Query(q.query).
 			Aggs(aggregations...).
-			Size(size).
 			MarshalJSON()
 	}
 

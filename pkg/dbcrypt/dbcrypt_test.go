@@ -80,7 +80,7 @@ func TestEncryptDecrypt(t *testing.T) {
 		Field1:   "111111111",
 		PwdField: "ThePassword",
 	}
-	var originalPw = clearData.PwdField
+	originalPw := clearData.PwdField
 
 	cryptor := DBCrypt[MyTable]{}
 	err := cryptor.EncryptStruct(clearData)
