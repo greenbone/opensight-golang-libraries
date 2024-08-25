@@ -1,16 +1,16 @@
 {
   "query": {
     "bool": {
-      "must": [
+      "minimum_should_match": 1,
+      "should": [
         {
-          "prefix": {
+          "term": {
             "testName.keyword": {
-              "value": "5"
+              "value": "127.0.0.1"
             }
           }
         }
       ]
     }
-  },
-  "size": 100
+  }
 }

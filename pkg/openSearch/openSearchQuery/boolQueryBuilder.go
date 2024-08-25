@@ -16,7 +16,6 @@ import (
 type BoolQueryBuilder struct {
 	querySettings    *QuerySettings
 	compareOperators []CompareOperator
-	size             uint64
 	query            *esquery.BoolQuery
 	Must             []esquery.Mappable
 	MustNot          []esquery.Mappable
@@ -116,12 +115,6 @@ func (q *BoolQueryBuilder) AddTermsFilter(fieldName string, values ...interface{
 // value is the value to filter for.
 func (q *BoolQueryBuilder) AddTermFilter(fieldName string, value interface{}) *BoolQueryBuilder {
 	q.query = q.query.Filter(esquery.Term(fieldName, value))
-	return q
-}
-
-// Size sets the size to be used in the query.
-func (q *BoolQueryBuilder) Size(size uint64) *BoolQueryBuilder {
-	q.size = size
 	return q
 }
 

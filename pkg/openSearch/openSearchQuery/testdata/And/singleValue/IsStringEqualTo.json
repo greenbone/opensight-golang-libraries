@@ -5,12 +5,11 @@
         {
           "term": {
             "testName.keyword": {
-              "value": 5
+              "value": "5"
             }
           }
         }
       ]
     }
-  },
-  "size": 100
+  }
 }
