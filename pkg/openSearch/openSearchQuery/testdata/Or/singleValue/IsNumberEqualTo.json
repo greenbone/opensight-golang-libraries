@@ -1,11 +1,12 @@
 {
   "query": {
     "bool": {
-      "must_not": [
+      "minimum_should_match": 1,
+      "should": [
         {
           "term": {
-            "testName.keyword": {
-              "value": "5"
+            "testName": {
+              "value": 5
             }
           }
         }

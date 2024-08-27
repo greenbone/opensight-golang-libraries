@@ -4,9 +4,9 @@
       "minimum_should_match": 1,
       "should": [
         {
-          "prefix": {
-            "testName.keyword": {
-              "value": "5"
+          "range": {
+            "testName": {
+              "lt": "2024-08-23T00:00:00.000+02:00"
             }
           }
         }

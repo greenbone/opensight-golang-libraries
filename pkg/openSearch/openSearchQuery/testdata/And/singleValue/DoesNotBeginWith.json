@@ -1,9 +1,9 @@
 {
   "query": {
     "bool": {
-      "must_not": [
+      "must": [
         {
-          "term": {
+          "prefix": {
             "testName.keyword": {
               "value": "5"
             }
