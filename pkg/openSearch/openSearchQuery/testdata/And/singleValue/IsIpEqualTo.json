@@ -1,11 +1,11 @@
 {
   "query": {
     "bool": {
-      "must_not": [
+      "must": [
         {
           "term": {
             "testName.keyword": {
-              "value": "5"
+              "value": "127.0.0.1"
             }
           }
         }

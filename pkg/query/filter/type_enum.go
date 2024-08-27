@@ -12,10 +12,9 @@ package filter
 
 import (
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"strings"
-
-	"errors"
 )
 
 const (
@@ -301,6 +300,8 @@ func (x CompareOperator) Value() (driver.Value, error) {
 }
 
 const (
+	// ControlTypeBool is a ControlType of type bool.
+	ControlTypeBool ControlType = "bool"
 	// ControlTypeEnum is a ControlType of type enum.
 	ControlTypeEnum ControlType = "enum"
 	// ControlTypeFloat is a ControlType of type float.
@@ -320,6 +321,7 @@ const (
 var ErrInvalidControlType = fmt.Errorf("not a valid ControlType, try [%s]", strings.Join(_ControlTypeNames, ", "))
 
 var _ControlTypeNames = []string{
+	string(ControlTypeBool),
 	string(ControlTypeEnum),
 	string(ControlTypeFloat),
 	string(ControlTypeInteger),
@@ -349,6 +351,7 @@ func (x ControlType) IsValid() bool {
 }
 
 var _ControlTypeValue = map[string]ControlType{
+	"bool":         ControlTypeBool,
 	"enum":         ControlTypeEnum,
 	"float":        ControlTypeFloat,
 	"integer":      ControlTypeInteger,

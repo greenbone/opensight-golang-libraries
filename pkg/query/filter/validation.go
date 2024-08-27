@@ -110,6 +110,10 @@ func validateFieldValueType(requestOption RequestOption, fieldName string, field
 		if _, ok := fieldValue.(float64); !ok {
 			return NewValidationError("field '%s' must be from type '%s'", fieldName, requestOption.Control.Type)
 		}
+	} else if requestOption.Control.Type == ControlTypeBool {
+		if _, ok := fieldValue.(bool); !ok {
+			return NewValidationError("field '%s' must be from type '%s'", fieldName, requestOption.Control.Type)
+		}
 	} else if requestOption.Control.Type == ControlTypeString ||
 		requestOption.Control.Type == ControlTypeEnum || requestOption.Control.Type == ControlTypeUuid {
 		if _, ok := fieldValue.(string); !ok {

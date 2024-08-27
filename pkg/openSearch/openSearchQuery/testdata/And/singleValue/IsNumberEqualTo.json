@@ -1,10 +1,10 @@
 {
   "query": {
     "bool": {
-      "must_not": [
+      "must": [
         {
           "term": {
-            "testName.keyword": {
+            "testName": {
               "value": "5"
             }
           }

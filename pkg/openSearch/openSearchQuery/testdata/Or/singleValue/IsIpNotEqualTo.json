@@ -7,9 +7,9 @@
           "bool": {
             "must_not": [
               {
-                "wildcard": {
+                "term": {
                   "testName.keyword": {
-                    "value": "*test1*"
+                    "value": "127.0.0.1"
                   }
                 }
               }

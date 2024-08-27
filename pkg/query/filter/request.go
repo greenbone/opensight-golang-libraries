@@ -38,7 +38,7 @@ type ReadableValue[T any] struct {
 
 // RequestOptionType configures the type of control for a field in a request option.
 type RequestOptionType struct {
-	Type ControlType `json:"type" enums:"string,float,integer,enum"`
+	Type ControlType `json:"type" enums:"string,float,integer,enum,bool"`
 }
 
 // RequestField represents a field in a request
