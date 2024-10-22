@@ -297,6 +297,8 @@ func (i *IndexFunction) GetIndexSettings(index string) (map[string]interface{}, 
 	if err != nil {
 		return nil, err
 	}
+	defer searchResp.Body.Close()
+
 	searchRespBody, err := io.ReadAll(searchResp.Body)
 	if err != nil {
 		return nil, err
