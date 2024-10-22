@@ -6,6 +6,9 @@ package openSearchClient
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -92,6 +95,19 @@ func TestIndexCheck(t *testing.T) {
 
 	// Now add a second index and add it to the alias
 	err = iFunc.CreateIndex("testindex2", []byte(testIndex))
+	assert.NoError(t, err)
+
+	// Now check if we can get the settings from the index
+	settings, err := iFunc.GetIndexSettings("testindex2")
+	jsonData, err := json.Marshal(settings)
+	assert.NoError(t, err)
+	assert.Contains(t, string(jsonData), "settings")
+	assert.Contains(t, string(jsonData), "number_of_replicas")
+
+	// Lets write a settings back to the Index
+	updatedSettings := `{"index": {"number_of_replicas": 1}}`
+	fmt.Println(updatedSettings)
+	err = iFunc.SetIndexSettings("testindex2", strings.NewReader(updatedSettings))
 	assert.NoError(t, err)
 
 	err = iFunc.CreateOrPutAlias("aliasName", "testindex", "testindex2")

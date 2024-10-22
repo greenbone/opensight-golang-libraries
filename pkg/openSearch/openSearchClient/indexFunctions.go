@@ -12,6 +12,7 @@ import (
 	"io"
 	"net/http"
 	"sort"
+	"strings"
 
 	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
 	"github.com/rs/zerolog/log"
@@ -265,4 +266,84 @@ func (i *IndexFunction) createIndexRemovalActions(indexesToRemove []string, alia
 		"actions": actions,
 	}
 	return wrappedActions
+}
+
+func (i *IndexFunction) RefreshIndex(index string) error {
+	log.Debug().Msgf("Start refreshing index: %s", index)
+	ctx := context.Background()
+	refreshResp, err := i.openSearchProjectClient.Indices.Refresh(
+		ctx,
+		&opensearchapi.IndicesRefreshReq{
+			Indices: []string{index},
+		},
+	)
+	if err != nil {
+		return err
+	}
+	log.Debug().Msgf("Index %s refreshed with staus code: %d", index,
+		refreshResp.Inspect().Response.StatusCode)
+	return nil
+}
+
+func (i *IndexFunction) GetIndexSettings(index string) (map[string]interface{}, error) {
+	body := strings.NewReader(``)
+	urlString := "/" + index + "/_settings?include_defaults=true"
+	settingsRequest, err := http.NewRequest("GET", urlString, body)
+	if err != nil {
+		return nil, err
+	}
+	settingsRequest.Header.Set("Content-Type", "application/json")
+	searchResp, err := i.openSearchProjectClient.Client.Perform(settingsRequest)
+	if err != nil {
+		return nil, err
+	}
+	searchRespBody, err := io.ReadAll(searchResp.Body)
+	if err != nil {
+		return nil, err
+	}
+	var settings map[string]interface{}
+	if err := json.Unmarshal(searchRespBody, &settings); err != nil {
+		return nil, err
+	}
+
+	// Log and return the settings for inspection
+	log.Trace().Msgf("Retrieved settings for index %s: %+v", index, settings)
+	return settings, nil
+}
+
+func (i *IndexFunction) SetIndexSettings(index string, settingsBody io.Reader) error {
+	ctx := context.Background()
+
+	// Apply the settings to the index
+	settingsPutResp, err := i.openSearchProjectClient.Indices.Settings.Put(
+		ctx,
+		opensearchapi.SettingsPutReq{
+			Indices: []string{index},
+			Body:    settingsBody,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	log.Debug().Msgf("Settings applied to index %s: %t", index, settingsPutResp.Acknowledged)
+	return nil
+}
+
+func (i *IndexFunction) ForceMerge(index string, maximumNumberOfSegments int) error {
+	ctx := context.Background()
+	forceMergeResponse, err := i.openSearchProjectClient.Indices.Forcemerge(
+		ctx,
+		&opensearchapi.IndicesForcemergeReq{
+			Indices: []string{index},
+			Params: opensearchapi.IndicesForcemergeParams{
+				MaxNumSegments: &maximumNumberOfSegments,
+			},
+		},
+	)
+	if err != nil {
+		return err
+	}
+	log.Debug().Msgf("Forcemerge applied to index %s: with status %+v", index, forceMergeResponse.Inspect().Response)
+	return nil
 }

@@ -322,7 +322,7 @@ func TestFilterQueryOperatorOrMultiValue(t *testing.T) {
 				},
 			})
 
-			//then
+			// then
 			require.NoError(t, err)
 			json, err := query.toJson()
 			require.NoError(t, err)
