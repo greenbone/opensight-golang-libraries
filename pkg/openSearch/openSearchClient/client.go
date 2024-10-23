@@ -7,6 +7,7 @@ package openSearchClient
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -71,6 +72,162 @@ func (c *Client) Search(indexName string, requestBody []byte) (responseBody []by
 		)
 
 	return result, nil
+}
+
+func (c *Client) SearchStream(indexName string, requestBody []byte) (io.Reader, error) {
+	reader, writer := io.Pipe()
+	startSignal := make(chan error, 1)
+
+	go func() {
+		var scrollID string
+		// Initiale query with scroll
+		startSignal <- nil
+		searchResponse, err := c.openSearchProjectClient.Search(
+			context.Background(),
+			&opensearchapi.SearchReq{
+				Indices: []string{indexName},
+				Body:    bytes.NewReader(requestBody),
+				Params: opensearchapi.SearchParams{
+					Scroll: time.Minute * 1,
+				},
+			},
+		)
+		if err != nil {
+			writer.CloseWithError(err)
+			startSignal <- err
+			return
+		}
+		if searchResponse.Errors {
+			err := fmt.Errorf("Search failed")
+			writer.CloseWithError(err)
+			startSignal <- err
+			return
+		}
+		scrollID = *searchResponse.ScrollID
+		body := searchResponse.Inspect().Response.Body
+		defer body.Close()
+
+		// Read the response body
+		bodyBytes, err := io.ReadAll(body)
+		if err != nil {
+			writer.CloseWithError(err)
+			startSignal <- err
+			return
+		}
+
+		// Write the data to the writer
+		if _, err := writer.Write(bodyBytes); err != nil {
+			writer.CloseWithError(err)
+			startSignal <- err
+			return
+		}
+
+		// Signal that data is ready
+
+		// Continue scrolling thru
+		scrolled := 0
+		for {
+			scrolled++
+			log.Debug().Msgf("Scrolling %d", scrolled)
+			scrollReq := opensearchapi.ScrollGetReq{
+				ScrollID: scrollID,
+				Params: opensearchapi.ScrollGetParams{
+					Scroll: time.Duration(60),
+				},
+			}
+
+			scrollResult, err := c.openSearchProjectClient.Scroll.Get(context.Background(), scrollReq)
+			if err != nil {
+				err := writer.CloseWithError(err)
+				if err != nil {
+					return
+				}
+				return
+			}
+
+			if scrollResult.Inspect().Response.IsError() {
+				err := writer.CloseWithError(fmt.Errorf("Scroll-Request failed"))
+				if err != nil {
+					return
+				}
+				return
+			}
+
+			noMoreHits, err := processResponse(scrollResult, writer)
+			if err != nil {
+				writer.CloseWithError(err)
+				return
+			}
+			if noMoreHits {
+				break
+			}
+
+			// update the scrollId from the last result
+			if scrollResult != nil && scrollResult.ScrollID != nil {
+				scrollID = *scrollResult.ScrollID
+			} else {
+				log.Warn().Msg("No scroll ID found in response")
+			}
+		}
+
+		writer.Close()
+		// Delete Scroll Context manually
+		clearScrollReq := opensearchapi.ScrollDeleteReq{
+			ScrollIDs: []string{scrollID},
+		}
+		_, err = c.openSearchProjectClient.Scroll.Delete(context.Background(), clearScrollReq)
+		if err != nil {
+			err := writer.CloseWithError(err)
+			if err != nil {
+				return
+			}
+			return
+		}
+	}()
+	err := <-startSignal
+	if err != nil {
+		return nil, err
+	}
+	return reader, nil
+}
+
+// processResponse reads the response, checks for hits, and writes them to the writer
+func processResponse(response *opensearchapi.ScrollGetResp, writer *io.PipeWriter) (noMoreHits bool, err error) {
+	// Read the response body
+	bodyBytes, err := io.ReadAll(response.Inspect().Response.Body)
+	if err != nil {
+		return false, err
+	}
+
+	// Parse the response body to check for hits
+	var respMap map[string]interface{}
+	if err := json.Unmarshal(bodyBytes, &respMap); err != nil {
+		return false, err
+	}
+
+	hitsMap, ok := respMap["hits"].(map[string]interface{})
+	if !ok {
+		return false, fmt.Errorf("Invalid response format: missing 'hits'")
+	}
+
+	hits, ok := hitsMap["hits"].([]interface{})
+	if !ok {
+		return false, fmt.Errorf("Invalid response format: missing 'hits.hits'")
+	}
+
+	// Check if there are hits
+	if len(hits) == 0 {
+		// No more data
+		return true, nil
+	}
+
+	// Optionally, write only the hits to the writer
+	_, err = io.Copy(writer, bytes.NewReader(bodyBytes))
+	if err != nil {
+		return false, err
+	}
+
+	return false, nil
 }
 
 // Update updates documents in the given index using UpdateQueue (which is also part of this package).
@@ -160,7 +317,7 @@ func (c *Client) BulkUpdate(indexName string, requestBody []byte) error {
 			Index: indexName,
 			Body:  bytes.NewReader(requestBody),
 			Params: opensearchapi.BulkParams{
-				Refresh: "true",
+				Refresh: "false",
 			},
 		},
 	)
