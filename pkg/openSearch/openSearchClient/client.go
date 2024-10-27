@@ -7,7 +7,6 @@ package openSearchClient
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -74,7 +73,7 @@ func (c *Client) Search(indexName string, requestBody []byte) (responseBody []by
 	return result, nil
 }
 
-func (c *Client) SearchStream(indexName string, requestBody []byte) (io.Reader, error) {
+func (c *Client) SearchStream(indexName string, requestBody []byte, scrollTimeout time.Duration, ctx context.Context) (io.Reader, error) {
 	reader, writer := io.Pipe()
 	startSignal := make(chan error, 1)
 
@@ -83,12 +82,12 @@ func (c *Client) SearchStream(indexName string, requestBody []byte) (io.Reader, 
 		// Initiale query with scroll
 		startSignal <- nil
 		searchResponse, err := c.openSearchProjectClient.Search(
-			context.Background(),
+			ctx,
 			&opensearchapi.SearchReq{
 				Indices: []string{indexName},
 				Body:    bytes.NewReader(requestBody),
 				Params: opensearchapi.SearchParams{
-					Scroll: time.Minute * 1,
+					Scroll: scrollTimeout,
 				},
 			},
 		)
@@ -122,8 +121,6 @@ func (c *Client) SearchStream(indexName string, requestBody []byte) (io.Reader, 
 			return
 		}
 
-		// Signal that data is ready
-
 		// Continue scrolling thru
 		scrolled := 0
 		for {
@@ -132,11 +129,11 @@ func (c *Client) SearchStream(indexName string, requestBody []byte) (io.Reader, 
 			scrollReq := opensearchapi.ScrollGetReq{
 				ScrollID: scrollID,
 				Params: opensearchapi.ScrollGetParams{
-					Scroll: time.Duration(60),
+					Scroll: scrollTimeout,
 				},
 			}
 
-			scrollResult, err := c.openSearchProjectClient.Scroll.Get(context.Background(), scrollReq)
+			scrollResult, err := c.openSearchProjectClient.Scroll.Get(ctx, scrollReq)
 			if err != nil {
 				err := writer.CloseWithError(err)
 				if err != nil {
@@ -193,40 +190,13 @@ func (c *Client) SearchStream(indexName string, requestBody []byte) (io.Reader, 
 
 // processResponse reads the response, checks for hits, and writes them to the writer
 func processResponse(response *opensearchapi.ScrollGetResp, writer *io.PipeWriter) (noMoreHits bool, err error) {
-	// Read the response body
-	bodyBytes, err := io.ReadAll(response.Inspect().Response.Body)
-	if err != nil {
-		return false, err
-	}
-
-	// Parse the response body to check for hits
-	var respMap map[string]interface{}
-	if err := json.Unmarshal(bodyBytes, &respMap); err != nil {
-		return false, err
-	}
-
-	hitsMap, ok := respMap["hits"].(map[string]interface{})
-	if !ok {
-		return false, fmt.Errorf("Invalid response format: missing 'hits'")
-	}
-
-	hits, ok := hitsMap["hits"].([]interface{})
-	if !ok {
-		return false, fmt.Errorf("Invalid response format: missing 'hits.hits'")
-	}
-
-	// Check if there are hits
-	if len(hits) == 0 {
-		// No more data
+	if len(response.Hits.Hits) <= 0 {
 		return true, nil
 	}
-
-	// Optionally, write only the hits to the writer
-	_, err = io.Copy(writer, bytes.NewReader(bodyBytes))
+	_, err = io.Copy(writer, response.Inspect().Response.Body)
 	if err != nil {
 		return false, err
 	}
-
 	return false, nil
 }
 
