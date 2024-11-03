@@ -28,6 +28,7 @@ const (
 // TokenReceiver is an interface for receiving client access tokens.
 type TokenReceiver interface {
 	GetClientAccessToken(clientName, clientSecret string) (string, error)
+	ClearClientAccessToken()
 }
 
 // Authenticator is a struct that holds the necessary information for authenticating with OpenSearch.
@@ -113,6 +114,12 @@ func (a *Authenticator) injectAuthenticationHeader(req *http.Request) (*http.Req
 	return reqClone, nil
 }
 
+func (a *Authenticator) handleUnauthorized() {
+	if a.authMethod == openId {
+		a.tokenReceiver.ClearClientAccessToken()
+	}
+}
+
 // Perform is a method that implements the opensearchtransport.Interface interface.
 // It injects the authentication header into the request and then performs the request.
 func (a *Authenticator) Perform(req *http.Request) (*http.Response, error) {
@@ -120,5 +127,12 @@ func (a *Authenticator) Perform(req *http.Request) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	return a.clientTransport.Perform(requestWithInjectedAuth)
+
+	resp, err := a.clientTransport.Perform(requestWithInjectedAuth)
+	if resp != nil && resp.StatusCode >= http.StatusBadRequest &&
+		resp.StatusCode < http.StatusInternalServerError {
+		a.handleUnauthorized()
+	}
+
+	return resp, err
 }
