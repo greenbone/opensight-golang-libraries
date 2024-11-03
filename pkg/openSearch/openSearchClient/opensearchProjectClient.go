@@ -14,6 +14,7 @@ import (
 	"github.com/greenbone/opensight-golang-libraries/pkg/openSearch/openSearchClient/config"
 	"github.com/opensearch-project/opensearch-go/v4"
 	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
+	"github.com/rs/zerolog/log"
 )
 
 // NewOpenSearchProjectClient creates a new official OpenSearch client (package github.com/opensearch-project/opensearch-go)
@@ -30,44 +31,41 @@ func NewOpenSearchProjectClient(ctx context.Context, config config.OpensearchCli
 		protocol = "https"
 	}
 
-	var client *opensearchapi.Client
-
-	if err := retry.Do(
-		func() error {
-			c, err := opensearchapi.NewClient(
-				opensearchapi.Config{
-					Client: opensearch.Config{
-						Transport: &http.Transport{
-							TLSClientConfig: &tls.Config{
-								InsecureSkipVerify: true, // nolint:gosec
-							},
-						},
-						Addresses: []string{
-							fmt.Sprintf("%s://%s:%d", protocol, config.Host, config.Port),
-						},
+	client, err := opensearchapi.NewClient(
+		opensearchapi.Config{
+			Client: opensearch.Config{
+				Transport: &http.Transport{
+					TLSClientConfig: &tls.Config{
+						InsecureSkipVerify: true, // nolint:gosec
 					},
 				},
-			)
-			if err != nil {
-				return fmt.Errorf("search client couldn't be created: %w", err)
-			}
+				Addresses: []string{
+					fmt.Sprintf("%s://%s:%d", protocol, config.Host, config.Port),
+				},
+			},
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("search client couldn't be created: %w", err)
+	}
 
-			err = InjectAuthenticationIntoClient(c, config, tokenReceiver)
-			if err != nil {
-				return fmt.Errorf("error injecting authentication into OpenSearch client: %w", err)
-			}
+	err = InjectAuthenticationIntoClient(client, config, tokenReceiver)
+	if err != nil {
+		return nil, fmt.Errorf("error injecting authentication into OpenSearch client: %w", err)
+	}
 
-			_, err = c.Ping(ctx, &opensearchapi.PingReq{})
-			if err != nil {
-				return fmt.Errorf("connection to search couldn't be established: %w", err)
+	if err = retry.Do(
+		func() error {
+			if _, err := client.Ping(ctx, &opensearchapi.PingReq{}); err != nil {
+				log.Debug().Msgf("connection to search couldn't be established: %v", err)
+				return err
 			}
-
-			client = c
+			log.Debug().Msg("connection to search established")
 			return nil
 		},
 		retry.Context(ctx),
 	); err != nil {
-		return nil, fmt.Errorf("max init retries reached: %w", err)
+		return nil, fmt.Errorf("connection to search couldn't be established: %w", err)
 	}
 
 	return client, nil
