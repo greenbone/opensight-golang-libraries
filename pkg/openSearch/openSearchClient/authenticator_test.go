@@ -26,6 +26,10 @@ func (m *MockTokenReceiver) GetClientAccessToken(clientName, clientSecret string
 	return args.String(0), args.Error(1)
 }
 
+func (m *MockTokenReceiver) ClearClientAccessToken() {
+	m.Called()
+}
+
 func TestGetAuthenticationMethod(t *testing.T) {
 	tests := []struct {
 		name           string
