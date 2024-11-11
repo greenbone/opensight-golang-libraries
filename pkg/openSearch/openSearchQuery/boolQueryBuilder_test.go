@@ -17,20 +17,84 @@ var querySettings = QuerySettings{
 	FilterFieldMapping: map[string]string{"testName": "testName"},
 }
 
-func TestBoolQueryBuilder(t *testing.T) {
+var emptyBoolQueryJSON = `{"query":{"bool":{}}}`
+
+func TestBoolQueryBuilder_BasicFunctionality(t *testing.T) {
+	tests := map[string]struct {
+		filterRequest *filter.Request
+		wantJSON      string
+		wantErr       bool
+	}{
+		"should work with empty filter request": {
+			filterRequest: nil,
+			wantJSON:      emptyBoolQueryJSON,
+			wantErr:       false,
+		},
+		"should work with empty (non-nil) filter request": {
+			filterRequest: &filter.Request{},
+			wantJSON:      emptyBoolQueryJSON,
+			wantErr:       false,
+		},
+		"should fail with invalid filter request (missing logic operator)": {
+			filterRequest: &filter.Request{
+				Fields: []filter.RequestField{
+					{
+						Name:     "testName",
+						Operator: filter.CompareOperatorBeginsWith,
+						Value:    "start",
+					},
+				},
+				// missing `Operator`
+			},
+			wantErr: true,
+		},
+		"should fail with invalid filter request (empty field name)": {
+			filterRequest: &filter.Request{
+				Fields: []filter.RequestField{
+					{
+						Name:     "",
+						Operator: filter.CompareOperatorBeginsWith,
+						Value:    "start",
+					},
+				},
+				Operator: filter.LogicOperatorAnd,
+			},
+			wantErr: true,
+		},
+	}
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			query := testBoolQueryBuilderWrapper{}
+			query.BoolQueryBuilder = NewBoolQueryBuilder(&querySettings)
+			err := query.AddFilterRequest(tc.filterRequest)
+
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+
+				json, err := query.toJson()
+				require.NoError(t, err)
+				assert.JSONEq(t, tc.wantJSON, json)
+			}
+		})
+	}
+}
+
+func TestBoolQueryBuilder_TermFilter(t *testing.T) {
 	var (
 		query  testBoolQueryBuilderWrapper
 		folder testFolder.TestFolder
 	)
 
-	setup := func(t *testing.T) {
+	setup := func() {
 		query = testBoolQueryBuilderWrapper{}
 		query.BoolQueryBuilder = NewBoolQueryBuilder(&querySettings)
 		folder = testFolder.NewTestFolder()
 	}
 
 	t.Run("shouldReturnJsonForFilterTerm", func(t *testing.T) {
-		setup(t)
+		setup()
 
 		query.AddTermFilter("foo", "bar")
 
@@ -39,16 +103,8 @@ func TestBoolQueryBuilder(t *testing.T) {
 		assert.JSONEq(t, folder.GetContent(t, "testdata/filterTerm.json"), json)
 	})
 
-	t.Run("should work with empty filter request", func(t *testing.T) {
-		setup(t)
-
-		err := query.AddFilterRequest(nil)
-
-		require.NoError(t, err)
-	})
-
 	t.Run("shouldReturnJsonForFilterTermWithFilterRequest", func(t *testing.T) {
-		setup(t)
+		setup()
 
 		query.AddTermFilter("foo", "bar")
 		err := query.AddFilterRequest(&filter.Request{
