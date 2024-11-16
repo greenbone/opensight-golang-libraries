@@ -92,19 +92,23 @@ func (c *Client) SearchStream(indexName string, requestBody []byte, scrollTimeou
 			},
 		)
 		if err != nil {
-			writer.CloseWithError(err)
+			err := writer.CloseWithError(err)
 			startSignal <- err
 			return
 		}
 		if searchResponse.Errors {
-			err := fmt.Errorf("Search failed")
-			writer.CloseWithError(err)
-			startSignal <- err
+			writer.CloseWithError(fmt.Errorf("search failed"))
+			startSignal <- fmt.Errorf("search failed")
 			return
 		}
 		scrollID = *searchResponse.ScrollID
 		body := searchResponse.Inspect().Response.Body
-		defer body.Close()
+		defer func(body io.ReadCloser) {
+			err := body.Close()
+			if err != nil {
+				return
+			}
+		}(body)
 
 		// Read the response body
 		bodyBytes, err := io.ReadAll(body)
@@ -135,24 +139,21 @@ func (c *Client) SearchStream(indexName string, requestBody []byte, scrollTimeou
 
 			scrollResult, err := c.openSearchProjectClient.Scroll.Get(ctx, scrollReq)
 			if err != nil {
-				err := writer.CloseWithError(err)
-				if err != nil {
-					return
-				}
+				writer.CloseWithError(err)
+				log.Err(err).Msgf("scroll-request failed: %v", scrollReq)
 				return
 			}
 
 			if scrollResult.Inspect().Response.IsError() {
-				err := writer.CloseWithError(fmt.Errorf("Scroll-Request failed"))
-				if err != nil {
-					return
-				}
+				writer.CloseWithError(fmt.Errorf("scroll-result error"))
+				log.Err(err).Msgf("scroll-result error: %v", scrollResult)
 				return
 			}
 
 			noMoreHits, err := processResponse(scrollResult, writer)
 			if err != nil {
 				writer.CloseWithError(err)
+				log.Err(err).Msgf("process response failed: %v", scrollResult)
 				return
 			}
 			if noMoreHits {
@@ -174,10 +175,7 @@ func (c *Client) SearchStream(indexName string, requestBody []byte, scrollTimeou
 		}
 		_, err = c.openSearchProjectClient.Scroll.Delete(context.Background(), clearScrollReq)
 		if err != nil {
-			err := writer.CloseWithError(err)
-			if err != nil {
-				return
-			}
+			writer.CloseWithError(err)
 			return
 		}
 	}()
