@@ -30,7 +30,7 @@ const openSearchTestDefaultHttpPort = "9200/tcp"
 // ctx is the context to use for the container.
 func StartOpensearchTestContainer(ctx context.Context) (testcontainers.Container, config.OpensearchClientConfig, error) {
 	req := testcontainers.ContainerRequest{
-		Image:        "opensearchproject/opensearch:2.11.0",
+		Image:        "opensearchproject/opensearch:2.18.0",
 		ExposedPorts: []string{openSearchTestDefaultHttpPort, "9300/tcp"},
 		WaitingFor:   createWaitStrategyFor(),
 		Env: map[string]string{
