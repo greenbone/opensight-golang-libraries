@@ -6,6 +6,8 @@ package openSearchClient
 
 import (
 	"context"
+	"encoding/json"
+	"io"
 	"testing"
 	"time"
 
@@ -149,6 +151,48 @@ func TestClient(t *testing.T) {
 			require.NoError(t, err)
 			searchResponse, err = UnmarshalSearchResponse[*Vulnerability](responseBody)
 			require.NoError(t, err)
+			assert.Equal(t, uint(0), searchResponse.Hits.Total.Value)
+			assert.Equal(t, 0, len(searchResponse.GetResults()))
+		}},
+		"TestSearchStream": {func(t *testing.T, client *Client) {
+			var searchResponse SearchResponse[*Vulnerability]
+
+			// given
+			createDataInIndex(t, client, []*Vulnerability{&aVulnerability}, 1)
+
+			// when
+			query := `{"query":{"bool":{"filter":[{"term":{"oid":{"value":"1.3.6.1.4.1.25623.1.0.117842"}}}]}}}`
+			responseReader, err := client.SearchStream(indexName, []byte(query), time.Millisecond, context.Background())
+
+			// then
+			require.NoError(t, err)
+
+			decoder := json.NewDecoder(responseReader)
+
+			// first read
+			err = decoder.Decode(&searchResponse)
+			require.NoError(t, err)
+
+			// second read
+			err = decoder.Decode(&searchResponse)
+			require.Equal(t, io.EOF, err)
+
+			assert.Equal(t, uint(1), searchResponse.Hits.Total.Value)
+			assert.Equal(t, 1, len(searchResponse.GetResults()))
+			assert.Equal(t, aVulnerability, *searchResponse.GetResults()[0])
+
+			// when
+			query = `{"query":{"bool":{"filter":[{"term":{"oid":{"value":"doesNotExist"}}}]}}}`
+			responseReader, err = client.SearchStream(indexName, []byte(query), time.Millisecond, context.Background())
+
+			// then
+			require.NoError(t, err)
+
+			decoder = json.NewDecoder(responseReader)
+			err = decoder.Decode(&searchResponse)
+			require.NoError(t, err)
+
+			assert.Empty(t, searchResponse.Hits.SearchHits)
 			assert.Equal(t, uint(0), searchResponse.Hits.Total.Value)
 			assert.Equal(t, 0, len(searchResponse.GetResults()))
 		}},
