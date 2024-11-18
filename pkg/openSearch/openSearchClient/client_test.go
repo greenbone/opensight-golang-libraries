@@ -45,10 +45,10 @@ func (v *Vulnerability) SetId(id string) {
 
 func TestClient(t *testing.T) {
 	type testCase struct {
-		testFunc func(t *testing.T, client *Client)
+		testFunc func(t *testing.T, client *Client, iFunc *IndexFunction)
 	}
 	tcs := map[string]testCase{
-		"TestBulkUpdate": {func(t *testing.T, client *Client) {
+		"TestBulkUpdate": {func(t *testing.T, client *Client, iFunc *IndexFunction) {
 			// given
 			bulkRequest, err := SerializeDocumentsForBulkUpdate(indexName, []*Vulnerability{&aVulnerability})
 			require.NoError(t, err)
@@ -58,6 +58,10 @@ func TestClient(t *testing.T) {
 
 			// then
 			require.NoError(t, err)
+
+			err = iFunc.RefreshIndex(indexName)
+			require.NoError(t, err)
+
 			require.EventuallyWithT(t, func(c *assert.CollectT) {
 				searchResponse := searchAllVulnerabilities(c, client)
 				assert.Equal(c, uint(1), searchResponse.Hits.Total.Value)
@@ -65,7 +69,7 @@ func TestClient(t *testing.T) {
 				assert.Equal(c, aVulnerability, *searchResponse.GetResults()[0])
 			}, 10*time.Second, 500*time.Millisecond)
 		}},
-		"TestUpdate": {func(t *testing.T, client *Client) {
+		"TestUpdate": {func(t *testing.T, client *Client, _ *IndexFunction) {
 			// given
 			createDataInIndex(t, client, []*Vulnerability{&aVulnerability}, 1)
 			updateRequest := `{
@@ -95,7 +99,7 @@ func TestClient(t *testing.T) {
 				assert.Equal(c, aVulnerability.Oid, searchResponse.GetResults()[0].Oid)
 			}, 10*time.Second, 500*time.Millisecond)
 		}},
-		"TestAsyncDeleteByQuery": {func(t *testing.T, client *Client) {
+		"TestAsyncDeleteByQuery": {func(t *testing.T, client *Client, _ *IndexFunction) {
 			// given
 			createDataInIndex(t, client, []*Vulnerability{&aVulnerability}, 1)
 
@@ -111,7 +115,7 @@ func TestClient(t *testing.T) {
 				assert.Equal(c, 0, len(searchResponse.GetResults()))
 			}, 10*time.Second, 500*time.Millisecond)
 		}},
-		"TestDeleteByQuery": {func(t *testing.T, client *Client) {
+		"TestDeleteByQuery": {func(t *testing.T, client *Client, _ *IndexFunction) {
 			// given
 			createDataInIndex(t, client, []*Vulnerability{&aVulnerability}, 1)
 
@@ -127,7 +131,7 @@ func TestClient(t *testing.T) {
 				assert.Equal(c, 0, len(searchResponse.GetResults()))
 			}, 10*time.Second, 500*time.Millisecond)
 		}},
-		"TestSearch": {func(t *testing.T, client *Client) {
+		"TestSearch": {func(t *testing.T, client *Client, _ *IndexFunction) {
 			// given
 			createDataInIndex(t, client, []*Vulnerability{&aVulnerability}, 1)
 
@@ -154,7 +158,7 @@ func TestClient(t *testing.T) {
 			assert.Equal(t, uint(0), searchResponse.Hits.Total.Value)
 			assert.Equal(t, 0, len(searchResponse.GetResults()))
 		}},
-		"TestSearchStream": {func(t *testing.T, client *Client) {
+		"TestSearchStream": {func(t *testing.T, client *Client, _ *IndexFunction) {
 			var searchResponse SearchResponse[*Vulnerability]
 
 			// given
@@ -222,7 +226,7 @@ func TestClient(t *testing.T) {
 			schema := folder.GetContent(t, "testdata/testSchema.json")
 			err = iFunc.CreateIndex(indexName, []byte(schema))
 			require.NoError(t, err)
-			testCase.testFunc(t, client)
+			testCase.testFunc(t, client, iFunc)
 		})
 	}
 }
