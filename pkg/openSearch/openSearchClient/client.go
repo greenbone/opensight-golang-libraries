@@ -79,8 +79,7 @@ func (c *Client) SearchStream(indexName string, requestBody []byte, scrollTimeou
 
 	go func() {
 		var scrollID string
-		// Initiale query with scroll
-		startSignal <- nil
+		// Initialize query with scroll
 		searchResponse, err := c.openSearchProjectClient.Search(
 			ctx,
 			&opensearchapi.SearchReq{
@@ -92,36 +91,32 @@ func (c *Client) SearchStream(indexName string, requestBody []byte, scrollTimeou
 			},
 		)
 		if err != nil {
-			err := writer.CloseWithError(err)
+			writer.Close()
 			startSignal <- err
 			return
 		}
-		if searchResponse.Errors {
-			writer.CloseWithError(fmt.Errorf("search failed"))
+		if searchResponse.Errors || searchResponse.Inspect().Response.IsError() {
+			writer.Close()
 			startSignal <- fmt.Errorf("search failed")
+			log.Error().Msgf("search response: %s: %s", searchResponse.Inspect().Response.Status(), searchResponse.Inspect().Response.String())
 			return
 		}
+
+		if searchResponse.ScrollID == nil {
+			writer.Close()
+			startSignal <- fmt.Errorf("search response contained no scroll ID")
+			return
+		}
+
+		startSignal <- nil
+
 		scrollID = *searchResponse.ScrollID
 		body := searchResponse.Inspect().Response.Body
-		defer func(body io.ReadCloser) {
-			err := body.Close()
-			if err != nil {
-				return
-			}
-		}(body)
+		defer body.Close()
 
-		// Read the response body
-		bodyBytes, err := io.ReadAll(body)
+		_, err = io.Copy(writer, body)
 		if err != nil {
 			writer.CloseWithError(err)
-			startSignal <- err
-			return
-		}
-
-		// Write the data to the writer
-		if _, err := writer.Write(bodyBytes); err != nil {
-			writer.CloseWithError(err)
-			startSignal <- err
 			return
 		}
 
@@ -146,7 +141,7 @@ func (c *Client) SearchStream(indexName string, requestBody []byte, scrollTimeou
 
 			if scrollResult.Inspect().Response.IsError() {
 				writer.CloseWithError(fmt.Errorf("scroll-result error"))
-				log.Err(err).Msgf("scroll-result error: %v", scrollResult)
+				log.Error().Msgf("search response: %s: %s", scrollResult.Inspect().Response.Status(), scrollResult.Inspect().Response.String())
 				return
 			}
 
@@ -175,8 +170,7 @@ func (c *Client) SearchStream(indexName string, requestBody []byte, scrollTimeou
 		}
 		_, err = c.openSearchProjectClient.Scroll.Delete(context.Background(), clearScrollReq)
 		if err != nil {
-			writer.CloseWithError(err)
-			return
+			log.Warn().Err(err).Msgf("failed to delete scroll context")
 		}
 	}()
 	err := <-startSignal
@@ -191,7 +185,9 @@ func processResponse(response *opensearchapi.ScrollGetResp, writer *io.PipeWrite
 	if len(response.Hits.Hits) <= 0 {
 		return true, nil
 	}
-	_, err = io.Copy(writer, response.Inspect().Response.Body)
+	body := response.Inspect().Response.Body
+	_, err = io.Copy(writer, body)
+	body.Close()
 	if err != nil {
 		return false, err
 	}
