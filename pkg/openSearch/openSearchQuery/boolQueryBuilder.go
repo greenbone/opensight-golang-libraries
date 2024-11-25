@@ -152,7 +152,7 @@ func (q *BoolQueryBuilder) createOperatorMapping() map[filter.CompareOperator]qu
 // AddFilterRequest adds a filter request to this query.
 // The filter request is translated into a bool query.
 func (q *BoolQueryBuilder) AddFilterRequest(request *filter.Request) error {
-	if request == nil {
+	if request == nil || len(request.Fields) == 0 {
 		return nil
 	}
 
@@ -171,8 +171,6 @@ func (q *BoolQueryBuilder) AddFilterRequest(request *filter.Request) error {
 		}
 	}
 	switch effectiveRequest.Operator {
-	case "": // empty filter request
-		return nil
 	case filter.LogicOperatorAnd:
 		q.query = q.query.
 			Must(q.Must...).
@@ -192,6 +190,8 @@ func (q *BoolQueryBuilder) AddFilterRequest(request *filter.Request) error {
 			q.query = q.query.Should(shouldQueries...).MinimumShouldMatch(1)
 		}
 		return nil
+	case "":
+		return fmt.Errorf("missing mandatory field `Operator` in filter request")
 	default:
 		return fmt.Errorf("unknown operator '%s'", effectiveRequest.Operator)
 	}
