@@ -24,9 +24,9 @@ func (r CountReq) GetRequest() (*http.Request, error) {
 	}
 	var path string
 	if len(r.Indices) > 0 {
-		path = fmt.Sprintf("/%s/_search", strings.Join(r.Indices, ","))
+		path = fmt.Sprintf("/%s/_count", strings.Join(r.Indices, ","))
 	} else {
-		path = "/_search"
+		path = "/_count"
 	}
 
 	return opensearch.BuildRequest(
