@@ -21,7 +21,7 @@ Package Notifications provides a client to communicate with the OpenSight Notifi
 
 
 <a name="Client"></a>
-## type [Client](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L24-L30>)
+## type [Client](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L26-L32>)
 
 Client can be used to send notifications
 
@@ -32,7 +32,7 @@ type Client struct {
 ```
 
 <a name="NewClient"></a>
-### func [NewClient](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L42>)
+### func [NewClient](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L44>)
 
 ```go
 func NewClient(httpClient *http.Client, config Config) *Client
@@ -41,7 +41,7 @@ func NewClient(httpClient *http.Client, config Config) *Client
 NewClient returns a new [Client](<#Client>) with the notification service address \(host:port\) set. As httpClient you can use e.g. \[http.DefaultClient\].
 
 <a name="Client.CreateNotification"></a>
-### func \(\*Client\) [CreateNotification](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L55>)
+### func \(\*Client\) [CreateNotification](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L57>)
 
 ```go
 func (c *Client) CreateNotification(ctx context.Context, notification Notification) error
@@ -50,7 +50,7 @@ func (c *Client) CreateNotification(ctx context.Context, notification Notificati
 CreateNotification sends a notification to the notification service. The request is retried up to the configured number of retries with an exponential backoff. So it can take some time until the functions returns.
 
 <a name="Config"></a>
-## type [Config](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L33-L38>)
+## type [Config](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L35-L40>)
 
 Config configures the notification service client
 
