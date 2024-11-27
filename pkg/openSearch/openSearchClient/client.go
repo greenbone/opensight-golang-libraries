@@ -89,9 +89,11 @@ func (c *Client) Count(indexName string, requestBody []byte) (count int64, err e
 	if err != nil {
 		return 0, err
 	}
+	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		log.Warn().Msgf("count response - statusCode:'%d' body:'%s'", response.StatusCode, string(requestBody))
+		responseBody, _ := io.ReadAll(response.Body)
+		log.Warn().Msgf("count response - statusCode:'%d' body:'%s'", response.StatusCode, responseBody)
 	}
 
 	var countResp CountResp
