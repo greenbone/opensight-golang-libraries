@@ -110,7 +110,7 @@ func (agg *CompositeAgg) Sources(sources ...esquery.Mappable) *CompositeAgg
 Sources sets the sources for the buckets.
 
 <a name="MatchQuery"></a>
-## type [MatchQuery](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/matchQuery.go#L5-L8>)
+## type [MatchQuery](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/matchQuery.go#L9-L12>)
 
 MatchQuery represents an OpenSearch match part in an OpenSearch query as described in https://www.elastic.co/guide/en/elasticsearch/reference/7.17/query-filter-context.html#query-filter-context-ex
 
@@ -122,7 +122,7 @@ type MatchQuery struct {
 ```
 
 <a name="Match"></a>
-### func [Match](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/matchQuery.go#L21>)
+### func [Match](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/matchQuery.go#L25>)
 
 ```go
 func Match(field string, value interface{}) *MatchQuery
@@ -131,7 +131,7 @@ func Match(field string, value interface{}) *MatchQuery
 Match creates a new MatchQuery.
 
 <a name="MatchQuery.Map"></a>
-### func \(\*MatchQuery\) [Map](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/matchQuery.go#L12>)
+### func \(\*MatchQuery\) [Map](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/matchQuery.go#L16>)
 
 ```go
 func (mq *MatchQuery) Map() map[string]interface{}
@@ -140,7 +140,7 @@ func (mq *MatchQuery) Map() map[string]interface{}
 Map returns a map representation of the MatchQuery, thus implementing the esquery.Mappable interface. Used for serialization to JSON.
 
 <a name="NestedQuery"></a>
-## type [NestedQuery](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/nestedQuery.go#L10-L13>)
+## type [NestedQuery](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/nestedQuery.go#L14-L17>)
 
 NestedQuery represents an OpenSearch nested query.
 
@@ -152,7 +152,7 @@ type NestedQuery struct {
 ```
 
 <a name="Nested"></a>
-### func [Nested](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/nestedQuery.go#L16>)
+### func [Nested](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/nestedQuery.go#L20>)
 
 ```go
 func Nested(field string, q esquery.BoolQuery) *NestedQuery
@@ -161,7 +161,7 @@ func Nested(field string, q esquery.BoolQuery) *NestedQuery
 Nested creates a new NestedQuery.
 
 <a name="NestedQuery.Map"></a>
-### func \(\*NestedQuery\) [Map](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/nestedQuery.go#L33>)
+### func \(\*NestedQuery\) [Map](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/nestedQuery.go#L37>)
 
 ```go
 func (nq *NestedQuery) Map() map[string]interface{}
@@ -170,7 +170,7 @@ func (nq *NestedQuery) Map() map[string]interface{}
 Map returns a map representation of the NestedQuery, thus implementing the esquery.Mappable interface. Used for serialization to JSON.
 
 <a name="ScriptedSumAggregation"></a>
-## type [ScriptedSumAggregation](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/scriptedSumAgg.go#L9-L12>)
+## type [ScriptedSumAggregation](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/scriptedSumAgg.go#L13-L16>)
 
 ScriptedSumAggregation represents an aggregation that calculates the sum using a scripted expression. See https://www.elastic.co/guide/en/elasticsearch/reference/7.17/search-aggregations-metrics-sum-aggregation.html#_script_14 . To be used in conjunction with the esquery library https://github.com/aquasecurity/esquery
 
@@ -181,7 +181,7 @@ type ScriptedSumAggregation struct {
 ```
 
 <a name="ScriptedSumAgg"></a>
-### func [ScriptedSumAgg](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/scriptedSumAgg.go#L36>)
+### func [ScriptedSumAgg](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/scriptedSumAgg.go#L40>)
 
 ```go
 func ScriptedSumAgg(name string, script string) *ScriptedSumAggregation
@@ -194,7 +194,7 @@ a := ScriptedSumAgg("testName", "testScript")
 ```
 
 <a name="ScriptedSumAggregation.Map"></a>
-### func \(\*ScriptedSumAggregation\) [Map](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/scriptedSumAgg.go#L21>)
+### func \(\*ScriptedSumAggregation\) [Map](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/scriptedSumAgg.go#L25>)
 
 ```go
 func (a *ScriptedSumAggregation) Map() map[string]interface{}
@@ -203,7 +203,7 @@ func (a *ScriptedSumAggregation) Map() map[string]interface{}
 Map returns a map representation of the ScriptedSumAggregation, thus implementing the esquery.Mappable interface. Used for serialization to JSON.
 
 <a name="ScriptedSumAggregation.Name"></a>
-### func \(\*ScriptedSumAggregation\) [Name](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/scriptedSumAgg.go#L15>)
+### func \(\*ScriptedSumAggregation\) [Name](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/scriptedSumAgg.go#L19>)
 
 ```go
 func (a *ScriptedSumAggregation) Name() string
