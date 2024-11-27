@@ -18,6 +18,7 @@ The following functionalities are provided:
 * [postgres](pkg/postgres/README.md) - provides utilities for building conditional queries for PostgreSQL databases
 * [query](pkg/query/README.md) - provides basic selector and response objects for requests, including filter, paging and sorting
 * [retryableRequest](pkg/retryableRequest/README.md) - provides function to execute a http request with retries on failures
+* [secretfiles](pkg/secretfiles/README.md) - helps with accessing secrets stored in files
 * [slices](pkg/slices/README.md) - utility functions for slices
 * [testFolder](pkg/testFolder/README.md) - access to test data from the file system
 
