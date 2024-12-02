@@ -246,7 +246,7 @@ func (c *Client) CompositeAggStream(indexName string, requestBody []byte, ctx co
 				log.Err(err).Msgf("search request failed: %v", requestBody)
 				return
 			}
-			//Signal start before processing the response
+			// Signal start before processing the response
 			if searchResponse.Inspect().Response.IsError() {
 				log.Error().Msgf("search response error: %s: %s",
 					searchResponse.Inspect().Response.Status(),
@@ -257,6 +257,10 @@ func (c *Client) CompositeAggStream(indexName string, requestBody []byte, ctx co
 			// Write the current batch of results to the writer
 			body := searchResponse.Inspect().Response.Body
 			responseDate, err := io.ReadAll(body)
+			if err != nil {
+				log.Err(err).Msgf("failed to read response body: %v", searchResponse)
+				return
+			}
 			body.Close()
 			_, err = writer.Write(responseDate)
 			if err != nil {
@@ -277,7 +281,6 @@ func (c *Client) CompositeAggStream(indexName string, requestBody []byte, ctx co
 			}
 			loopCount++
 		}
-
 	}()
 
 	return reader, nil
