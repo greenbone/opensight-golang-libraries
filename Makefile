@@ -63,14 +63,11 @@ test: ## run all tests
 
 .PHONY: all build test clean
 
-SUBDIRS = pkg/configReader	pkg/dbcrypt	pkg/errorResponses pkg/jobQueue	pkg/notifications	pkg/openSearch/esextension\
-	pkg/openSearch/openSearchClient	pkg/openSearch/openSearchQuery	pkg/query/	pkg/query/filter	pkg/query/paging\
-	pkg/query/sorting	pkg/retryableRequest pkg/secretfiles	pkg/slices	pkg/testFolder pkg/postgres/query
-.PHONY: generate_docs $(SUBDIRS)
-generate_docs: check_tools $(SUBDIRS)
-$(SUBDIRS):
-	@cd $@; gomarkdoc -e --output README.md .
-	@echo "Generated documentation in $@"
+.PHONY: generate_docs
+generate_docs: check_tools
+	gomarkdoc -e --output '{{.Dir}}/README.md' \
+		--exclude-dirs .,./pkg/configReader/helper,./pkg/dbcrypt/config,./pkg/openSearch/openSearchClient/config \
+		./...
 
 check_tools:
 	@command -v gomarkdoc >/dev/null || $(INSTALL_GOMARKDOC)
