@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"strings"
 	"time"
 
@@ -74,6 +75,36 @@ func (c *Client) Search(indexName string, requestBody []byte) (responseBody []by
 	return result, nil
 }
 
+func (c *Client) Count(indexName string, requestBody []byte) (count int64, err error) {
+	log.Debug().Msgf("count requestBody: %s", string(requestBody))
+	request := CountReq{
+		Indices: []string{indexName},
+		Body:    bytes.NewReader(requestBody),
+	}
+	countRequest, err := request.GetRequest()
+	if err != nil {
+		return 0, err
+	}
+	response, err := c.openSearchProjectClient.Client.Perform(countRequest)
+	if err != nil {
+		return 0, err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		responseBody, _ := io.ReadAll(response.Body)
+		log.Warn().Msgf("count response - statusCode:'%d' body:'%s'", response.StatusCode, responseBody)
+	}
+
+	var countResp CountResp
+	if err := json.NewDecoder(response.Body).Decode(&countResp); err != nil {
+		log.Error().Msgf("error decoding count response: %v", err)
+		return 0, err
+	}
+
+	return countResp.Count, nil
+}
+
 func (c *Client) SearchStream(indexName string, requestBody []byte, scrollTimeout time.Duration, ctx context.Context) (io.Reader, error) {
 	reader, writer := io.Pipe()
 	startSignal := make(chan error, 1)
@@ -99,7 +130,9 @@ func (c *Client) SearchStream(indexName string, requestBody []byte, scrollTimeou
 		if searchResponse.Errors || searchResponse.Inspect().Response.IsError() {
 			writer.Close()
 			startSignal <- fmt.Errorf("search failed")
-			log.Error().Msgf("search response: %s: %s", searchResponse.Inspect().Response.Status(), searchResponse.Inspect().Response.String())
+			log.Error().Msgf("search response: %s: %s",
+				searchResponse.Inspect().Response.Status(),
+				searchResponse.Inspect().Response.String())
 			return
 		}
 
@@ -142,7 +175,9 @@ func (c *Client) SearchStream(indexName string, requestBody []byte, scrollTimeou
 
 			if scrollResult.Inspect().Response.IsError() {
 				writer.CloseWithError(fmt.Errorf("scroll-result error"))
-				log.Error().Msgf("search response: %s: %s", scrollResult.Inspect().Response.Status(), scrollResult.Inspect().Response.String())
+				log.Error().Msgf("search response: %s: %s",
+					scrollResult.Inspect().Response.Status(),
+					scrollResult.Inspect().Response.String())
 				return
 			}
 

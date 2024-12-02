@@ -81,7 +81,7 @@ import "github.com/greenbone/opensight-golang-libraries/pkg/dbcrypt"
 
 
 <a name="Decrypt"></a>
-## func [Decrypt](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/dbcrypt/dbcrypt.go#L105>)
+## func [Decrypt](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/dbcrypt/dbcrypt.go#L107>)
 
 ```go
 func Decrypt(encrypted string, key []byte) (string, error)
@@ -90,7 +90,7 @@ func Decrypt(encrypted string, key []byte) (string, error)
 
 
 <a name="Encrypt"></a>
-## func [Encrypt](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/dbcrypt/dbcrypt.go#L83>)
+## func [Encrypt](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/dbcrypt/dbcrypt.go#L85>)
 
 ```go
 func Encrypt(plaintext string, key []byte) (string, error)
@@ -99,7 +99,7 @@ func Encrypt(plaintext string, key []byte) (string, error)
 
 
 <a name="DBCrypt"></a>
-## type [DBCrypt](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/dbcrypt/dbcrypt.go#L24-L26>)
+## type [DBCrypt](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/dbcrypt/dbcrypt.go#L26-L28>)
 
 
 
@@ -110,7 +110,7 @@ type DBCrypt[T any] struct {
 ```
 
 <a name="DBCrypt[T].DecryptStruct"></a>
-### func \(\*DBCrypt\[T\]\) [DecryptStruct](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/dbcrypt/dbcrypt.go#L65>)
+### func \(\*DBCrypt\[T\]\) [DecryptStruct](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/dbcrypt/dbcrypt.go#L67>)
 
 ```go
 func (d *DBCrypt[T]) DecryptStruct(data *T) error
@@ -119,7 +119,7 @@ func (d *DBCrypt[T]) DecryptStruct(data *T) error
 DecryptStruct decrypts all fields of a struct that are tagged with \`encrypt:"true"\`
 
 <a name="DBCrypt[T].EncryptStruct"></a>
-### func \(\*DBCrypt\[T\]\) [EncryptStruct](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/dbcrypt/dbcrypt.go#L41>)
+### func \(\*DBCrypt\[T\]\) [EncryptStruct](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/dbcrypt/dbcrypt.go#L43>)
 
 ```go
 func (d *DBCrypt[T]) EncryptStruct(data *T) error

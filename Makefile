@@ -65,7 +65,7 @@ test: ## run all tests
 
 SUBDIRS = pkg/configReader	pkg/dbcrypt	pkg/errorResponses pkg/jobQueue	pkg/notifications	pkg/openSearch/esextension\
 	pkg/openSearch/openSearchClient	pkg/openSearch/openSearchQuery	pkg/query/	pkg/query/filter	pkg/query/paging\
-	pkg/query/sorting	pkg/retryableRequest	pkg/slices	pkg/testFolder pkg/postgres/query
+	pkg/query/sorting	pkg/retryableRequest pkg/secretfiles	pkg/slices	pkg/testFolder pkg/postgres/query
 .PHONY: generate_docs $(SUBDIRS)
 generate_docs: check_tools $(SUBDIRS)
 $(SUBDIRS):

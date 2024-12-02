@@ -26,7 +26,7 @@ import "github.com/greenbone/opensight-golang-libraries/pkg/query"
 - [type FilterOption](<#FilterOption>)
 - [type Metadata](<#Metadata>)
   - [func NewMetadata\(resultSelector ResultSelector, totalResults uint64\) Metadata](<#NewMetadata>)
-  - [func NewMetadataWithTotalResults\(resultSelector ResultSelector, totalDisplayableResults, totalResults uint64\) Metadata](<#NewMetadataWithTotalResults>)
+  - [func NewMetadataWithTotalResults\(resultSelector ResultSelector, totalResults, resultLimit uint64\) Metadata](<#NewMetadataWithTotalResults>)
 - [type ResponseListWithMetadata](<#ResponseListWithMetadata>)
 - [type ResponseWithMetadata](<#ResponseWithMetadata>)
 - [type ResultSelector](<#ResultSelector>)
@@ -50,7 +50,7 @@ type FilterOption struct {
 ```
 
 <a name="Metadata"></a>
-## type [Metadata](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/responseWithMetadata.go#L27-L31>)
+## type [Metadata](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/responseWithMetadata.go#L31-L35>)
 
 Metadata represents the metadata used in a query.
 
@@ -63,7 +63,7 @@ type Metadata struct {
 ```
 
 <a name="NewMetadata"></a>
-### func [NewMetadata](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/responseWithMetadata.go#L34>)
+### func [NewMetadata](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/responseWithMetadata.go#L38>)
 
 ```go
 func NewMetadata(resultSelector ResultSelector, totalResults uint64) Metadata
@@ -72,16 +72,16 @@ func NewMetadata(resultSelector ResultSelector, totalResults uint64) Metadata
 NewMetadata creates a new Metadata object based on the provided ResultSelector and totalResults.
 
 <a name="NewMetadataWithTotalResults"></a>
-### func [NewMetadataWithTotalResults](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/responseWithMetadata.go#L50>)
+### func [NewMetadataWithTotalResults](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/responseWithMetadata.go#L54>)
 
 ```go
-func NewMetadataWithTotalResults(resultSelector ResultSelector, totalDisplayableResults, totalResults uint64) Metadata
+func NewMetadataWithTotalResults(resultSelector ResultSelector, totalResults, resultLimit uint64) Metadata
 ```
 
-NewMetadataWithTotalResults creates a new Metadata object based on the provided ResultSelector, totalDisplayableResults, and totalResults.
+NewMetadataWithTotalResults creates a new Metadata object based on the provided ResultSelector and totalResults.
 
 <a name="ResponseListWithMetadata"></a>
-## type [ResponseListWithMetadata](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/responseWithMetadata.go#L12-L15>)
+## type [ResponseListWithMetadata](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/responseWithMetadata.go#L16-L19>)
 
 ResponseListWithMetadata represents a response containing a list of data with associated metadata. The 'Metadata' field is of type 'Metadata' includes filter, paging, and sorting information used in the query. The 'Data' field is a slice of type 'T' and represents the data retrieved.
 
@@ -93,7 +93,7 @@ type ResponseListWithMetadata[T any] struct {
 ```
 
 <a name="ResponseWithMetadata"></a>
-## type [ResponseWithMetadata](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/responseWithMetadata.go#L21-L24>)
+## type [ResponseWithMetadata](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/query/responseWithMetadata.go#L25-L28>)
 
 ResponseWithMetadata represents a response with associated metadata. The metadata includes filter, paging, and sorting information. The 'Metadata' field is of type 'Metadata' includes filter, paging, and sorting information used in the query. The 'Data' field is of any type and represents the data retrieved by the query.
 

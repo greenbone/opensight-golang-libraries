@@ -65,7 +65,6 @@ Package openSearchQuery provides a query builder for OpenSearch.
   - [func \(q \*BoolQueryBuilder\) AddTermsFilter\(fieldName string, values ...interface\{\}\) \*BoolQueryBuilder](<#BoolQueryBuilder.AddTermsFilter>)
   - [func \(q \*BoolQueryBuilder\) Build\(\) \*esquery.BoolQuery](<#BoolQueryBuilder.Build>)
   - [func \(q \*BoolQueryBuilder\) ReplaceCompareOperators\(operators \[\]CompareOperator\) \*BoolQueryBuilder](<#BoolQueryBuilder.ReplaceCompareOperators>)
-  - [func \(q \*BoolQueryBuilder\) Size\(size uint64\) \*BoolQueryBuilder](<#BoolQueryBuilder.Size>)
 - [type CompareOperator](<#CompareOperator>)
 - [type CompareOperatorHandler](<#CompareOperatorHandler>)
 - [type NestedQueryFieldDefinition](<#NestedQueryFieldDefinition>)
@@ -190,7 +189,7 @@ func HandleCompareOperatorNotBeginsWith(fieldName string, fieldKeys []string, fi
 HandleCompareOperatorNotBeginsWith handles not begins with
 
 <a name="BoolQueryBuilder"></a>
-## type [BoolQueryBuilder](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L16-L23>)
+## type [BoolQueryBuilder](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L16-L22>)
 
 BoolQueryBuilder is a builder for an OpenSearch bool query. Use NewBoolQueryBuilder or NewBoolQueryBuilderWith for proper initialization.
 
@@ -203,7 +202,7 @@ type BoolQueryBuilder struct {
 ```
 
 <a name="NewBoolQueryBuilder"></a>
-### func [NewBoolQueryBuilder](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L74>)
+### func [NewBoolQueryBuilder](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L73>)
 
 ```go
 func NewBoolQueryBuilder(querySettings *QuerySettings) *BoolQueryBuilder
@@ -214,7 +213,7 @@ NewBoolQueryBuilder creates a new BoolQueryBuilder and returns it. It uses the d
 querySettings is used to configure the query builder.
 
 <a name="NewBoolQueryBuilderWith"></a>
-### func [NewBoolQueryBuilderWith](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L82>)
+### func [NewBoolQueryBuilderWith](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L81>)
 
 ```go
 func NewBoolQueryBuilderWith(query *esquery.BoolQuery, querySettings *QuerySettings) *BoolQueryBuilder
@@ -225,7 +224,7 @@ NewBoolQueryBuilderWith creates a new BoolQueryBuilder and returns it. It uses t
 query is the initial bool query to use. querySettings is used to configure the query builder.
 
 <a name="BoolQueryBuilder.AddCompareOperators"></a>
-### func \(\*BoolQueryBuilder\) [AddCompareOperators](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L101>)
+### func \(\*BoolQueryBuilder\) [AddCompareOperators](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L100>)
 
 ```go
 func (q *BoolQueryBuilder) AddCompareOperators(operators ...CompareOperator) *BoolQueryBuilder
@@ -236,7 +235,7 @@ AddCompareOperators adds the given set of CompareOperator to the set of CompareO
 operators is the set of CompareOperator to add.
 
 <a name="BoolQueryBuilder.AddFilterRequest"></a>
-### func \(\*BoolQueryBuilder\) [AddFilterRequest](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L161>)
+### func \(\*BoolQueryBuilder\) [AddFilterRequest](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L154>)
 
 ```go
 func (q *BoolQueryBuilder) AddFilterRequest(request *filter.Request) error
@@ -245,7 +244,7 @@ func (q *BoolQueryBuilder) AddFilterRequest(request *filter.Request) error
 AddFilterRequest adds a filter request to this query. The filter request is translated into a bool query.
 
 <a name="BoolQueryBuilder.AddTermFilter"></a>
-### func \(\*BoolQueryBuilder\) [AddTermFilter](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L117>)
+### func \(\*BoolQueryBuilder\) [AddTermFilter](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L116>)
 
 ```go
 func (q *BoolQueryBuilder) AddTermFilter(fieldName string, value interface{}) *BoolQueryBuilder
@@ -256,7 +255,7 @@ AddTermFilter adds a term filter to this query.
 value is the value to filter for.
 
 <a name="BoolQueryBuilder.AddTermsFilter"></a>
-### func \(\*BoolQueryBuilder\) [AddTermsFilter](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L109>)
+### func \(\*BoolQueryBuilder\) [AddTermsFilter](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L108>)
 
 ```go
 func (q *BoolQueryBuilder) AddTermsFilter(fieldName string, values ...interface{}) *BoolQueryBuilder
@@ -267,7 +266,7 @@ AddTermsFilter adds a terms filter to this query.
 values is the list of values to filter for.
 
 <a name="BoolQueryBuilder.Build"></a>
-### func \(\*BoolQueryBuilder\) [Build](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L238>)
+### func \(\*BoolQueryBuilder\) [Build](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L231>)
 
 ```go
 func (q *BoolQueryBuilder) Build() *esquery.BoolQuery
@@ -276,7 +275,7 @@ func (q *BoolQueryBuilder) Build() *esquery.BoolQuery
 Build returns the built query.
 
 <a name="BoolQueryBuilder.ReplaceCompareOperators"></a>
-### func \(\*BoolQueryBuilder\) [ReplaceCompareOperators](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L93>)
+### func \(\*BoolQueryBuilder\) [ReplaceCompareOperators](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L92>)
 
 ```go
 func (q *BoolQueryBuilder) ReplaceCompareOperators(operators []CompareOperator) *BoolQueryBuilder
@@ -286,17 +285,8 @@ ReplaceCompareOperators replaces the set of CompareOperator to be used for this 
 
 operators is the new set of CompareOperator to use.
 
-<a name="BoolQueryBuilder.Size"></a>
-### func \(\*BoolQueryBuilder\) [Size](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L123>)
-
-```go
-func (q *BoolQueryBuilder) Size(size uint64) *BoolQueryBuilder
-```
-
-Size sets the size to be used in the query.
-
 <a name="CompareOperator"></a>
-## type [CompareOperator](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L64-L69>)
+## type [CompareOperator](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L63-L68>)
 
 CompareOperator defines a mapping between a filter.CompareOperator and a function to generate an appropriate query condition in from of a CompareOperatorHandler.
 
@@ -310,7 +300,7 @@ type CompareOperator struct {
 ```
 
 <a name="CompareOperatorHandler"></a>
-## type [CompareOperatorHandler](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L33-L34>)
+## type [CompareOperatorHandler](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L32-L33>)
 
 CompareOperatorHandler is a function that generates an appropriate query condition for the given field.
 
@@ -322,7 +312,7 @@ type CompareOperatorHandler func(fieldName string, fieldKeys []string, fieldValu
 ```
 
 <a name="NestedQueryFieldDefinition"></a>
-## type [NestedQueryFieldDefinition](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L53-L60>)
+## type [NestedQueryFieldDefinition](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L52-L59>)
 
 NestedQueryFieldDefinition is a definition of a nested query field.
 
@@ -338,7 +328,7 @@ type NestedQueryFieldDefinition struct {
 ```
 
 <a name="QuerySettings"></a>
-## type [QuerySettings](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L38-L50>)
+## type [QuerySettings](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L37-L49>)
 
 QuerySettings is used to configure the query builder.
 
