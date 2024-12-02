@@ -216,6 +216,142 @@ func (c *Client) SearchStream(indexName string, requestBody []byte, scrollTimeou
 	return reader, nil
 }
 
+func (c *Client) CompositeAggStream(indexName string, requestBody []byte, ctx context.Context) (io.Reader, error) {
+	reader, writer := io.Pipe()
+
+	go func() {
+		defer writer.Close()
+		var afterKey map[string]string
+
+		// Loop to handle pagination using the "after" key
+		loopCount := 0
+		log.Trace().Msg("Starting composite aggregation stream")
+
+		for {
+			log.Trace().Msgf("Looping over compound query: %d", loopCount)
+			// Build the request body dynamically by injecting the `afterKey`
+			paginatedRequestBody, err := injectAfterKey(requestBody, afterKey)
+			if err != nil {
+				log.Err(err).Msgf("failed to inject after key: %v", requestBody)
+				return
+			}
+			searchResponse, err := c.openSearchProjectClient.Search(
+				ctx,
+				&opensearchapi.SearchReq{
+					Indices: []string{indexName},
+					Body:    bytes.NewReader(paginatedRequestBody),
+				},
+			)
+			if err != nil {
+				log.Err(err).Msgf("search request failed: %v", requestBody)
+				return
+			}
+			// Signal start before processing the response
+			if searchResponse.Inspect().Response.IsError() {
+				log.Error().Msgf("search response error: %s: %s",
+					searchResponse.Inspect().Response.Status(),
+					searchResponse.Inspect().Response.String())
+				return
+			}
+
+			// Write the current batch of results to the writer
+			body := searchResponse.Inspect().Response.Body
+			responseDate, err := io.ReadAll(body)
+			if err != nil {
+				log.Err(err).Msgf("failed to read response body: %v", searchResponse)
+				return
+			}
+			body.Close()
+			_, err = writer.Write(responseDate)
+			if err != nil {
+				log.Err(err).Msgf("failed to write response to writer: %v", searchResponse)
+				return
+			}
+
+			// Extract the "after" key for pagination
+			afterKey, err = extractAfterKeyFromBytes(responseDate)
+			if err != nil {
+				log.Err(err).Msgf("failed to extract after key from response: %v", searchResponse)
+				return
+			}
+
+			// If no more `afterKey`, break the loop
+			if afterKey == nil {
+				return
+			}
+			loopCount++
+		}
+	}()
+
+	return reader, nil
+}
+
+func injectAfterKey(requestBody []byte, afterKey map[string]string) ([]byte, error) {
+	var body map[string]interface{}
+	err := json.Unmarshal(requestBody, &body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse request body: %w", err)
+	}
+
+	aggs, ok := body["aggs"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("no aggregations found in request body")
+	}
+
+	// Iterate over all aggregations to find the first composite aggregation
+	for _, agg := range aggs {
+		compositeAgg, ok := agg.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		compositeConfig, ok := compositeAgg["composite"].(map[string]interface{})
+		if ok {
+			if afterKey != nil {
+				compositeConfig["after"] = afterKey
+			} else {
+				delete(compositeConfig, "after")
+			}
+			return json.Marshal(body)
+		}
+	}
+	return nil, fmt.Errorf("no composite aggregation found in request body")
+}
+
+func extractAfterKeyFromBytes(responseData []byte) (map[string]string, error) {
+	var body map[string]interface{}
+	err := json.Unmarshal(responseData, &body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse response data: %w", err)
+	}
+
+	aggregations, ok := body["aggregations"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("no aggregations found in response")
+	}
+
+	// Iterate over all aggregations to find the first with an "after_key"
+	for _, agg := range aggregations {
+		compositeAgg, ok := agg.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		afterKey, ok := compositeAgg["after_key"].(map[string]interface{})
+		if ok && len(afterKey) > 0 {
+			// Convert `afterKey` to map[string]string
+			stringAfterKey := make(map[string]string)
+			for k, v := range afterKey {
+				stringAfterKey[k] = fmt.Sprintf("%v", v)
+			}
+			return stringAfterKey, nil
+		}
+	}
+
+	// No `after_key` found in any aggregation
+	return nil, nil
+}
+
 // processResponse reads the response, checks for hits, and writes them to the writer
 func processResponse(response *opensearchapi.ScrollGetResp, writer *io.PipeWriter) (noMoreHits bool, err error) {
 	if len(response.Hits.Hits) <= 0 {
