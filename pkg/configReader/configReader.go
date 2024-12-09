@@ -46,7 +46,7 @@ func ReadEnvVarsIntoStruct(s any) (any, error) {
 		case reflect.String:
 			field.SetString(envValue)
 		case reflect.Bool:
-			boolValue := viper.GetBool(fieldTag)
+			boolValue := viper.GetBool(envValue)
 			field.SetBool(boolValue)
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 			if fieldType == reflect.TypeOf(time.Duration(0)) {
