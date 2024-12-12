@@ -34,10 +34,9 @@ type notificationModel struct {
 type Level string
 
 const (
-	LevelInfo     Level = "info"
-	LevelWarning  Level = "warning"
-	LevelError    Level = "error"
-	LevelCritical Level = "critical"
+	LevelInfo    Level = "info"
+	LevelWarning Level = "warning"
+	LevelError   Level = "error"
 )
 
 func toNotificationModel(n Notification) notificationModel {
