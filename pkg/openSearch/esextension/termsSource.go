@@ -4,16 +4,14 @@
 
 package esextensions
 
-// TermsSource represents a terms value source to composite aggregations, as described in
-// https://www.elastic.co/guide/en/elasticsearch/reference/7.17/search-aggregations-bucket-composite-aggregation.html#_terms
-// see also CompositeAgg
+// TermsSource represents a terms value source in composite aggregations.
 type TermsSource struct {
 	name  string
 	field string
+	order string // Add order field for sorting
 }
 
 // Terms creates a new TermsSource.
-// Is tested in compositeAgg_test.go.
 //
 // name: The name of the terms TermsSource.
 // field: The name of the field referenced.
@@ -21,18 +19,30 @@ func Terms(name string, field string) *TermsSource {
 	return &TermsSource{
 		name:  name,
 		field: field,
+		order: "asc", // Default order is ascending
 	}
 }
 
-// Map returns a map representation of the TermsSource, thus implementing the esquery.Mappable interface.
-// Used for serialization to JSON.
-// Is tested in compositeAgg_test.go.
+// Order sets the sorting order for the TermsSource.
+// Valid values: "asc", "desc".
+func (t *TermsSource) Order(order string) *TermsSource {
+	t.order = order
+	return t
+}
+
+// Map returns a map representation of the TermsSource.
 func (t *TermsSource) Map() map[string]interface{} {
+	termsMap := map[string]interface{}{
+		"field": t.field,
+	}
+
+	if t.order != "" {
+		termsMap["order"] = t.order
+	}
+
 	return map[string]interface{}{
 		t.name: map[string]interface{}{
-			"terms": map[string]interface{}{
-				"field": t.field,
-			},
+			"terms": termsMap,
 		},
 	}
 }
