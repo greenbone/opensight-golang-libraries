@@ -34,8 +34,8 @@ func TestComposite(t *testing.T) {
 			expected: map[string]interface{}{
 				"composite": map[string]interface{}{
 					"sources": []map[string]interface{}{
-						{"n1": map[string]interface{}{"terms": map[string]interface{}{"field": "f1"}}},
-						{"n2": map[string]interface{}{"terms": map[string]interface{}{"field": "f2"}}},
+						{"n1": map[string]interface{}{"terms": map[string]interface{}{"field": "f1", "order": "asc"}}},
+						{"n2": map[string]interface{}{"terms": map[string]interface{}{"field": "f2", "order": "asc"}}},
 					},
 				},
 			},
