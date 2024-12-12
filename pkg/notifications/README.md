@@ -76,10 +76,9 @@ type Level string
 
 ```go
 const (
-    LevelInfo     Level = "info"
-    LevelWarning  Level = "warning"
-    LevelError    Level = "error"
-    LevelCritical Level = "critical"
+    LevelInfo    Level = "info"
+    LevelWarning Level = "warning"
+    LevelError   Level = "error"
 )
 ```
 
