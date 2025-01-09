@@ -39,12 +39,12 @@ func HandleCompareOperatorContains(fieldName string, fieldKeys []string, fieldVa
 			return esquery.Bool().
 				Should(
 					lo.Map[interface{}, esquery.Mappable](values, func(value interface{}, _ int) esquery.Mappable {
-						return esquery.Wildcard(fieldName+".keyword", "*"+valueToString(value)+"*")
+						return esquery.Wildcard(fieldName+".keyword", "*"+ValueToString(value)+"*")
 					})...,
 				).
 				MinimumShouldMatch(1)
 		} else { // for single values
-			return esquery.Wildcard(fieldName+".keyword", "*"+valueToString(fieldValue)+"*")
+			return esquery.Wildcard(fieldName+".keyword", "*"+ValueToString(fieldValue)+"*")
 		}
 	}
 }
@@ -56,7 +56,7 @@ func nestedHandleCompareOperatorContains(fieldName string, fieldKeys []string, f
 		query1 := esextensions.Nested(nestedFieldSetting.FieldKeyName, *esquery.Bool().
 			Must(
 				esquery.Match(nestedFieldSetting.FieldKeyName, fieldKeys[0]),
-				esquery.Wildcard(nestedFieldSetting.FieldValueName, "*"+valueToString(fieldValue)+"*")))
+				esquery.Wildcard(nestedFieldSetting.FieldValueName, "*"+ValueToString(fieldValue)+"*")))
 		return query1
 	}
 	return nil
@@ -67,7 +67,7 @@ func handleCompareOperatorContainsDifferent(fieldName string, fieldKeys []string
 		return esquery.Bool().
 			Should(
 				lo.Map[interface{}, esquery.Mappable](values, func(value interface{}, _ int) esquery.Mappable {
-					return esquery.Wildcard(fieldName, "*"+valueToString(value)+"*")
+					return esquery.Wildcard(fieldName, "*"+ValueToString(value)+"*")
 				})...,
 			).
 			MinimumShouldMatch(1)
@@ -95,14 +95,14 @@ func handleCompareOperatorBeginsWith(fieldName string, fieldValue any) esquery.M
 		return esquery.Bool().
 			Should(
 				lo.Map[any, esquery.Mappable](values, func(value any, _ int) esquery.Mappable {
-					return esquery.Prefix(fieldName, valueToString(value))
+					return esquery.Prefix(fieldName, ValueToString(value))
 				})...,
 			).
 			MinimumShouldMatch(1)
 	}
 
 	// for single value
-	return esquery.Prefix(fieldName, valueToString(fieldValue))
+	return esquery.Prefix(fieldName, ValueToString(fieldValue))
 }
 
 // HandleCompareOperatorNotBeginsWith handles not begins with
@@ -112,7 +112,7 @@ func HandleCompareOperatorNotBeginsWith(fieldName string, fieldKeys []string, fi
 		return esquery.Bool().
 			MustNot(
 				lo.Map[interface{}, esquery.Mappable](values, func(value interface{}, _ int) esquery.Mappable {
-					return esquery.Prefix(fieldName+".keyword", valueToString(value))
+					return esquery.Prefix(fieldName+".keyword", ValueToString(value))
 				})...,
 			)
 	} else { // for single values
@@ -187,12 +187,14 @@ func createTermQuery(fieldName string, fieldValue any, fieldKeys []string, query
 	}
 }
 
-func valueToString(value interface{}) string {
+func ValueToString(value interface{}) string {
 	switch v := value.(type) {
 	case string:
 		return v
 	case int:
 		return strconv.Itoa(v)
+	case float32:
+		return strconv.FormatFloat(float64(v), 'f', -1, 32)
 	case float64:
 		return strconv.FormatFloat(v, 'f', -1, 64)
 	case time.Time:
