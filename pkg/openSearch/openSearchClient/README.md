@@ -156,7 +156,7 @@ NewOpenSearchProjectClient creates a new official OpenSearch client \(package gi
 ctx is the context to use for the connection. config is the configuration for the client.
 
 <a name="SerializeDocumentsForBulkUpdate"></a>
-## func [SerializeDocumentsForBulkUpdate](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L424>)
+## func [SerializeDocumentsForBulkUpdate](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L426>)
 
 ```go
 func SerializeDocumentsForBulkUpdate[T any](indexName string, documents []T) ([]byte, error)
@@ -274,7 +274,7 @@ NewClient creates a new OpenSearch client.
 openSearchProjectClient is the official OpenSearch client to wrap. Use NewOpenSearchProjectClient to create it. updateMaxRetries is the number of retries for update requests. updateRetryDelay is the delay between retries.
 
 <a name="Client.AsyncDeleteByQuery"></a>
-### func \(\*Client\) [AsyncDeleteByQuery](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L385>)
+### func \(\*Client\) [AsyncDeleteByQuery](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L387>)
 
 ```go
 func (c *Client) AsyncDeleteByQuery(indexName string, requestBody []byte) error
@@ -285,7 +285,7 @@ AsyncDeleteByQuery updates documents in the given index asynchronously. It does 
 indexName is the name of the index to delete from. requestBody is the request body to send to OpenSearch to identify the documents to be deleted.
 
 <a name="Client.BulkUpdate"></a>
-### func \(\*Client\) [BulkUpdate](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L449>)
+### func \(\*Client\) [BulkUpdate](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L451>)
 
 ```go
 func (c *Client) BulkUpdate(indexName string, requestBody []byte) error
@@ -296,7 +296,7 @@ BulkUpdate performs a bulk update in the given index. It returns an error in cas
 indexName is the name of the index to update. requestBody is the request body to send to OpenSearch specifying the bulk update.
 
 <a name="Client.Close"></a>
-### func \(\*Client\) [Close](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L468>)
+### func \(\*Client\) [Close](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L470>)
 
 ```go
 func (c *Client) Close()
@@ -305,7 +305,7 @@ func (c *Client) Close()
 Close stops the underlying UpdateQueue allowing a graceful shutdown.
 
 <a name="Client.CompositeAggStream"></a>
-### func \(\*Client\) [CompositeAggStream](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L219>)
+### func \(\*Client\) [CompositeAggStream](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L221>)
 
 ```go
 func (c *Client) CompositeAggStream(indexName string, requestBody []byte, ctx context.Context) (io.Reader, error)
@@ -323,7 +323,7 @@ func (c *Client) Count(indexName string, requestBody []byte) (count int64, err e
 
 
 <a name="Client.DeleteByQuery"></a>
-### func \(\*Client\) [DeleteByQuery](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L395>)
+### func \(\*Client\) [DeleteByQuery](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L397>)
 
 ```go
 func (c *Client) DeleteByQuery(indexName string, requestBody []byte) error
@@ -354,7 +354,7 @@ func (c *Client) SearchStream(indexName string, requestBody []byte, scrollTimeou
 
 
 <a name="Client.Update"></a>
-### func \(\*Client\) [Update](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L375>)
+### func \(\*Client\) [Update](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L377>)
 
 ```go
 func (c *Client) Update(indexName string, requestBody []byte) (responseBody []byte, err error)

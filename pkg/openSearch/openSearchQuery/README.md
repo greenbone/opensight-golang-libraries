@@ -56,6 +56,7 @@ Package openSearchQuery provides a query builder for OpenSearch.
 - [func HandleCompareOperatorIsLessThan\(fieldName string, fieldKeys \[\]string, fieldValue any, querySettings \*QuerySettings\) esquery.Mappable](<#HandleCompareOperatorIsLessThan>)
 - [func HandleCompareOperatorIsLessThanOrEqualTo\(fieldName string, fieldKeys \[\]string, fieldValue any, querySettings \*QuerySettings\) esquery.Mappable](<#HandleCompareOperatorIsLessThanOrEqualTo>)
 - [func HandleCompareOperatorNotBeginsWith\(fieldName string, fieldKeys \[\]string, fieldValue any, querySettings \*QuerySettings\) esquery.Mappable](<#HandleCompareOperatorNotBeginsWith>)
+- [func ValueToString\(value interface\{\}\) string](<#ValueToString>)
 - [type BoolQueryBuilder](<#BoolQueryBuilder>)
   - [func NewBoolQueryBuilder\(querySettings \*QuerySettings\) \*BoolQueryBuilder](<#NewBoolQueryBuilder>)
   - [func NewBoolQueryBuilderWith\(query \*esquery.BoolQuery, querySettings \*QuerySettings\) \*BoolQueryBuilder](<#NewBoolQueryBuilderWith>)
@@ -187,6 +188,15 @@ func HandleCompareOperatorNotBeginsWith(fieldName string, fieldKeys []string, fi
 ```
 
 HandleCompareOperatorNotBeginsWith handles not begins with
+
+<a name="ValueToString"></a>
+## func [ValueToString](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/compareHandler.go#L190>)
+
+```go
+func ValueToString(value interface{}) string
+```
+
+
 
 <a name="BoolQueryBuilder"></a>
 ## type [BoolQueryBuilder](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/boolQueryBuilder.go#L16-L22>)
