@@ -109,6 +109,8 @@ func (c *Client) SearchStream(indexName string, requestBody []byte, scrollTimeou
 	reader, writer := io.Pipe()
 	startSignal := make(chan error, 1)
 
+	log.Debug().Msgf("searchStream requestBody: %s", string(requestBody))
+
 	go func() {
 		var scrollID string
 		// Initialize query with scroll
