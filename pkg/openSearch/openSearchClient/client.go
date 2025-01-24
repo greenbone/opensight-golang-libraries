@@ -109,6 +109,8 @@ func (c *Client) SearchStream(indexName string, requestBody []byte, scrollTimeou
 	reader, writer := io.Pipe()
 	startSignal := make(chan error, 1)
 
+	log.Debug().Msgf("searchStream requestBody: %s", string(requestBody))
+
 	go func() {
 		var scrollID string
 		// Initialize query with scroll
@@ -184,7 +186,7 @@ func (c *Client) SearchStream(indexName string, requestBody []byte, scrollTimeou
 			noMoreHits, err := processResponse(scrollResult, writer)
 			if err != nil {
 				writer.CloseWithError(err)
-				log.Err(err).Msgf("process response failed: %v", scrollResult)
+				log.Err(err).Msgf("process response failed")
 				return
 			}
 			if noMoreHits {
