@@ -184,7 +184,7 @@ func (c *Client) SearchStream(indexName string, requestBody []byte, scrollTimeou
 			noMoreHits, err := processResponse(scrollResult, writer)
 			if err != nil {
 				writer.CloseWithError(err)
-				log.Err(err).Msgf("process response failed: %v", scrollResult)
+				log.Err(err).Msgf("process response failed")
 				return
 			}
 			if noMoreHits {
