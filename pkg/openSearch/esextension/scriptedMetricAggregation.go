@@ -39,8 +39,8 @@ func (a *ScriptedMetricAggregation) Map() map[string]interface{} {
 //
 // Example usage:
 //
-//	a := ScriptedMetricAgg("unique_asset_ids", initScript, mapScript, combineScript, reduceScript)
-func ScriptedMetricAgg(
+//	a := NewScriptedMetricAggregation("unique_asset_ids", initScript, mapScript, combineScript, reduceScript)
+func NewScriptedMetricAggregation(
 	name string,
 	initScript string,
 	mapScript string,
