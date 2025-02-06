@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "0 1 * * 1" # At 01:00 on Mondays
+  push:
 
 jobs:
   update-header:
@@ -14,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run update header
-        uses: greenbone/actions/update-header@v3
+        uses: greenbone/actions/update-header@92ff09253239c11304312437fa9f30877852b9ec
         with:
           github-user: ${{ secrets.GREENBONE_BOT }}
           github-user-mail: ${{ secrets.GREENBONE_BOT_MAIL }}
@@ -22,3 +23,4 @@ jobs:
           directories: pkg
           license-type: "AGPL-3.0-or-later"
           target: main
+          single-year: true
