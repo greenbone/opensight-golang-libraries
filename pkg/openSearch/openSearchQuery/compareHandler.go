@@ -204,7 +204,7 @@ func HandleCompareOperatorIsGreaterThanOrEqualToRating(fieldName string, fieldKe
 ) esquery.Mappable {
 	ratingRange := getStringRange(fieldName, fieldValue.(string), querySettings)
 	return esquery.Range(fieldName).
-		Gte(ratingRange.Max)
+		Gte(ratingRange.Min)
 }
 
 func HandleCompareOperatorIsLessThanOrEqualToRating(fieldName string, fieldKeys []string,
@@ -262,10 +262,8 @@ func findNestedFieldByName(name string, querySettings *QuerySettings) *NestedQue
 }
 
 func getStringRange(fieldName string, rating string, querySettings *QuerySettings) RatingRange {
-	// Ensure that the field exists in the StringFieldRating map
 	if ratingMap, ok := querySettings.StringFieldRating[fieldName]; ok {
 		if bounds, exists := ratingMap[rating]; exists {
-			// Return the numeric range (lower bound and upper bound) for the rating
 			return bounds
 		}
 	}
