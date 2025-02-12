@@ -15,10 +15,10 @@ func TestRead(t *testing.T) {
 	// create files containing secrets
 	tempDir := t.TempDir()
 	validSecretPath := tempDir + "/secretFileName"
-	err := os.WriteFile(validSecretPath, []byte("  secret   \n\n\t"), 0644)
+	err := os.WriteFile(validSecretPath, []byte("  secret   \n\n\t"), 0o644)
 	require.NoError(t, err)
 	emptySecretPath := tempDir + "/empty"
-	err = os.WriteFile(emptySecretPath, []byte("  \n"), 0644)
+	err = os.WriteFile(emptySecretPath, []byte("  \n"), 0o644)
 	require.NoError(t, err)
 
 	type envVar struct {
@@ -77,7 +77,6 @@ func TestRead(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-
 			err := os.Setenv(tt.envVar.key, tt.envVar.value)
 			require.NoError(t, err)
 
