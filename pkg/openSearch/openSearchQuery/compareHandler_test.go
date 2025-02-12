@@ -111,9 +111,9 @@ func TestHandleRatingComparison(t *testing.T) {
 		StringFieldRating: map[string]map[string]RatingRange{
 			"severityClass": {
 				"Log":      {0, 0},
-				"Low":      {0, 4},
-				"Medium":   {4, 7},
-				"High":     {7, 9},
+				"Low":      {0.1, 3.9},
+				"Medium":   {4, 6.9},
+				"High":     {7, 8.9},
 				"Critical": {9, 10},
 			},
 		},
@@ -133,7 +133,7 @@ func TestHandleRatingComparison(t *testing.T) {
 			"severityClass",
 			nil,
 			"Medium",
-			esquery.Range("severityClass").Gt(float32(7)),
+			esquery.Range("severityClass").Gt(float32(6.9)),
 		},
 		{
 			"FailingRatingIsLowerThen",
@@ -157,7 +157,7 @@ func TestHandleRatingComparison(t *testing.T) {
 			"severityClass",
 			nil,
 			"High",
-			esquery.Range("severityClass").Lte(float32(9)),
+			esquery.Range("severityClass").Lte(float32(8.9)),
 		},
 	}
 
