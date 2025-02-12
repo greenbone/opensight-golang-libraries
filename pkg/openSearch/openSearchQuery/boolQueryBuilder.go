@@ -33,6 +33,11 @@ type (
 		querySettings *QuerySettings) esquery.Mappable
 )
 
+type RatingRange struct {
+	Min float32 // Lower bound of the rating range
+	Max float32 // Upper bound of the rating range
+}
+
 // QuerySettings is used to configure the query builder.
 type QuerySettings struct {
 	// WildcardArrays is a map of field names to a boolean value indicating whether the field is to be treated as a wildcard array.
@@ -46,6 +51,8 @@ type QuerySettings struct {
 	// UseMatchPhraseFields is a map of field names to a boolean value indicating whether the field should use a match phrase query.
 	UseMatchPhrase     map[string]bool
 	FilterFieldMapping map[string]string
+	// StringFieldRating is a map for field names with a rating. The rating is used to determine the compare order of the field in the query.
+	StringFieldRating map[string]map[string]RatingRange
 }
 
 // NestedQueryFieldDefinition is a definition of a nested query field.
@@ -267,5 +274,29 @@ func defaultCompareOperators() []CompareOperator {
 		{Operator: filter.CompareOperatorIsLessThan, Handler: HandleCompareOperatorIsLessThan, MustCondition: true},
 		{Operator: filter.CompareOperatorAfterDate, Handler: HandleCompareOperatorIsGreaterThan, MustCondition: true},
 		{Operator: filter.CompareOperatorBeforeDate, Handler: HandleCompareOperatorIsLessThan, MustCondition: true},
+		{
+			Operator: filter.CompareOperatorIsGreaterThanRating,
+			Handler:  HandleCompareOperatorIsGreaterThanRating, MustCondition: true,
+		},
+		{
+			Operator: filter.CompareOperatorIsLessThanRating,
+			Handler:  HandleCompareOperatorIsLessThanRating, MustCondition: true,
+		},
+		{
+			Operator: filter.CompareOperatorIsGreaterThanOrEqualToRating,
+			Handler:  HandleCompareOperatorIsGreaterThanOrEqualToRating, MustCondition: true,
+		},
+		{
+			Operator: filter.CompareOperatorIsLessThanOrEqualToRating,
+			Handler:  HandleCompareOperatorIsLessThanOrEqualToRating, MustCondition: true,
+		},
+		{
+			Operator: filter.CompareOperatorIsEqualToRating,
+			Handler:  HandleCompareOperatorIsEqualToRating, MustCondition: true,
+		},
+		{
+			Operator: filter.CompareOperatorIsNotEqualToRating,
+			Handler:  HandleCompareOperatorIsNotEqualToRating, MustCondition: true,
+		},
 	}
 }

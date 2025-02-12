@@ -17,10 +17,10 @@ GOFUMPT			= go run mvdan.cc/gofumpt@latest
 GOLANGCI-LINT   = go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 GO-MOD-OUTDATED = go run github.com/psampaz/go-mod-outdated@latest
 GO-MOD-UPGRADE  = go run github.com/oligot/go-mod-upgrade@latest
-SWAG            = github.com/swaggo/swag/cmd/swag@v1.8.12
+SWAG            = github.com/swaggo/swag/cmd/swag@v1.16.2
 
 INSTALL_GOMARKDOC = go install github.com/princjef/gomarkdoc/cmd/gomarkdoc@latest
-INSTALL_MOCKERY	= go install github.com/vektra/mockery/v2@v2.28.2
+INSTALL_MOCKERY	= go install github.com/vektra/mockery/v2@v2.44.1
 
 OS="$(shell go env var GOOS | xargs)"
 
@@ -45,6 +45,10 @@ format: ## format and tidy
 	$(GOIMPORTS) -l -w .
 	GOFUMPT_SPLIT_LONG_LINES=on $(GOFUMPT) -l -w ./pkg
 	go fmt ./...
+
+generate-code: ## create mocks and enums
+	@ echo "\033[36m  Generate mocks and enums  \033[0m"
+	go get github.com/abice/go-enum
 
 .PHONY: lint
 lint: format ## lint go code

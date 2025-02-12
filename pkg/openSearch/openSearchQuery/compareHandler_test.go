@@ -105,3 +105,65 @@ func TestHandleCompareOperator(t *testing.T) {
 		})
 	}
 }
+
+func TestHandleRatingComparison(t *testing.T) {
+	querySettings := QuerySettings{
+		StringFieldRating: map[string]map[string]RatingRange{
+			"severityClass": {
+				"Log":      {0, 0},
+				"Low":      {0, 4},
+				"Medium":   {4, 7},
+				"High":     {7, 9},
+				"Critical": {9, 10},
+			},
+		},
+	}
+
+	tests := []struct {
+		name     string
+		handler  CompareOperatorHandler
+		field    string
+		keys     []string
+		value    any
+		expected esquery.Mappable
+	}{
+		{
+			"RatingIsGreaterThen",
+			HandleCompareOperatorIsGreaterThanRating,
+			"severityClass",
+			nil,
+			"Log",
+			esquery.Range("severityClass").Gt(float32(0)),
+		},
+		{
+			"FailingRatingIsLowerThen",
+			HandleCompareOperatorIsLessThanRating,
+			"severityClass",
+			nil,
+			"Log",
+			esquery.Range("severityClass").Lt(float32(0)),
+		},
+		{
+			"GreaterOrEqualTo",
+			HandleCompareOperatorIsGreaterThanOrEqualToRating,
+			"severityClass",
+			nil,
+			"High",
+			esquery.Range("severityClass").Gte(float32(9)),
+		},
+		{
+			"LessOrEqualTo",
+			HandleCompareOperatorIsLessThanOrEqualToRating,
+			"severityClass",
+			nil,
+			"High",
+			esquery.Range("severityClass").Lte(float32(9)),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, tt.handler(tt.field, tt.keys, tt.value, &querySettings))
+		})
+	}
+}
