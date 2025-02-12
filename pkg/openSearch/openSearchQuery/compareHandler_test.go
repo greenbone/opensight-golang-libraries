@@ -128,7 +128,7 @@ func TestHandleRatingComparison(t *testing.T) {
 		expected esquery.Mappable
 	}{
 		{
-			"RatingIsGreaterThen",
+			"RatingIsGreaterThan",
 			HandleCompareOperatorIsGreaterThanRating,
 			"severityClass",
 			nil,
@@ -136,7 +136,7 @@ func TestHandleRatingComparison(t *testing.T) {
 			esquery.Range("severityClass").Gt(float32(6.9)),
 		},
 		{
-			"FailingRatingIsLowerThen",
+			"RatingIsLowerThan",
 			HandleCompareOperatorIsLessThanRating,
 			"severityClass",
 			nil,
