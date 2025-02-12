@@ -33,9 +33,10 @@ type (
 		querySettings *QuerySettings) esquery.Mappable
 )
 
+// RatingRange represent a closed interval of float32 values.
 type RatingRange struct {
-	Min float32 // Lower bound of the rating range
-	Max float32 // Upper bound of the rating range
+	Min float32 // Lower bound of the rating range (inclusive)
+	Max float32 // Upper bound of the rating range (inclusive)
 }
 
 // QuerySettings is used to configure the query builder.
