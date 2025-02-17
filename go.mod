@@ -6,12 +6,12 @@ require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/aquasecurity/esquery v0.2.0
 	github.com/avast/retry-go/v4 v4.6.0
-	github.com/go-playground/validator/v10 v10.24.0
+	github.com/go-playground/validator/v10 v10.25.0
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-retryablehttp v0.7.7
 	github.com/json-iterator/go v1.1.12
 	github.com/lib/pq v1.10.9
-	github.com/opensearch-project/opensearch-go/v4 v4.3.0
+	github.com/opensearch-project/opensearch-go/v4 v4.4.0
 	github.com/rs/zerolog v1.33.0
 	github.com/samber/lo v1.49.1
 	github.com/spf13/viper v1.19.0
