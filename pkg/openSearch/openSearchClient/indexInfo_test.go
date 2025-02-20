@@ -36,7 +36,7 @@ func TestConvertToIndexInfo(t *testing.T) {
 		{
 			name:     "converts empty slice",
 			input:    []opensearchapi.CatIndexResp{},
-			expected: []IndexInfo{},
+			expected: nil,
 		},
 	}
 
