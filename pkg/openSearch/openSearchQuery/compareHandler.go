@@ -187,6 +187,51 @@ func createTermQuery(fieldName string, fieldValue any, fieldKeys []string, query
 	}
 }
 
+func HandleCompareOperatorIsGreaterThanRating(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
+	ratingRange := getStringRange(fieldName, fieldValue.(string), querySettings)
+	return esquery.Range(fieldName).
+		Gt(ratingRange.Max)
+}
+
+func HandleCompareOperatorIsLessThanRating(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
+	ratingRange := getStringRange(fieldName, fieldValue.(string), querySettings)
+	return esquery.Range(fieldName).
+		Lt(ratingRange.Min)
+}
+
+func HandleCompareOperatorIsGreaterThanOrEqualToRating(fieldName string, fieldKeys []string,
+	fieldValue any, querySettings *QuerySettings,
+) esquery.Mappable {
+	ratingRange := getStringRange(fieldName, fieldValue.(string), querySettings)
+	return esquery.Range(fieldName).
+		Gte(ratingRange.Min)
+}
+
+func HandleCompareOperatorIsLessThanOrEqualToRating(fieldName string, fieldKeys []string,
+	fieldValue any, querySettings *QuerySettings,
+) esquery.Mappable {
+	ratingRange := getStringRange(fieldName, fieldValue.(string), querySettings)
+	return esquery.Range(fieldName).
+		Lte(ratingRange.Max)
+}
+
+func HandleCompareOperatorIsEqualToRating(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
+	rating := fieldValue.(string)
+	ratingRange := getStringRange(fieldName, rating, querySettings)
+	return esquery.Range(fieldName).
+		Gte(ratingRange.Min).
+		Lte(ratingRange.Max)
+}
+
+func HandleCompareOperatorIsNotEqualToRating(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
+	rating := fieldValue.(string)
+	ratingRange := getStringRange(fieldName, rating, querySettings)
+	return esquery.Bool().
+		MustNot(
+			esquery.Range(fieldName).Gte(ratingRange.Min).Lte(ratingRange.Max), // Exclude the range
+		)
+}
+
 func ValueToString(value interface{}) string {
 	switch v := value.(type) {
 	case string:
@@ -214,4 +259,13 @@ func findNestedFieldByName(name string, querySettings *QuerySettings) *NestedQue
 		}
 	}
 	return nil // Kein passendes Feld gefunden
+}
+
+func getStringRange(fieldName string, rating string, querySettings *QuerySettings) RatingRange {
+	if ratingMap, ok := querySettings.StringFieldRating[fieldName]; ok {
+		if bounds, exists := ratingMap[rating]; exists {
+			return bounds
+		}
+	}
+	return RatingRange{}
 }

@@ -35,29 +35,36 @@ type LogicOperator string
 /*
 CompareOperator ENUM(
 
-	beginsWith
-	doesNotBeginWith
-	contains
-	doesNotContain
+				beginsWith
+				doesNotBeginWith
+				contains
+				doesNotContain
 
-	isNumberEqualTo
-	isEqualTo
-	isIpEqualTo
-	isStringEqualTo
+				isNumberEqualTo
+				isEqualTo
+				isIpEqualTo
+				isStringEqualTo
 
-	isNotEqualTo
-	isNumberNotEqualTo
-	isIpNotEqualTo
-	isStringNotEqualTo
+				isNotEqualTo
+				isNumberNotEqualTo
+				isIpNotEqualTo
+				isStringNotEqualTo
 
-	isGreaterThan
-	isGreaterThanOrEqualTo
-	isLessThan
-	isLessThanOrEqualTo
-	beforeDate
-	afterDate
+				isGreaterThan
+				isGreaterThanOrEqualTo
+				isLessThan
+				isLessThanOrEqualTo
+				beforeDate
+				afterDate
 
-	exists
+				exists
+
+				isEqualToRating
+	            isNotEqualToRating
+			    isGreaterThanRating
+		        isLessThanRating
+				isGreaterThanOrEqualToRating
+		        isLessThanOrEqualToRating
 
 )
 */
