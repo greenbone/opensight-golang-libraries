@@ -2,6 +2,7 @@ package openSearchClient
 
 import (
 	"context"
+
 	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
@@ -32,7 +33,6 @@ func (h *OpenSearchHealth) GetDiskAllocationPercentage() (int, error) {
 }
 
 func (h *OpenSearchHealth) GetIndexesWithCreationDate(pattern string) ([]IndexInfo, error) {
-
 	request := opensearchapi.CatIndicesReq{
 		Indices: []string{pattern},
 		Params: opensearchapi.CatIndicesParams{

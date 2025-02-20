@@ -1,8 +1,9 @@
 package openSearchClient
 
 import (
-	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
 	"sort"
+
+	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
 )
 
 type IndexInfo struct {

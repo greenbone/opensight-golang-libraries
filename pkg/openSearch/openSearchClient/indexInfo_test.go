@@ -1,9 +1,10 @@
 package openSearchClient
 
 import (
+	"testing"
+
 	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestConvertToIndexInfo(t *testing.T) {
