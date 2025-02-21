@@ -9,6 +9,7 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -104,6 +105,23 @@ func ReadEnvVarsIntoStruct(s any) (any, error) {
 					return nil, err
 				}
 				field.Set(reflect.ValueOf(nestedValue))
+			}
+		case reflect.Slice:
+			strSlice := strings.Split(envValue, ",") // Assuming comma-separated values
+			if field.Type().Elem().Kind() == reflect.Int {
+				intSlice := viper.GetIntSlice(fieldTag)
+				if len(intSlice) == 0 && envValue != "" {
+					for _, str := range strSlice {
+						if num, err := strconv.Atoi(strings.TrimSpace(str)); err == nil {
+							intSlice = append(intSlice, num)
+						}
+					}
+				}
+				field.Set(reflect.ValueOf(intSlice))
+			} else if field.Type().Elem().Kind() == reflect.String {
+				field.Set(reflect.ValueOf(strSlice))
+			} else {
+				return nil, fmt.Errorf("unsupported slice type %s", fieldType.Elem().Kind().String())
 			}
 		default:
 			return nil, fmt.Errorf("unsupported field type %s", fieldType.Kind().String())

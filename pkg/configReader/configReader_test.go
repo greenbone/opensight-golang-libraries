@@ -21,6 +21,7 @@ func TestOKReadEnvVarsIntoStruct(t *testing.T) {
 			Field3 bool          `viperEnv:"THE_VAR_3"`
 			Field4 string        `viperEnv:"THE_VAR_4" default:"a tttt"`
 			Filed5 time.Duration `viperEnv:"THE_VAR_5" default:"1s"`
+			Filed6 []int         `viperEnv:"THE_VAR_6" default:"14,30,60,90,180,365"`
 		}
 	}
 
@@ -44,4 +45,5 @@ func TestOKReadEnvVarsIntoStruct(t *testing.T) {
 	assert.Equal(t, true, test.Nested.Field3)
 	assert.Equal(t, "Stringdafsf", test.Nested.Field4)
 	assert.Equal(t, 1*time.Second, test.Nested.Filed5)
+	assert.ElementsMatch(t, []int{14, 30, 60, 90, 180, 365}, test.Nested.Filed6)
 }
