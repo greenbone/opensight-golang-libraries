@@ -269,3 +269,14 @@ func getStringRange(fieldName string, rating string, querySettings *QuerySetting
 	}
 	return RatingRange{}
 }
+
+func HandleCompareOperatorOnDateRange(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
+	stringValue := fieldValue.(string)
+	date, _ := time.Parse(time.RFC3339Nano, stringValue)
+
+	startOfDay := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
+	endOfDay := time.Date(date.Year(), date.Month(), date.Day(), 23, 59, 59, 999999999, time.UTC)
+	return esquery.Range(fieldName).
+		Gte(startOfDay).
+		Lte(endOfDay)
+}
