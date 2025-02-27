@@ -300,8 +300,8 @@ func defaultCompareOperators() []CompareOperator {
 			Handler:  HandleCompareOperatorIsNotEqualToRating, MustCondition: true,
 		},
 		{
-			Operator: filter.CompareOperatorOnDate,
-			Handler:  HandleCompareOperatorOnDateRange, MustCondition: true,
+			Operator: filter.CompareOperatorOnDay,
+			Handler:  HandleCompareOperatorOnDay, MustCondition: true,
 		},
 	}
 }

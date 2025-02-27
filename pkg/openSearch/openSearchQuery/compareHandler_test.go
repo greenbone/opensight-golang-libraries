@@ -6,6 +6,7 @@ package openSearchQuery
 
 import (
 	"testing"
+	"time"
 
 	"github.com/aquasecurity/esquery"
 	esextensions "github.com/greenbone/opensight-golang-libraries/pkg/openSearch/esextension"
@@ -95,6 +96,24 @@ func TestHandleCompareOperator(t *testing.T) {
 			keys:     nil,
 			value:    "denial of service",
 			expected: esquery.MatchPhrase("vulnerabilityTest.family", "denial of service"),
+		},
+		{
+			name:    "OnDayOperator",
+			handler: HandleCompareOperatorOnDay,
+			field:   "event.timestamp",
+			keys:    nil,
+			value:   "2024-02-27T12:34:56.789Z",
+			expected: esquery.Range("event.timestamp").
+				Gte(time.Date(2024, 2, 27, 0, 0, 0, 0, time.UTC)).
+				Lte(time.Date(2024, 2, 27, 23, 59, 59, 999999999, time.UTC)),
+		},
+		{
+			name:     "OnDayOperator_InvalidDate",
+			handler:  HandleCompareOperatorOnDay,
+			field:    "event.timestamp",
+			keys:     nil,
+			value:    "invalid-date",
+			expected: esquery.MatchNone(),
 		},
 		// Add other test cases here
 	}
