@@ -170,7 +170,7 @@ func TestHandleRatingComparison(t *testing.T) {
 }
 
 func TestHandleCompareOperatorOnDay(t *testing.T) {
-	startDate := time.Date(2024, 2, 27, 12, 34, 56, 0, time.UTC)
+	startDate := time.Date(2023, 2, 27, 12, 34, 56, 0, time.UTC)
 	endDate := time.Date(2024, 2, 27, 12, 34, 56, 0, time.UTC)
 
 	tests := []struct {
