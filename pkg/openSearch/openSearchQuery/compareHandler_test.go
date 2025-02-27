@@ -169,7 +169,20 @@ func TestHandleRatingComparison(t *testing.T) {
 	}
 }
 
-func TestHandleCompareOperatorOnDay(t *testing.T) {
+func TestHandleCompareOperatorDateRange(t *testing.T) {
+	startDate := time.Date(2023, 2, 27, 12, 34, 56, 0, time.UTC)
+	endDate := time.Date(2024, 8, 24, 0, 0, 0, 0, time.UTC) // Adjusted to match test case
+
+	// Correct string representations in RFC3339 format
+	startDateStr := "2023-02-27T12:34:56Z"
+	endDateStr := "2024-08-24T00:00:00Z"
+
+	// Parse expected values from strings
+	parsedStartDate, _ := time.Parse(time.RFC3339, startDateStr)
+	parsedEndDate, _ := time.Parse(time.RFC3339, endDateStr)
+
+	querySettings := QuerySettings{} // Ensure querySettings is declared
+
 	tests := []struct {
 		name     string
 		handler  CompareOperatorHandler
@@ -179,29 +192,53 @@ func TestHandleCompareOperatorOnDay(t *testing.T) {
 		expected esquery.Mappable
 	}{
 		{
-			name:    "OnDayOperator",
-			handler: HandleCompareOperatorOnDay,
+			name:    "ValidDateRange_StringInput",
+			handler: HandleCompareOperatorDateRange,
 			field:   "event.timestamp",
 			keys:    nil,
-			value:   "2024-02-27T12:34:56.789Z",
+			value: []string{
+				startDateStr,
+				endDateStr,
+			},
 			expected: esquery.Range("event.timestamp").
-				Gte(time.Date(2024, 2, 27, 0, 0, 0, 0, time.UTC)).
-				Lte(time.Date(2024, 2, 27, 23, 59, 59, 999999999, time.UTC)),
+				Gte(parsedStartDate).
+				Lte(parsedEndDate),
 		},
 		{
-			name:     "OnDayOperator_InvalidDate",
-			handler:  HandleCompareOperatorOnDay,
+			name:    "ValidDateRange_TimeInput",
+			handler: HandleCompareOperatorDateRange,
+			field:   "event.timestamp",
+			keys:    nil,
+			value: []time.Time{
+				startDate,
+				endDate,
+			},
+			expected: esquery.Range("event.timestamp").
+				Gte(startDate).
+				Lte(endDate),
+		},
+		{
+			name:     "InvalidDateString",
+			handler:  HandleCompareOperatorDateRange,
 			field:    "event.timestamp",
 			keys:     nil,
-			value:    "invalid-date",
+			value:    []string{"invalid-date", "2024-08-24T00:00:00Z"},
 			expected: esquery.MatchNone(),
 		},
 		{
-			name:     "OnDayOperator_NonStringValue",
-			handler:  HandleCompareOperatorOnDay,
+			name:     "NonTimeValue",
+			handler:  HandleCompareOperatorDateRange,
 			field:    "event.timestamp",
 			keys:     nil,
 			value:    12345,
+			expected: esquery.MatchNone(),
+		},
+		{
+			name:     "InvalidSliceLength",
+			handler:  HandleCompareOperatorDateRange,
+			field:    "event.timestamp",
+			keys:     nil,
+			value:    []string{"2023-02-27T12:34:56Z"}, // Only one date instead of two
 			expected: esquery.MatchNone(),
 		},
 	}

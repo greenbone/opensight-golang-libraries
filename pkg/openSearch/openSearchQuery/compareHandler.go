@@ -272,26 +272,34 @@ func getStringRange(fieldName string, rating string, querySettings *QuerySetting
 	return RatingRange{}
 }
 
-// HandleCompareOperatorOnDay creates an opensearch range query for a given date field.
-// It ensures the field value is a valid RFC3339Nano date string and constructs a query
-// that matches all timestamps within the specified day (from 00:00:00 to 23:59:59 UTC).
-// it returns a MatchNone query if the operation fails
-func HandleCompareOperatorOnDay(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
-	stringValue, ok := fieldValue.(string)
-	if !ok {
-		log.Error().Msgf("fieldValue is not a string: %v", fieldValue)
+// HandleCompareOperatorDateRange creates an OpenSearch range query for a given date field.
+// It supports both []time.Time and []string (in RFC3339Nano format) as input.
+func HandleCompareOperatorDateRange(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
+	switch dateValue := fieldValue.(type) {
+	case []time.Time:
+		if len(dateValue) != 2 {
+			log.Error().Msgf("invalid fieldValue length for []time.Time: %T", fieldValue)
+			return esquery.MatchNone()
+		}
+		return esquery.Range(fieldName).
+			Gte(dateValue[0]).
+			Lte(dateValue[1])
+	case []string:
+		if len(dateValue) != 2 {
+			log.Error().Msgf("invalid fieldValue length for []string: %T", fieldValue)
+			return esquery.MatchNone()
+		}
+		start, err1 := time.Parse(time.RFC3339Nano, dateValue[0])
+		end, err2 := time.Parse(time.RFC3339Nano, dateValue[1])
+		if err1 != nil || err2 != nil {
+			log.Error().Msgf("invalid date format in []string: %v, %v", err1, err2)
+			return esquery.MatchNone()
+		}
+		return esquery.Range(fieldName).
+			Gte(start).
+			Lte(end)
+	default:
+		log.Error().Msgf("unsupported fieldValue type: %T", fieldValue)
 		return esquery.MatchNone()
 	}
-
-	date, err := time.Parse(time.RFC3339Nano, stringValue)
-	if err != nil {
-		log.Err(err).Msgf("failed to parse date string: %s", stringValue)
-		return esquery.MatchNone()
-	}
-
-	startOfDay := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
-	endOfDay := time.Date(date.Year(), date.Month(), date.Day(), 23, 59, 59, 999999999, date.Location())
-	return esquery.Range(fieldName).
-		Gte(startOfDay).
-		Lte(endOfDay)
 }
