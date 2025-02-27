@@ -271,6 +271,10 @@ func getStringRange(fieldName string, rating string, querySettings *QuerySetting
 	return RatingRange{}
 }
 
+// HandleCompareOperatorOnDay creates an opensearch range query for a given date field.
+// It ensures the field value is a valid RFC3339Nano date string and constructs a query
+// that matches all timestamps within the specified day (from 00:00:00 to 23:59:59 UTC).
+// it returns a MatchNone query if the operation fails
 func HandleCompareOperatorOnDay(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
 	stringValue, ok := fieldValue.(string)
 	if !ok {
