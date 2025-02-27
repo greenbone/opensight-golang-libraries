@@ -170,6 +170,9 @@ func TestHandleRatingComparison(t *testing.T) {
 }
 
 func TestHandleCompareOperatorOnDay(t *testing.T) {
+	startDate := time.Date(2024, 2, 27, 12, 34, 56, 0, time.UTC)
+	endDate := time.Date(2024, 2, 27, 12, 34, 56, 0, time.UTC)
+
 	tests := []struct {
 		name     string
 		handler  CompareOperatorHandler
@@ -183,10 +186,13 @@ func TestHandleCompareOperatorOnDay(t *testing.T) {
 			handler: HandleCompareOperatorDateRange,
 			field:   "event.timestamp",
 			keys:    nil,
-			value:   "2024-02-27T12:34:56.789Z",
+			value: []time.Time{
+				startDate,
+				endDate,
+			},
 			expected: esquery.Range("event.timestamp").
-				Gte(time.Date(2024, 2, 27, 0, 0, 0, 0, time.UTC)).
-				Lte(time.Date(2024, 2, 27, 23, 59, 59, 999999999, time.UTC)),
+				Gte(startDate).
+				Lte(endDate),
 		},
 		{
 			name:     "OnDayOperator_InvalidDate",
@@ -197,7 +203,7 @@ func TestHandleCompareOperatorOnDay(t *testing.T) {
 			expected: esquery.MatchNone(),
 		},
 		{
-			name:     "OnDayOperator_NonStringValue",
+			name:     "OnDayOperator_NonTimeValue",
 			handler:  HandleCompareOperatorDateRange,
 			field:    "event.timestamp",
 			keys:     nil,
