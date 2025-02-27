@@ -272,7 +272,12 @@ func getStringRange(fieldName string, rating string, querySettings *QuerySetting
 }
 
 func HandleCompareOperatorOnDay(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
-	stringValue := fieldValue.(string)
+	stringValue, ok := fieldValue.(string)
+	if !ok {
+		log.Error().Msgf("fieldValue is not a string: %v", fieldValue)
+		return esquery.MatchNone()
+	}
+
 	date, err := time.Parse(time.RFC3339Nano, stringValue)
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to parse date string: %s", stringValue)

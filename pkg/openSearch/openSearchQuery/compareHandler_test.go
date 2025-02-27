@@ -97,24 +97,6 @@ func TestHandleCompareOperator(t *testing.T) {
 			value:    "denial of service",
 			expected: esquery.MatchPhrase("vulnerabilityTest.family", "denial of service"),
 		},
-		{
-			name:    "OnDayOperator",
-			handler: HandleCompareOperatorOnDay,
-			field:   "event.timestamp",
-			keys:    nil,
-			value:   "2024-02-27T12:34:56.789Z",
-			expected: esquery.Range("event.timestamp").
-				Gte(time.Date(2024, 2, 27, 0, 0, 0, 0, time.UTC)).
-				Lte(time.Date(2024, 2, 27, 23, 59, 59, 999999999, time.UTC)),
-		},
-		{
-			name:     "OnDayOperator_InvalidDate",
-			handler:  HandleCompareOperatorOnDay,
-			field:    "event.timestamp",
-			keys:     nil,
-			value:    "invalid-date",
-			expected: esquery.MatchNone(),
-		},
 		// Add other test cases here
 	}
 
@@ -177,6 +159,50 @@ func TestHandleRatingComparison(t *testing.T) {
 			nil,
 			"High",
 			esquery.Range("severityClass").Lte(float32(8.9)),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, tt.handler(tt.field, tt.keys, tt.value, &querySettings))
+		})
+	}
+}
+
+func TestHandleCompareOperatorOnDay(t *testing.T) {
+	tests := []struct {
+		name     string
+		handler  CompareOperatorHandler
+		field    string
+		keys     []string
+		value    any
+		expected esquery.Mappable
+	}{
+		{
+			name:    "OnDayOperator",
+			handler: HandleCompareOperatorOnDay,
+			field:   "event.timestamp",
+			keys:    nil,
+			value:   "2024-02-27T12:34:56.789Z",
+			expected: esquery.Range("event.timestamp").
+				Gte(time.Date(2024, 2, 27, 0, 0, 0, 0, time.UTC)).
+				Lte(time.Date(2024, 2, 27, 23, 59, 59, 999999999, time.UTC)),
+		},
+		{
+			name:     "OnDayOperator_InvalidDate",
+			handler:  HandleCompareOperatorOnDay,
+			field:    "event.timestamp",
+			keys:     nil,
+			value:    "invalid-date",
+			expected: esquery.MatchNone(),
+		},
+		{
+			name:     "OnDayOperator_NonStringValue",
+			handler:  HandleCompareOperatorOnDay,
+			field:    "event.timestamp",
+			keys:     nil,
+			value:    12345,
+			expected: esquery.MatchNone(),
 		},
 	}
 
