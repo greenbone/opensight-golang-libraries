@@ -275,7 +275,7 @@ func HandleCompareOperatorOnDay(fieldName string, fieldKeys []string, fieldValue
 	stringValue := fieldValue.(string)
 	date, err := time.Parse(time.RFC3339Nano, stringValue)
 	if err != nil {
-		log.Error().Err(err).Msgf("Failed to parse date string: %s", stringValue)
+		log.Error().Err(err).Msgf("failed to parse date string: %s", stringValue)
 		return esquery.MatchNone()
 	}
 
