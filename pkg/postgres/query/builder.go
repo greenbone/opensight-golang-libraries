@@ -73,17 +73,23 @@ func (qb *Builder) BuildQueryConditions(request *filter.Request) (args []any, er
 	return
 }
 
-// Replacer for escaping LIKE clause wildcards and backslashes
+// likeReplacer is used for escaping LIKE and ILIKE clauses wildcards and backslashes
 var likeReplacer = strings.NewReplacer(`_`, `\_`, `%`, `\%`, `\`, `\\`)
 
 func extractFieldValues(input any, compareOperator filter.CompareOperator) (resp []any) {
 	processString := func(str string) string {
-		if compareOperator == filter.CompareOperatorBeginsWith ||
-			compareOperator == filter.CompareOperatorContains {
-			replacedStr := likeReplacer.Replace(str)
-			return replacedStr
+		switch compareOperator {
+		case
+			// compareOperators using LIKE or ILIKE operators
+			filter.CompareOperatorBeginsWith,
+			filter.CompareOperatorContains,
+			filter.CompareOperatorIsStringCaseInsensitiveEqualTo:
+
+			return likeReplacer.Replace(str)
+
+		default:
+			return str
 		}
-		return str
 	}
 
 	if values, isSlice := input.([]any); isSlice {
