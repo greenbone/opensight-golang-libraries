@@ -5,9 +5,10 @@
 package openSearchQuery
 
 import (
-	"github.com/rs/zerolog/log"
 	"strconv"
 	"time"
+
+	"github.com/rs/zerolog/log"
 
 	esextensions "github.com/greenbone/opensight-golang-libraries/pkg/openSearch/esextension"
 
