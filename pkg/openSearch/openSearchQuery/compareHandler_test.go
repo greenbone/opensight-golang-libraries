@@ -180,7 +180,7 @@ func TestHandleCompareOperatorOnDay(t *testing.T) {
 	}{
 		{
 			name:    "OnDayOperator",
-			handler: HandleCompareOperatorOnDay,
+			handler: HandleCompareOperatorDateRange,
 			field:   "event.timestamp",
 			keys:    nil,
 			value:   "2024-02-27T12:34:56.789Z",
@@ -190,7 +190,7 @@ func TestHandleCompareOperatorOnDay(t *testing.T) {
 		},
 		{
 			name:     "OnDayOperator_InvalidDate",
-			handler:  HandleCompareOperatorOnDay,
+			handler:  HandleCompareOperatorDateRange,
 			field:    "event.timestamp",
 			keys:     nil,
 			value:    "invalid-date",
@@ -198,7 +198,7 @@ func TestHandleCompareOperatorOnDay(t *testing.T) {
 		},
 		{
 			name:     "OnDayOperator_NonStringValue",
-			handler:  HandleCompareOperatorOnDay,
+			handler:  HandleCompareOperatorDateRange,
 			field:    "event.timestamp",
 			keys:     nil,
 			value:    12345,

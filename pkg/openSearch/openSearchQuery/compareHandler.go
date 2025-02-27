@@ -272,26 +272,18 @@ func getStringRange(fieldName string, rating string, querySettings *QuerySetting
 	return RatingRange{}
 }
 
-// HandleCompareOperatorOnDay creates an opensearch range query for a given date field.
+// HandleCompareOperatorDateRange creates an opensearch range query for a given date field.
 // It ensures the field value is a valid RFC3339Nano date string and constructs a query
 // that matches all timestamps within the specified day (from 00:00:00 to 23:59:59 UTC).
 // it returns a MatchNone query if the operation fails
-func HandleCompareOperatorOnDay(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
-	stringValue, ok := fieldValue.(string)
-	if !ok {
-		log.Error().Msgf("fieldValue is not a string: %v", fieldValue)
+func HandleCompareOperatorDateRange(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
+	dateRange, ok := fieldValue.([]time.Time)
+	if !ok || len(dateRange) != 2 {
+		log.Error().Msgf("invalid fieldValue type or length: %T", fieldValue)
 		return esquery.MatchNone()
 	}
 
-	date, err := time.Parse(time.RFC3339Nano, stringValue)
-	if err != nil {
-		log.Err(err).Msgf("failed to parse date string: %s", stringValue)
-		return esquery.MatchNone()
-	}
-
-	startOfDay := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
-	endOfDay := time.Date(date.Year(), date.Month(), date.Day(), 23, 59, 59, 999999999, date.Location())
 	return esquery.Range(fieldName).
-		Gte(startOfDay).
-		Lte(endOfDay)
+		Gte(dateRange[0]).
+		Lte(dateRange[1])
 }
