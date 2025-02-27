@@ -285,12 +285,12 @@ func HandleCompareOperatorOnDay(fieldName string, fieldKeys []string, fieldValue
 
 	date, err := time.Parse(time.RFC3339Nano, stringValue)
 	if err != nil {
-		log.Error().Err(err).Msgf("failed to parse date string: %s", stringValue)
+		log.Err(err).Msgf("failed to parse date string: %s", stringValue)
 		return esquery.MatchNone()
 	}
 
-	startOfDay := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
-	endOfDay := time.Date(date.Year(), date.Month(), date.Day(), 23, 59, 59, 999999999, time.UTC)
+	startOfDay := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
+	endOfDay := time.Date(date.Year(), date.Month(), date.Day(), 23, 59, 59, 999999999, date.Location())
 	return esquery.Range(fieldName).
 		Gte(startOfDay).
 		Lte(endOfDay)
