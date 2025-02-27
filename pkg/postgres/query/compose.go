@@ -62,6 +62,9 @@ func composeQuery(
 		conditionTemplate, err = likeOperatorCondition(
 			field, valueIsList, false, true,
 		)
+	case filter.CompareOperatorIsStringCaseInsensitiveEqualTo:
+		conditionTemplate, err = simpleOperatorCondition(
+			field, valueIsList, " %s ILIKE ?", " %s ILIKE ANY(ARRAY[%s])")
 	case filter.CompareOperatorBeforeDate:
 		conditionTemplate, err = simpleSingleStringValueOperatorCondition(
 			field, valueIsList,

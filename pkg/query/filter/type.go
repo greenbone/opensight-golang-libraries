@@ -44,6 +44,7 @@ CompareOperator ENUM(
 				isEqualTo
 				isIpEqualTo
 				isStringEqualTo
+				isStringCaseInsensitiveEqualTo
 
 				isNotEqualTo
 				isNumberNotEqualTo

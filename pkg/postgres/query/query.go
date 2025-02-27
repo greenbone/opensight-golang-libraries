@@ -55,6 +55,7 @@ func simpleOperatorCondition(
 	} else {
 		conditionTemplate = fmt.Sprintf(singleValueTemplate, quotedName)
 	}
+
 	return conditionTemplate, nil
 }
 
