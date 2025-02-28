@@ -67,6 +67,8 @@ CompareOperator ENUM(
 				isGreaterThanOrEqualToRating
 		        isLessThanOrEqualToRating
 
+				inDateRange
+
 )
 */
 type CompareOperator string

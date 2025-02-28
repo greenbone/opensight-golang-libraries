@@ -179,6 +179,8 @@ const (
 	CompareOperatorIsGreaterThanOrEqualToRating CompareOperator = "isGreaterThanOrEqualToRating"
 	// CompareOperatorIsLessThanOrEqualToRating is a CompareOperator of type isLessThanOrEqualToRating.
 	CompareOperatorIsLessThanOrEqualToRating CompareOperator = "isLessThanOrEqualToRating"
+	// CompareOperatorInDateRange is a CompareOperator of type inDateRange.
+	CompareOperatorInDateRange CompareOperator = "inDateRange"
 )
 
 var ErrInvalidCompareOperator = fmt.Errorf("not a valid CompareOperator, try [%s]", strings.Join(_CompareOperatorNames, ", "))
@@ -210,6 +212,7 @@ var _CompareOperatorNames = []string{
 	string(CompareOperatorIsLessThanRating),
 	string(CompareOperatorIsGreaterThanOrEqualToRating),
 	string(CompareOperatorIsLessThanOrEqualToRating),
+	string(CompareOperatorInDateRange),
 }
 
 // CompareOperatorNames returns a list of possible string values of CompareOperator.
@@ -258,6 +261,7 @@ var _CompareOperatorValue = map[string]CompareOperator{
 	"isLessThanRating":               CompareOperatorIsLessThanRating,
 	"isGreaterThanOrEqualToRating":   CompareOperatorIsGreaterThanOrEqualToRating,
 	"isLessThanOrEqualToRating":      CompareOperatorIsLessThanOrEqualToRating,
+	"inDateRange":                    CompareOperatorInDateRange,
 }
 
 // ParseCompareOperator attempts to convert a string to a CompareOperator.
