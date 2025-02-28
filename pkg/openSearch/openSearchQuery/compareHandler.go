@@ -272,9 +272,13 @@ func getStringRange(fieldName string, rating string, querySettings *QuerySetting
 	return RatingRange{}
 }
 
-// HandleCompareOperatorDateRange creates an OpenSearch range query for a given date field.
-// It supports both []time.Time and []string (in RFC3339Nano format) as input.
-func HandleCompareOperatorDateRange(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
+// HandleCompareOperatorBetweenDates constructs an OpenSearch range query for a given date field.
+// It accepts a field name and a field value, which must be either:
+// - A slice of two time.Time values ([]time.Time), representing the start and end of the range, or
+// - A slice of two RFC3339Nano-formatted strings ([]string), which are parsed into time.Time.
+// If the slice length is not exactly 2, or if the string values cannot be parsed into valid dates,
+// the function logs an error and returns an empty query (MatchNone).
+func HandleCompareOperatorBetweenDates(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
 	switch dateValue := fieldValue.(type) {
 	case []time.Time:
 		if len(dateValue) != 2 {
@@ -299,7 +303,7 @@ func HandleCompareOperatorDateRange(fieldName string, fieldKeys []string, fieldV
 			Gte(start).
 			Lte(end)
 	default:
-		log.Error().Msgf("unsupported fieldValue type: %T", fieldValue)
+		log.Error().Msgf("unsupported fieldValue type: %T, want: []string, []time.Time", fieldValue)
 		return esquery.MatchNone()
 	}
 }

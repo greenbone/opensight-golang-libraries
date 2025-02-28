@@ -181,21 +181,17 @@ func TestHandleCompareOperatorDateRange(t *testing.T) {
 	parsedStartDate, _ := time.Parse(time.RFC3339, startDateStr)
 	parsedEndDate, _ := time.Parse(time.RFC3339, endDateStr)
 
-	querySettings := QuerySettings{} // Ensure querySettings is declared
-
 	tests := []struct {
 		name     string
-		handler  CompareOperatorHandler
 		field    string
 		keys     []string
 		value    any
 		expected esquery.Mappable
 	}{
 		{
-			name:    "ValidDateRange_StringInput",
-			handler: HandleCompareOperatorDateRange,
-			field:   "event.timestamp",
-			keys:    nil,
+			name:  "ValidDateRange_StringInput",
+			field: "event.timestamp",
+			keys:  nil,
 			value: []string{
 				startDateStr,
 				endDateStr,
@@ -205,10 +201,9 @@ func TestHandleCompareOperatorDateRange(t *testing.T) {
 				Lte(parsedEndDate),
 		},
 		{
-			name:    "ValidDateRange_TimeInput",
-			handler: HandleCompareOperatorDateRange,
-			field:   "event.timestamp",
-			keys:    nil,
+			name:  "ValidDateRange_TimeInput",
+			field: "event.timestamp",
+			keys:  nil,
 			value: []time.Time{
 				startDate,
 				endDate,
@@ -219,7 +214,6 @@ func TestHandleCompareOperatorDateRange(t *testing.T) {
 		},
 		{
 			name:     "InvalidDateString",
-			handler:  HandleCompareOperatorDateRange,
 			field:    "event.timestamp",
 			keys:     nil,
 			value:    []string{"invalid-date", "2024-08-24T00:00:00Z"},
@@ -227,7 +221,6 @@ func TestHandleCompareOperatorDateRange(t *testing.T) {
 		},
 		{
 			name:     "NonTimeValue",
-			handler:  HandleCompareOperatorDateRange,
 			field:    "event.timestamp",
 			keys:     nil,
 			value:    12345,
@@ -235,7 +228,6 @@ func TestHandleCompareOperatorDateRange(t *testing.T) {
 		},
 		{
 			name:     "InvalidSliceLength",
-			handler:  HandleCompareOperatorDateRange,
 			field:    "event.timestamp",
 			keys:     nil,
 			value:    []string{"2023-02-27T12:34:56Z"}, // Only one date instead of two
@@ -245,7 +237,7 @@ func TestHandleCompareOperatorDateRange(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.expected, tt.handler(tt.field, tt.keys, tt.value, &querySettings))
+			assert.Equal(t, tt.expected, HandleCompareOperatorBetweenDates(tt.field, tt.keys, tt.value, &querySettings))
 		})
 	}
 }

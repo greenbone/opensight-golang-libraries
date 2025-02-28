@@ -67,7 +67,7 @@ CompareOperator ENUM(
 				isGreaterThanOrEqualToRating
 		        isLessThanOrEqualToRating
 
-				dateRange
+				inDateRange
 
 )
 */
