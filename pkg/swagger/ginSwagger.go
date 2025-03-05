@@ -108,7 +108,7 @@ func GinWrapHandler(options ...func(*Config)) gin.HandlerFunc {
 		// Set security headers to protect against ClickJacking and XSS
 		c.Header("X-Frame-Options", "DENY")
 		c.Header("X-XSS-Protection", "1; mode=block")
-		c.Header("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net")
+		c.Header("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; frame-ancestors 'none'")
 		c.Header("X-Content-Type-Options", "nosniff")
 
 		if c.Request.Method != http.MethodGet {
