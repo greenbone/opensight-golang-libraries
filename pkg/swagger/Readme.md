@@ -34,6 +34,6 @@ ginSwagger.GinWrapHandler(
 
 # License
 
-Copyright (C) 2022-2023 [Greenbone AG][Greenbone AG]
+Copyright (C) 2025 [Greenbone AG][Greenbone AG]
 
 Licensed under the [GNU General Public License v3.0 or later](../../LICENSE).
