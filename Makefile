@@ -49,6 +49,8 @@ format: ## format and tidy
 generate-code: ## create mocks and enums
 	@ echo "\033[36m  Generate mocks and enums  \033[0m"
 	go get github.com/abice/go-enum
+	go generate ./...
+
 
 .PHONY: lint
 lint: format ## lint go code

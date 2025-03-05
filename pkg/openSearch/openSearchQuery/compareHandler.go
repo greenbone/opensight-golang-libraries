@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/rs/zerolog/log"
+
 	esextensions "github.com/greenbone/opensight-golang-libraries/pkg/openSearch/esextension"
 
 	"github.com/aquasecurity/esquery"
@@ -268,4 +270,44 @@ func getStringRange(fieldName string, rating string, querySettings *QuerySetting
 		}
 	}
 	return RatingRange{}
+}
+
+// HandleCompareOperatorBetweenDates constructs an OpenSearch range query for a given date field.
+// It accepts a field name and a field value, which must be either:
+// - A slice of two time.Time values ([]time.Time), representing the start and end of the range, or
+// - A slice of two RFC3339Nano-formatted strings ([]string), which are parsed into time.Time,  representing the start and end of the range.
+//
+// The generated range query is inclusive of both the lower and upper bounds.
+// If a document’s timestamp is exactly equal to the start or end date, it will still match the query.
+//
+// If the slice length is not exactly 2, or if the string values cannot be parsed into valid dates,
+// the function logs an error and returns an empty query (MatchNone).
+func HandleCompareOperatorBetweenDates(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
+	switch dateValue := fieldValue.(type) {
+	case []time.Time:
+		if len(dateValue) != 2 {
+			log.Error().Msgf("invalid fieldValue length for []time.Time: %T", fieldValue)
+			return esquery.MatchNone()
+		}
+		return esquery.Range(fieldName).
+			Gte(dateValue[0]).
+			Lte(dateValue[1])
+	case []string:
+		if len(dateValue) != 2 {
+			log.Error().Msgf("invalid fieldValue length for []string: %T", fieldValue)
+			return esquery.MatchNone()
+		}
+		start, err1 := time.Parse(time.RFC3339Nano, dateValue[0])
+		end, err2 := time.Parse(time.RFC3339Nano, dateValue[1])
+		if err1 != nil || err2 != nil {
+			log.Error().Msgf("invalid date format in []string: %v, %v", err1, err2)
+			return esquery.MatchNone()
+		}
+		return esquery.Range(fieldName).
+			Gte(start).
+			Lte(end)
+	default:
+		log.Error().Msgf("unsupported fieldValue type: %T, want: []string, []time.Time", fieldValue)
+		return esquery.MatchNone()
+	}
 }
