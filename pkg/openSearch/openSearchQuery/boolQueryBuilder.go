@@ -299,5 +299,9 @@ func defaultCompareOperators() []CompareOperator {
 			Operator: filter.CompareOperatorIsNotEqualToRating,
 			Handler:  HandleCompareOperatorIsNotEqualToRating, MustCondition: true,
 		},
+		{
+			Operator: filter.CompareOperatorBetweenDates,
+			Handler:  HandleCompareOperatorBetweenDates, MustCondition: true,
+		},
 	}
 }
