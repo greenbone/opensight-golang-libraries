@@ -271,6 +271,7 @@ func defaultCompareOperators() []CompareOperator {
 			Operator: filter.CompareOperatorIsGreaterThanOrEqualTo,
 			Handler:  HandleCompareOperatorIsGreaterThanOrEqualTo, MustCondition: true,
 		},
+		{Operator: filter.CompareOperatorTextContains, Handler: HandleCompareOperatorTextContains, MustCondition: true},
 		{Operator: filter.CompareOperatorIsGreaterThan, Handler: HandleCompareOperatorIsGreaterThan, MustCondition: true},
 		{Operator: filter.CompareOperatorIsLessThan, Handler: HandleCompareOperatorIsLessThan, MustCondition: true},
 		{Operator: filter.CompareOperatorAfterDate, Handler: HandleCompareOperatorIsGreaterThan, MustCondition: true},

@@ -181,6 +181,7 @@ func TestHandleCompareOperatorDateRange(t *testing.T) {
 	parsedStartDate, _ := time.Parse(time.RFC3339, startDateStr)
 	parsedEndDate, _ := time.Parse(time.RFC3339, endDateStr)
 
+	field := "event.timestamp" // same for all tests
 	tests := []struct {
 		name     string
 		field    string
@@ -189,47 +190,37 @@ func TestHandleCompareOperatorDateRange(t *testing.T) {
 		expected esquery.Mappable
 	}{
 		{
-			name:  "ValidDateRange_StringInput",
-			field: "event.timestamp",
-			keys:  nil,
+			name: "ValidDateRange_StringInput",
 			value: []string{
 				startDateStr,
 				endDateStr,
 			},
-			expected: esquery.Range("event.timestamp").
+			expected: esquery.Range(field).
 				Gte(parsedStartDate).
 				Lte(parsedEndDate),
 		},
 		{
-			name:  "ValidDateRange_TimeInput",
-			field: "event.timestamp",
-			keys:  nil,
+			name: "ValidDateRange_TimeInput",
 			value: []time.Time{
 				startDate,
 				endDate,
 			},
-			expected: esquery.Range("event.timestamp").
+			expected: esquery.Range(field).
 				Gte(startDate).
 				Lte(endDate),
 		},
 		{
 			name:     "InvalidDateString",
-			field:    "event.timestamp",
-			keys:     nil,
 			value:    []string{"invalid-date", "2024-08-24T00:00:00Z"},
 			expected: esquery.MatchNone(),
 		},
 		{
 			name:     "NonTimeValue",
-			field:    "event.timestamp",
-			keys:     nil,
 			value:    12345,
 			expected: esquery.MatchNone(),
 		},
 		{
 			name:     "InvalidSliceLength",
-			field:    "event.timestamp",
-			keys:     nil,
 			value:    []string{"2023-02-27T12:34:56Z"}, // Only one date instead of two
 			expected: esquery.MatchNone(),
 		},
@@ -237,7 +228,48 @@ func TestHandleCompareOperatorDateRange(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.expected, HandleCompareOperatorBetweenDates(tt.field, tt.keys, tt.value, &querySettings))
+			// `fieldKeys` and `QuerySettings` are irrelevant for handler
+			assert.Equal(t, tt.expected, HandleCompareOperatorBetweenDates(field, nil, tt.value, nil))
+		})
+	}
+}
+func TestHandleCompareOperatorTextContains(t *testing.T) {
+	field := "description" // same for all tests
+	tests := []struct {
+		name     string
+		field    string
+		keys     []string
+		value    any
+		expected esquery.Mappable
+	}{
+		{
+			name:     "SingleValue",
+			value:    "test",
+			expected: esquery.Match(field, "test").MinimumShouldMatch("100%"),
+		},
+		{
+			name:     "MultipleValues",
+			value:    []any{"test", "example"},
+			expected: esquery.Match(field, "test example").MinimumShouldMatch("100%"),
+		},
+		{
+			name:  "EmptyValue",
+			value: "",
+			// handled gracefully by openSearch, will give no results
+			expected: esquery.Match(field, "").MinimumShouldMatch("100%"),
+		},
+		{
+			name:  "EmptySlice",
+			value: []any{},
+			// handled gracefully by openSearch, will give no results
+			expected: esquery.Match(field, "").MinimumShouldMatch("100%"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// `fieldKeys` and `QuerySettings` are irrelevant for handler
+			assert.Equal(t, tt.expected, HandleCompareOperatorTextContains(field, nil, tt.value, nil))
 		})
 	}
 }

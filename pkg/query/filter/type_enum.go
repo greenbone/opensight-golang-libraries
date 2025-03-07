@@ -139,6 +139,8 @@ const (
 	CompareOperatorContains CompareOperator = "contains"
 	// CompareOperatorDoesNotContain is a CompareOperator of type doesNotContain.
 	CompareOperatorDoesNotContain CompareOperator = "doesNotContain"
+	// CompareOperatorTextContains is a CompareOperator of type textContains.
+	CompareOperatorTextContains CompareOperator = "textContains"
 	// CompareOperatorIsNumberEqualTo is a CompareOperator of type isNumberEqualTo.
 	CompareOperatorIsNumberEqualTo CompareOperator = "isNumberEqualTo"
 	// CompareOperatorIsEqualTo is a CompareOperator of type isEqualTo.
@@ -194,6 +196,7 @@ var _CompareOperatorNames = []string{
 	string(CompareOperatorDoesNotBeginWith),
 	string(CompareOperatorContains),
 	string(CompareOperatorDoesNotContain),
+	string(CompareOperatorTextContains),
 	string(CompareOperatorIsNumberEqualTo),
 	string(CompareOperatorIsEqualTo),
 	string(CompareOperatorIsIpEqualTo),
@@ -243,6 +246,7 @@ var _CompareOperatorValue = map[string]CompareOperator{
 	"doesNotBeginWith":               CompareOperatorDoesNotBeginWith,
 	"contains":                       CompareOperatorContains,
 	"doesNotContain":                 CompareOperatorDoesNotContain,
+	"textContains":                   CompareOperatorTextContains,
 	"isNumberEqualTo":                CompareOperatorIsNumberEqualTo,
 	"isEqualTo":                      CompareOperatorIsEqualTo,
 	"isIpEqualTo":                    CompareOperatorIsIpEqualTo,
