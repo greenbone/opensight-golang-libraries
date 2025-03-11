@@ -14,7 +14,6 @@ import (
 
 type OpenSearchHealth struct {
 	openSearchProjectClient *opensearchapi.Client
-	context                 context.Context
 }
 
 func NewOpenSearchHealth(openSearchProjectClient *opensearchapi.Client) *OpenSearchHealth {
@@ -28,7 +27,7 @@ func (h *OpenSearchHealth) GetDiskAllocationPercentage() (int, error) {
 			Pretty: true,
 		},
 	}
-	allocation, err := h.openSearchProjectClient.Cat.Allocation(h.context, &request)
+	allocation, err := h.openSearchProjectClient.Cat.Allocation(context.Background(), &request)
 	if err != nil {
 		return 0, err
 	}
@@ -43,7 +42,7 @@ func (h *OpenSearchHealth) GetIndexesWithCreationDate(pattern string) ([]IndexIn
 			H: []string{"index,creation.date"},
 		},
 	}
-	response, err := h.openSearchProjectClient.Cat.Indices(h.context, &request)
+	response, err := h.openSearchProjectClient.Cat.Indices(context.Background(), &request)
 	if err != nil {
 		log.Debug().Err(err).Msg("error while checking if index exists")
 		return nil, err

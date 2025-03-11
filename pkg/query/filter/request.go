@@ -48,7 +48,7 @@ type RequestOptionType struct {
 // Field Value: The value of the field, which can be a list of values or a single value
 type RequestField struct {
 	Name     string          `json:"name" binding:"required"`
-	Keys     []string        `json:"keys"`
+	Keys     []string        `json:"keys,omitempty"`
 	Operator CompareOperator `json:"operator" binding:"required"`
 	// Value can be a list of values or a value
 	Value any `json:"value" binding:"required"`
