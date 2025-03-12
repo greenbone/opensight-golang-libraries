@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/retryableRequest"
@@ -29,6 +30,7 @@ type Client struct {
 	maxRetries                 int
 	retryWaitMin               time.Duration
 	retryWaitMax               time.Duration
+	Authentication             Authentication
 }
 
 // Config configures the notification service client
@@ -39,24 +41,38 @@ type Config struct {
 	RetryWaitMax time.Duration
 }
 
+type Authentication struct {
+	ClientID     string
+	ClientSecret string
+	URL          string
+}
+
 // NewClient returns a new [Client] with the notification service address (host:port) set.
 // As httpClient you can use e.g. [http.DefaultClient].
-func NewClient(httpClient *http.Client, config Config) *Client {
+func NewClient(httpClient *http.Client, config Config, authentication Authentication) *Client {
 	return &Client{
 		httpClient:                 httpClient,
 		notificationServiceAddress: config.Address,
 		maxRetries:                 config.MaxRetries,
 		retryWaitMin:               config.RetryWaitMin,
 		retryWaitMax:               config.RetryWaitMax,
+		Authentication:             authentication,
 	}
 }
 
 // CreateNotification sends a notification to the notification service.
-// The request is retried up to the configured number of retries with an exponential backoff.
-// So it can take some time until the functions returns.
+// The request is authenticated, serialized, and sent via an HTTP POST request.
+// It is retried up to the configured number of retries with an exponential backoff,
+// so the function may take some time to return.
 func (c *Client) CreateNotification(ctx context.Context, notification Notification) error {
-	notificationModel := toNotificationModel(notification)
+	// Get authentication token
+	token, err := c.GetAuthenticationToken(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get authentication token: %w", err)
+	}
 
+	// serialize notification
+	notificationModel := toNotificationModel(notification)
 	notificationSerialized, err := json.Marshal(notificationModel)
 	if err != nil {
 		return fmt.Errorf("failed to serialize notification object: %w", err)
@@ -68,17 +84,60 @@ func (c *Client) CreateNotification(ctx context.Context, notification Notificati
 		return fmt.Errorf("invalid url '%s': %w", c.notificationServiceAddress, err)
 	}
 
-	request, err := http.NewRequest(http.MethodPost, createNotificationEndpoint,
-		bytes.NewReader(notificationSerialized))
+	req, err := http.NewRequest(http.MethodPost, createNotificationEndpoint, bytes.NewReader(notificationSerialized))
 	if err != nil {
 		return fmt.Errorf("failed to build request: %w", err)
 	}
 
-	response, err := retryableRequest.ExecuteRequestWithRetry(ctx, c.httpClient, request,
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+
+	// execute request with retries
+	response, err := retryableRequest.ExecuteRequestWithRetry(ctx, c.httpClient, req,
 		c.maxRetries, c.retryWaitMin, c.retryWaitMax)
 	if err == nil {
-		// note: the successful response returns the notification object, but we don't care about its values and omit parsing the body here
 		response.Body.Close()
 	}
+
 	return err
+}
+
+// GetAuthenticationToken retrieves an authentication token using client credentials.
+// It constructs a form-encoded request, sends it with retry logic, and parses the response.
+func (c *Client) GetAuthenticationToken(ctx context.Context) (string, error) {
+	// prepare form data for authentication request
+	data := url.Values{}
+	data.Set("client_id", c.Authentication.ClientID)
+	data.Set("client_secret", c.Authentication.ClientSecret)
+	data.Set("grant_type", "client_credentials")
+
+	// create an HTTP request with the necessary headers
+	req, err := http.NewRequest(http.MethodPost, c.Authentication.URL, strings.NewReader(data.Encode()))
+	if err != nil {
+		return "", fmt.Errorf("failed to create authentication request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// execute request with retry logic
+	resp, err := retryableRequest.ExecuteRequestWithRetry(ctx, c.httpClient, req,
+		c.maxRetries, c.retryWaitMin, c.retryWaitMax)
+	if err != nil {
+		return "", fmt.Errorf("failed to execute authentication request with retry: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// check for unsuccessful HTTP response
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("authentication request failed with status: %d", resp.StatusCode)
+	}
+
+	// parse JSON response to extract the access token
+	var authResponse struct {
+		AccessToken string `json:"access_token"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&authResponse); err != nil {
+		return "", fmt.Errorf("failed to parse authentication response: %w", err)
+	}
+
+	return authResponse.AccessToken, nil
 }

@@ -6,22 +6,25 @@ package notifications
 
 import (
 	"context"
+	"encoding/json"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
 	"testing"
 	"time"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestClient_CreateNotification(t *testing.T) {
 	type serverErrors struct { // set at most one of the fields to true
-		fatalFail     bool
-		retryableFail bool
+		fatalFail          bool
+		retryableFail      bool
+		authenticationFail bool
+		unexpectedResponse bool
 	}
+
 	tests := []struct {
 		name         string
 		serverErrors serverErrors
@@ -40,6 +43,16 @@ func TestClient_CreateNotification(t *testing.T) {
 		{
 			name:         "client returns error on non retryable notification service error",
 			serverErrors: serverErrors{fatalFail: true},
+			wantErr:      true,
+		},
+		{
+			name:         "client fails on authentication error",
+			serverErrors: serverErrors{authenticationFail: true},
+			wantErr:      true,
+		},
+		{
+			name:         "unexpected response code from server",
+			serverErrors: serverErrors{unexpectedResponse: true},
 			wantErr:      true,
 		},
 	}
@@ -77,9 +90,28 @@ func TestClient_CreateNotification(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var serverCallCount atomic.Int32
 
+			// Mock authentication server
+			authServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if tt.serverErrors.authenticationFail {
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+
+				err := json.NewEncoder(w).Encode(map[string]string{"access_token": "mock-token"})
+				if err != nil {
+					return
+				}
+			}))
+			defer authServer.Close()
+
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				t.Log("server called")
 				serverCallCount.Add(1)
+
+				if tt.serverErrors.unexpectedResponse {
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
 
 				if !assert.Equal(t, wantRequestUri, r.RequestURI, "invalid request url") {
 					w.WriteHeader(http.StatusNotFound)
@@ -92,17 +124,14 @@ func TestClient_CreateNotification(t *testing.T) {
 				assert.JSONEq(t, string(wantNotificationSerialized),
 					string(requestBody), "request body is not set properly")
 
-				// error simulation (fail on first attempt, if configured)
-				if serverCallCount.Load() == 1 {
-					if tt.serverErrors.fatalFail {
-						t.Log("fatal server fail as per test config")
-						w.WriteHeader(http.StatusUnauthorized)
-						return
-					} else if tt.serverErrors.retryableFail {
-						t.Log("retryable server fail as per test config")
-						w.WriteHeader(http.StatusTooManyRequests)
-						return
-					}
+				if tt.serverErrors.retryableFail && serverCallCount.Load() == 1 {
+					w.WriteHeader(http.StatusTooManyRequests)
+					return
+				}
+
+				if tt.serverErrors.fatalFail {
+					w.WriteHeader(http.StatusInternalServerError)
+					return
 				}
 
 				w.WriteHeader(http.StatusCreated)
@@ -110,15 +139,24 @@ func TestClient_CreateNotification(t *testing.T) {
 			defer server.Close()
 
 			config.Address = server.URL
-			client := NewClient(http.DefaultClient, config)
+
+			authentication := Authentication{
+				ClientID:     "client_id",
+				ClientSecret: "client_secret",
+				URL:          authServer.URL,
+			}
+
+			client := NewClient(http.DefaultClient, config, authentication)
 			err := client.CreateNotification(context.Background(), notification)
 
-			require.True(t, serverCallCount.Load() > 0, "server was not called")
+			if !tt.serverErrors.authenticationFail {
+				require.True(t, serverCallCount.Load() > 0, "server was not called")
+			}
 
 			if tt.wantErr {
-				assert.Error(t, err)
+				assert.Error(t, err, "expected an error but got none")
 			} else {
-				assert.NoError(t, err)
+				assert.NoError(t, err, "did not expect an error but got one")
 			}
 		})
 	}
