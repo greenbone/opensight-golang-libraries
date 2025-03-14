@@ -30,7 +30,7 @@ type Client struct {
 	maxRetries                 int
 	retryWaitMin               time.Duration
 	retryWaitMax               time.Duration
-	Authentication             Authentication
+	authentication             Authentication
 }
 
 // Config configures the notification service client
@@ -56,7 +56,7 @@ func NewClient(httpClient *http.Client, config Config, authentication Authentica
 		maxRetries:                 config.MaxRetries,
 		retryWaitMin:               config.RetryWaitMin,
 		retryWaitMax:               config.RetryWaitMax,
-		Authentication:             authentication,
+		authentication:             authentication,
 	}
 }
 
@@ -107,12 +107,12 @@ func (c *Client) CreateNotification(ctx context.Context, notification Notificati
 func (c *Client) GetAuthenticationToken(ctx context.Context) (string, error) {
 	// prepare form data for authentication request
 	data := url.Values{}
-	data.Set("client_id", c.Authentication.ClientID)
-	data.Set("client_secret", c.Authentication.ClientSecret)
+	data.Set("client_id", c.authentication.ClientID)
+	data.Set("client_secret", c.authentication.ClientSecret)
 	data.Set("grant_type", "client_credentials")
 
 	// create an HTTP request with the necessary headers
-	req, err := http.NewRequest(http.MethodPost, c.Authentication.URL, strings.NewReader(data.Encode()))
+	req, err := http.NewRequest(http.MethodPost, c.authentication.URL, strings.NewReader(data.Encode()))
 	if err != nil {
 		return "", fmt.Errorf("failed to create authentication request: %w", err)
 	}
