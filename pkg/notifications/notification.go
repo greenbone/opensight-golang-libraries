@@ -42,9 +42,10 @@ type Config struct {
 }
 
 type Authentication struct {
-	ClientID     string
-	ClientSecret string
-	URL          string
+	ClientID string
+	Username string
+	Password string
+	URL      string
 }
 
 // NewClient returns a new [Client] with the notification service address (host:port) set.
@@ -105,8 +106,9 @@ func (c *Client) CreateNotification(ctx context.Context, notification Notificati
 func (c *Client) GetAuthenticationToken(ctx context.Context) (string, error) {
 	data := url.Values{}
 	data.Set("client_id", c.authentication.ClientID)
-	data.Set("client_secret", c.authentication.ClientSecret)
-	data.Set("grant_type", "client_credentials")
+	data.Set("password", c.authentication.Password)
+	data.Set("username", c.authentication.Username)
+	data.Set("grant_type", "password")
 
 	req, err := http.NewRequest(http.MethodPost, c.authentication.URL, strings.NewReader(data.Encode()))
 	if err != nil {
