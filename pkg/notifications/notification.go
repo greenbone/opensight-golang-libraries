@@ -78,7 +78,6 @@ func (c *Client) CreateNotification(ctx context.Context, notification Notificati
 		return fmt.Errorf("failed to serialize notification object: %w", err)
 	}
 
-	// create request
 	createNotificationEndpoint, err := url.JoinPath(c.notificationServiceAddress, basePath, createNotificationPath)
 	if err != nil {
 		return fmt.Errorf("invalid url '%s': %w", c.notificationServiceAddress, err)
@@ -92,7 +91,6 @@ func (c *Client) CreateNotification(ctx context.Context, notification Notificati
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Content-Type", "application/json")
 
-	// execute request with retries
 	response, err := retryableRequest.ExecuteRequestWithRetry(ctx, c.httpClient, req,
 		c.maxRetries, c.retryWaitMin, c.retryWaitMax)
 	if err == nil {
@@ -105,20 +103,17 @@ func (c *Client) CreateNotification(ctx context.Context, notification Notificati
 // GetAuthenticationToken retrieves an authentication token using client credentials.
 // It constructs a form-encoded request, sends it with retry logic, and parses the response.
 func (c *Client) GetAuthenticationToken(ctx context.Context) (string, error) {
-	// prepare form data for authentication request
 	data := url.Values{}
 	data.Set("client_id", c.authentication.ClientID)
 	data.Set("client_secret", c.authentication.ClientSecret)
 	data.Set("grant_type", "client_credentials")
 
-	// create an HTTP request with the necessary headers
 	req, err := http.NewRequest(http.MethodPost, c.authentication.URL, strings.NewReader(data.Encode()))
 	if err != nil {
 		return "", fmt.Errorf("failed to create authentication request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	// execute request with retry logic
 	resp, err := retryableRequest.ExecuteRequestWithRetry(ctx, c.httpClient, req,
 		c.maxRetries, c.retryWaitMin, c.retryWaitMax)
 	if err != nil {
@@ -126,12 +121,12 @@ func (c *Client) GetAuthenticationToken(ctx context.Context) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	// check for unsuccessful HTTP response
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("authentication request failed with status: %d", resp.StatusCode)
 	}
 
 	// parse JSON response to extract the access token
+	// only access token is needed from the response
 	var authResponse struct {
 		AccessToken string `json:"access_token"`
 	}
