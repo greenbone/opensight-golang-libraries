@@ -141,9 +141,10 @@ func TestClient_CreateNotification(t *testing.T) {
 			config.Address = server.URL
 
 			authentication := Authentication{
-				ClientID:     "client_id",
-				ClientSecret: "client_secret",
-				URL:          authServer.URL,
+				ClientID: "client_id",
+				Username: "username",
+				Password: "password",
+				URL:      authServer.URL,
 			}
 
 			client := NewClient(http.DefaultClient, config, authentication)
