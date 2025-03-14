@@ -5,7 +5,9 @@
 package openSearchQuery
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -26,7 +28,8 @@ func HandleCompareOperatorIsKeywordEqualTo(fieldName string, fieldKeys []string,
 	return createTermQuery(fieldName+".keyword", fieldValue, fieldKeys, querySettings)
 }
 
-// HandleCompareOperatorContains handles contains
+// HandleCompareOperatorContains handles contains.
+// In the index mapping the given field must be a string of type `keyword`.
 func HandleCompareOperatorContains(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
 	if querySettings.UseNestedMatchQueryFields != nil &&
 		querySettings.UseNestedMatchQueryFields[fieldName] {
@@ -76,6 +79,22 @@ func handleCompareOperatorContainsDifferent(fieldName string, fieldKeys []string
 	} else { // for single values
 		return esquery.Wildcard(fieldName, "*"+fieldValue.(string)+"*")
 	}
+}
+
+// HandleCompareOperatorTextContains performs a full text search on the given field.
+// In the index mapping it must be a string of type `text`.
+func HandleCompareOperatorTextContains(fieldName string, _ []string, fieldValue any, _ *QuerySettings) esquery.Mappable {
+	var value string
+	if values, ok := fieldValue.([]any); ok { // value as list and value as space separated string should result in same query
+		stringValues := make([]string, 0, len(values))
+		for _, val := range values {
+			stringValues = append(stringValues, ValueToString(val))
+		}
+		value = strings.Join(stringValues, " ")
+	} else {
+		value = ValueToString(fieldValue)
+	}
+	return esquery.Match(fieldName, value).MinimumShouldMatch("100%") // no query term is optional
 }
 
 // HandleCompareOperatorBeginsWith handles begins with
@@ -234,6 +253,9 @@ func HandleCompareOperatorIsNotEqualToRating(fieldName string, fieldKeys []strin
 		)
 }
 
+// ValueToString converts the given value to a string.
+// Compared to [fmt.Sprint] it will give RFC3339 format for [time.Time] value
+// and a specific formatting of numbers.
 func ValueToString(value interface{}) string {
 	switch v := value.(type) {
 	case string:
@@ -247,7 +269,7 @@ func ValueToString(value interface{}) string {
 	case time.Time:
 		return v.Format(time.RFC3339)
 	default:
-		return ""
+		return fmt.Sprint(value)
 	}
 }
 
@@ -282,7 +304,7 @@ func getStringRange(fieldName string, rating string, querySettings *QuerySetting
 //
 // If the slice length is not exactly 2, or if the string values cannot be parsed into valid dates,
 // the function logs an error and returns an empty query (MatchNone).
-func HandleCompareOperatorBetweenDates(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
+func HandleCompareOperatorBetweenDates(fieldName string, _ []string, fieldValue any, _ *QuerySettings) esquery.Mappable {
 	switch dateValue := fieldValue.(type) {
 	case []time.Time:
 		if len(dateValue) != 2 {

@@ -40,6 +40,8 @@ CompareOperator ENUM(
 				contains
 				doesNotContain
 
+				textContains
+
 				isNumberEqualTo
 				isEqualTo
 				isIpEqualTo
