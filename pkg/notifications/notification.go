@@ -67,7 +67,7 @@ func NewClient(httpClient *http.Client, config Config, authentication KeycloakAu
 // CreateNotification sends a notification to the notification service.
 // The request is authenticated, serialized, and sent via an HTTP POST request.
 // It is retried up to the configured number of retries with an exponential backoff,
-// so the function may take some time to return.
+// So it can take some time until the functions returns.
 func (c *Client) CreateNotification(ctx context.Context, notification Notification) error {
 	token, err := c.GetAuthenticationToken(ctx)
 	if err != nil {
@@ -96,6 +96,7 @@ func (c *Client) CreateNotification(ctx context.Context, notification Notificati
 	response, err := retryableRequest.ExecuteRequestWithRetry(ctx, c.httpClient, req,
 		c.maxRetries, c.retryWaitMin, c.retryWaitMax)
 	if err == nil {
+		// note: the successful response returns the notification object, but we don't care about its values and omit parsing the body here
 		response.Body.Close()
 	}
 

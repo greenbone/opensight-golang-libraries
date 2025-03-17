@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-type serverErrors struct {
+type serverErrors struct { // set at most one of the fields to true
 	fatalFail          bool
 	retryableFail      bool
 	authenticationFail bool
@@ -41,7 +41,7 @@ func TestClient_CreateNotification(t *testing.T) {
 			wantErr:      false,
 		},
 		{
-			name:         "client returns error on non-retryable notification service error",
+			name:         "client returns error on non retryable notification service error",
 			serverErrors: serverErrors{fatalFail: true},
 			wantErr:      true,
 		},
@@ -77,9 +77,9 @@ func TestClient_CreateNotification(t *testing.T) {
 			defer mockNotificationServer.Close()
 
 			config := Config{
-				Address:      mockNotificationServer.URL,
+				Address:      "", // set below in test
 				MaxRetries:   1,
-				RetryWaitMin: time.Microsecond,
+				RetryWaitMin: time.Microsecond, // keep test short
 				RetryWaitMax: time.Second,
 			}
 
@@ -129,6 +129,7 @@ func setupMockNotificationServer(t *testing.T, serverCallCount *atomic.Int32, er
 			return
 		}
 
+		// check body
 		requestBody, err := io.ReadAll(r.Body)
 		require.NoError(t, err, "failed to read request body")
 		assert.JSONEq(t, `{
