@@ -47,7 +47,7 @@ type KeycloakAuthentication struct {
 	ClientID      string
 	Username      string
 	Password      string
-	URL           string
+	AuthURL       string
 	KeycloakRealm string
 }
 
@@ -111,7 +111,7 @@ func (c *Client) GetAuthenticationToken(ctx context.Context) (string, error) {
 	data.Set("username", c.authentication.Username)
 	data.Set("grant_type", "password")
 
-	authenticationURL := fmt.Sprintf("%s/auth/realms/%s/protocol/openid-connect/token", c.authentication.URL, c.authentication.KeycloakRealm)
+	authenticationURL := fmt.Sprintf("%s/realms/%s/protocol/openid-connect/token", c.authentication.AuthURL, c.authentication.KeycloakRealm)
 
 	req, err := http.NewRequest(http.MethodPost, authenticationURL, strings.NewReader(data.Encode()))
 	if err != nil {

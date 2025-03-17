@@ -67,7 +67,7 @@ func TestClient_CreateNotification(t *testing.T) {
 				ClientID: "client_id",
 				Username: "username",
 				Password: "password",
-				URL:      mockAuthServer.URL,
+				AuthURL:  mockAuthServer.URL,
 			}
 
 			client := NewClient(http.DefaultClient, config, authentication)
