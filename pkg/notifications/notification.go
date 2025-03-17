@@ -30,7 +30,7 @@ type Client struct {
 	maxRetries                 int
 	retryWaitMin               time.Duration
 	retryWaitMax               time.Duration
-	authentication             Authentication
+	authentication             KeycloakAuthentication
 }
 
 // Config configures the notification service client
@@ -41,16 +41,19 @@ type Config struct {
 	RetryWaitMax time.Duration
 }
 
-type Authentication struct {
-	ClientID string
-	Username string
-	Password string
-	URL      string
+// KeycloakAuthentication holds the credentials and configuration details
+// required for Keycloak authentication in the notification service.
+type KeycloakAuthentication struct {
+	ClientID      string
+	Username      string
+	Password      string
+	URL           string
+	KeycloakRealm string
 }
 
 // NewClient returns a new [Client] with the notification service address (host:port) set.
 // As httpClient you can use e.g. [http.DefaultClient].
-func NewClient(httpClient *http.Client, config Config, authentication Authentication) *Client {
+func NewClient(httpClient *http.Client, config Config, authentication KeycloakAuthentication) *Client {
 	return &Client{
 		httpClient:                 httpClient,
 		notificationServiceAddress: config.Address,
@@ -66,13 +69,11 @@ func NewClient(httpClient *http.Client, config Config, authentication Authentica
 // It is retried up to the configured number of retries with an exponential backoff,
 // so the function may take some time to return.
 func (c *Client) CreateNotification(ctx context.Context, notification Notification) error {
-	// Get authentication token
 	token, err := c.GetAuthenticationToken(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get authentication token: %w", err)
 	}
 
-	// serialize notification
 	notificationModel := toNotificationModel(notification)
 	notificationSerialized, err := json.Marshal(notificationModel)
 	if err != nil {
@@ -110,7 +111,9 @@ func (c *Client) GetAuthenticationToken(ctx context.Context) (string, error) {
 	data.Set("username", c.authentication.Username)
 	data.Set("grant_type", "password")
 
-	req, err := http.NewRequest(http.MethodPost, c.authentication.URL, strings.NewReader(data.Encode()))
+	authenticationURL := fmt.Sprintf("%s/auth/realms/%s/protocol/openid-connect/token", c.authentication.URL, c.authentication.KeycloakRealm)
+
+	req, err := http.NewRequest(http.MethodPost, authenticationURL, strings.NewReader(data.Encode()))
 	if err != nil {
 		return "", fmt.Errorf("failed to create authentication request: %w", err)
 	}
@@ -122,10 +125,6 @@ func (c *Client) GetAuthenticationToken(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("failed to execute authentication request with retry: %w", err)
 	}
 	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("authentication request failed with status: %d", resp.StatusCode)
-	}
 
 	// parse JSON response to extract the access token
 	// only access token is needed from the response

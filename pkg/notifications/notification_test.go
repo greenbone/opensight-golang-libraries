@@ -17,44 +17,24 @@ import (
 	"time"
 )
 
-func TestClient_CreateNotification(t *testing.T) {
-	type serverErrors struct { // set at most one of the fields to true
-		fatalFail          bool
-		retryableFail      bool
-		authenticationFail bool
-		unexpectedResponse bool
-	}
+type serverErrors struct {
+	fatalFail          bool
+	retryableFail      bool
+	authenticationFail bool
+	unexpectedResponse bool
+}
 
+func TestClient_CreateNotification(t *testing.T) {
 	tests := []struct {
 		name         string
 		serverErrors serverErrors
 		wantErr      bool
 	}{
-		{
-			name:         "notification can be sent",
-			serverErrors: serverErrors{}, // no server errors
-			wantErr:      false,
-		},
-		{
-			name:         "notification can be sent despite temporary server failure",
-			serverErrors: serverErrors{retryableFail: true},
-			wantErr:      false,
-		},
-		{
-			name:         "client returns error on non retryable notification service error",
-			serverErrors: serverErrors{fatalFail: true},
-			wantErr:      true,
-		},
-		{
-			name:         "client fails on authentication error",
-			serverErrors: serverErrors{authenticationFail: true},
-			wantErr:      true,
-		},
-		{
-			name:         "unexpected response code from server",
-			serverErrors: serverErrors{unexpectedResponse: true},
-			wantErr:      true,
-		},
+		{"notification can be sent", serverErrors{}, false},
+		{"notification can be sent despite temporary server failure", serverErrors{retryableFail: true}, false},
+		{"client returns error on non-retryable notification service error", serverErrors{fatalFail: true}, true},
+		{"client fails on authentication error", serverErrors{authenticationFail: true}, true},
+		{"sending notification fails after maximum number of retries", serverErrors{unexpectedResponse: true}, true},
 	}
 
 	notification := Notification{
@@ -66,85 +46,28 @@ func TestClient_CreateNotification(t *testing.T) {
 		CustomFields: map[string]any{"extraProperty": "value"},
 	}
 
-	config := Config{
-		Address:      "", // set below in test
-		MaxRetries:   1,
-		RetryWaitMin: time.Microsecond, // keep test short
-		RetryWaitMax: time.Second,
-	}
-
-	wantNotificationSerialized := `{
-		"origin": "Example Task XY",
-		"timestamp": "0001-01-01T00:00:00Z",
-		"title": "Example Task XY failed",
-		"detail": "Example Task XY failed because ...",
-		"level": "error",
-		"customFields": {
-			"extraProperty": "value"
-		}
-	}`
-
-	wantRequestUri := basePath + createNotificationPath
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var serverCallCount atomic.Int32
 
-			// Mock authentication server
-			authServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				if tt.serverErrors.authenticationFail {
-					w.WriteHeader(http.StatusUnauthorized)
-					return
-				}
+			mockAuthServer := setupMockAuthServer(t, tt.serverErrors.authenticationFail)
+			defer mockAuthServer.Close()
 
-				err := json.NewEncoder(w).Encode(map[string]string{"access_token": "mock-token"})
-				if err != nil {
-					return
-				}
-			}))
-			defer authServer.Close()
+			mockNotificationServer := setupMockNotificationServer(t, &serverCallCount, tt.serverErrors)
+			defer mockNotificationServer.Close()
 
-			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				t.Log("server called")
-				serverCallCount.Add(1)
+			config := Config{
+				Address:      mockNotificationServer.URL,
+				MaxRetries:   1,
+				RetryWaitMin: time.Microsecond,
+				RetryWaitMax: time.Second,
+			}
 
-				if tt.serverErrors.unexpectedResponse {
-					w.WriteHeader(http.StatusInternalServerError)
-					return
-				}
-
-				if !assert.Equal(t, wantRequestUri, r.RequestURI, "invalid request url") {
-					w.WriteHeader(http.StatusNotFound)
-					return
-				}
-
-				// check body
-				requestBody, err := io.ReadAll(r.Body)
-				require.NoError(t, err, "failed to read request body")
-				assert.JSONEq(t, string(wantNotificationSerialized),
-					string(requestBody), "request body is not set properly")
-
-				if tt.serverErrors.retryableFail && serverCallCount.Load() == 1 {
-					w.WriteHeader(http.StatusTooManyRequests)
-					return
-				}
-
-				if tt.serverErrors.fatalFail {
-					w.WriteHeader(http.StatusInternalServerError)
-					return
-				}
-
-				w.WriteHeader(http.StatusCreated)
-			}))
-			defer server.Close()
-
-			config.Address = server.URL
-
-			authentication := Authentication{
+			authentication := KeycloakAuthentication{
 				ClientID: "client_id",
 				Username: "username",
 				Password: "password",
-				URL:      authServer.URL,
+				URL:      mockAuthServer.URL,
 			}
 
 			client := NewClient(http.DefaultClient, config, authentication)
@@ -155,10 +78,65 @@ func TestClient_CreateNotification(t *testing.T) {
 			}
 
 			if tt.wantErr {
-				assert.Error(t, err, "expected an error but got none")
+				assert.Error(t, err)
 			} else {
-				assert.NoError(t, err, "did not expect an error but got one")
+				assert.NoError(t, err)
 			}
 		})
 	}
+}
+
+func setupMockAuthServer(t *testing.T, failAuth bool) *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if failAuth {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		err := json.NewEncoder(w).Encode(map[string]string{"access_token": "mock-token"})
+		require.NoError(t, err)
+	}))
+}
+
+func setupMockNotificationServer(t *testing.T, serverCallCount *atomic.Int32, errors serverErrors) *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		serverCallCount.Add(1)
+
+		token := r.Header.Get("Authorization")
+		require.Equal(t, "Bearer mock-token", token, "missing or incorrect Authorization header")
+
+		if !assert.Equal(t, basePath+createNotificationPath, r.RequestURI, "invalid request url") {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		requestBody, err := io.ReadAll(r.Body)
+		require.NoError(t, err, "failed to read request body")
+		assert.JSONEq(t, `{
+			"origin": "Example Task XY",
+			"timestamp": "0001-01-01T00:00:00Z",
+			"title": "Example Task XY failed",
+			"detail": "Example Task XY failed because ...",
+			"level": "error",
+			"customFields": {"extraProperty": "value"}
+		}`, string(requestBody), "request body is incorrect")
+
+		// error simulation (fail on first attempt, if configured)
+		if serverCallCount.Load() == 1 {
+			if errors.fatalFail {
+				t.Log("fatal server fail as per test config")
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			} else if errors.retryableFail {
+				t.Log("retryable server fail as per test config")
+				w.WriteHeader(http.StatusTooManyRequests)
+				return
+			}
+		}
+		if errors.unexpectedResponse {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusCreated)
+	}))
 }
