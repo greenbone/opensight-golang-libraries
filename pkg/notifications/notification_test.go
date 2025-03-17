@@ -77,7 +77,7 @@ func TestClient_CreateNotification(t *testing.T) {
 			defer mockNotificationServer.Close()
 
 			config := Config{
-				Address:      "", // set below in test
+				Address:      mockNotificationServer.URL, // set below in test
 				MaxRetries:   1,
 				RetryWaitMin: time.Microsecond, // keep test short
 				RetryWaitMax: time.Second,
@@ -129,7 +129,6 @@ func setupMockNotificationServer(t *testing.T, serverCallCount *atomic.Int32, er
 			return
 		}
 
-		// check body
 		requestBody, err := io.ReadAll(r.Body)
 		require.NoError(t, err, "failed to read request body")
 		assert.JSONEq(t, `{
