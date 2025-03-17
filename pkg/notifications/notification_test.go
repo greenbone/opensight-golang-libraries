@@ -30,11 +30,31 @@ func TestClient_CreateNotification(t *testing.T) {
 		serverErrors serverErrors
 		wantErr      bool
 	}{
-		{"notification can be sent", serverErrors{}, false},
-		{"notification can be sent despite temporary server failure", serverErrors{retryableFail: true}, false},
-		{"client returns error on non-retryable notification service error", serverErrors{fatalFail: true}, true},
-		{"client fails on authentication error", serverErrors{authenticationFail: true}, true},
-		{"sending notification fails after maximum number of retries", serverErrors{unexpectedResponse: true}, true},
+		{
+			name:         "notification can be sent",
+			serverErrors: serverErrors{}, // no server errors
+			wantErr:      false,
+		},
+		{
+			name:         "notification can be sent despite temporary server failure",
+			serverErrors: serverErrors{retryableFail: true},
+			wantErr:      false,
+		},
+		{
+			name:         "client returns error on non-retryable notification service error",
+			serverErrors: serverErrors{fatalFail: true},
+			wantErr:      true,
+		},
+		{
+			name:         "client fails on authentication error",
+			serverErrors: serverErrors{authenticationFail: true},
+			wantErr:      true,
+		},
+		{
+			name:         "sending notification fails after maximum number of retries",
+			serverErrors: serverErrors{unexpectedResponse: true},
+			wantErr:      true,
+		},
 	}
 
 	notification := Notification{
