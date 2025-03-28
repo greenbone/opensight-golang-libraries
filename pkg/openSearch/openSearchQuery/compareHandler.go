@@ -208,6 +208,25 @@ func createTermQuery(fieldName string, fieldValue any, fieldKeys []string, query
 	}
 }
 
+func HandleCompareOperatorExists(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
+	if len(fieldKeys) == 0 {
+		return nil
+	}
+	nestedFieldSetting := findNestedFieldByName(fieldName, querySettings)
+	if nestedFieldSetting != nil && len(fieldKeys) == 1 {
+		termQuery := esquery.Term(nestedFieldSetting.FieldKeyName, fieldKeys[0])
+
+		nestedQuery := esextensions.Nested(nestedFieldSetting.FieldName, *esquery.Bool().Must(termQuery))
+
+		if strVal, ok := fieldValue.(string); ok && strVal == "yes" {
+			return nestedQuery
+		} else {
+			return esquery.Bool().MustNot(nestedQuery)
+		}
+	}
+	return nil
+}
+
 func HandleCompareOperatorIsGreaterThanRating(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
 	ratingRange := getStringRange(fieldName, fieldValue.(string), querySettings)
 	return esquery.Range(fieldName).
