@@ -273,3 +273,47 @@ func TestHandleCompareOperatorTextContains(t *testing.T) {
 		})
 	}
 }
+
+func TestHandleCompareOperatorBeginsWith(t *testing.T) {
+	field := "testField"
+
+	tests := []struct {
+		name     string
+		value    any
+		expected esquery.Mappable
+	}{
+		{
+			name:     "SingleValue",
+			value:    "test",
+			expected: esquery.Prefix(field, "test"),
+		},
+		{
+			name:  "MultipleValues",
+			value: []any{"test1", "test2"},
+			expected: esquery.Bool().
+				Should(
+					esquery.Prefix(field, "test1"),
+					esquery.Prefix(field, "test2"),
+				).
+				MinimumShouldMatch(1),
+		},
+		{
+			name:     "EmptyValue",
+			value:    "",
+			expected: esquery.Prefix(field, ""),
+		},
+		{
+			name:  "EmptySlice",
+			value: []any{},
+			expected: esquery.Bool().
+				Should().
+				MinimumShouldMatch(1),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, handleCompareOperatorBeginsWith(field, tt.value))
+		})
+	}
+}
