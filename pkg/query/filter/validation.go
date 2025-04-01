@@ -102,47 +102,37 @@ func validateTagValues(request RequestField) error {
 }
 
 func validateFieldValueType(requestOption RequestOption, fieldName string, fieldValue any) error {
-	if requestOption.Control.Type == ControlTypeInteger {
+	switch requestOption.Control.Type {
+	case ControlTypeInteger, ControlTypeFloat:
 		if _, ok := fieldValue.(float64); !ok {
 			return NewValidationError("field '%s' must be from type '%s'", fieldName, requestOption.Control.Type)
 		}
-	} else if requestOption.Control.Type == ControlTypeFloat {
-		if _, ok := fieldValue.(float64); !ok {
-			return NewValidationError("field '%s' must be from type '%s'", fieldName, requestOption.Control.Type)
-		}
-	} else if requestOption.Control.Type == ControlTypeBool {
+	case ControlTypeBool:
 		if _, ok := fieldValue.(bool); !ok {
 			return NewValidationError("field '%s' must be from type '%s'", fieldName, requestOption.Control.Type)
 		}
-	} else if requestOption.Control.Type == ControlTypeString ||
-		requestOption.Control.Type == ControlTypeEnum || requestOption.Control.Type == ControlTypeUuid {
+	case ControlTypeString, ControlTypeEnum, ControlTypeUuid, ControlTypeAutocomplete:
 		if _, ok := fieldValue.(string); !ok {
 			return NewValidationError("field '%s' must be from type '%s'", fieldName, requestOption.Control.Type)
 		}
-
 		if requestOption.Control.Type == ControlTypeEnum {
 			fieldCanHaveValue := slices.Contains(requestOption.Values, fieldValue.(string))
 			if !fieldCanHaveValue {
 				return NewValidationError("field '%s' can not have the value '%s'", fieldName, fieldValue)
 			}
 		} else if requestOption.Control.Type == ControlTypeUuid {
-			_, err := uuid.Parse(fieldValue.(string))
-			if err != nil {
+			if _, err := uuid.Parse(fieldValue.(string)); err != nil {
 				return NewUuidValidationError("field '%s' has an invalid UUID: %v", fieldName, fieldValue)
 			}
 		}
-	} else if requestOption.Control.Type == ControlTypeDateTime {
+	case ControlTypeDateTime:
 		if _, ok := fieldValue.(string); !ok {
 			return NewValidationError("field '%s' must be from type '%s'", fieldName, requestOption.Control.Type)
 		}
 		if _, err := time.Parse(time.RFC3339, fieldValue.(string)); err != nil {
 			return NewValidationError("field '%s' must contain a valid RFC3339 time", fieldName)
 		}
-	} else if requestOption.Control.Type == ControlTypeAutocomplete {
-		if _, ok := fieldValue.(string); !ok {
-			return NewValidationError("field '%s' must be from type '%s'", fieldName, requestOption.Control.Type)
-		}
-	} else {
+	default:
 		return NewValidationError("request option control type '%s' is not supported", requestOption.Control.Type)
 	}
 	return nil
