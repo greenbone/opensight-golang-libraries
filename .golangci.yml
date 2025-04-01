@@ -1,14 +1,32 @@
+version: "2"
 run:
-  timeout: 2m
   tests: false
-
-linters: 
+linters:
   enable:
-    - goimports
-    - gosec
-    - errorlint
-    - interfacebloat
-    - ineffassign
     - dupword
+    - errorlint
+    - gosec
+    - interfacebloat
     - misspell
-    - govet
+    - zerologlint
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
