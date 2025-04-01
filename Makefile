@@ -14,7 +14,7 @@ GOPRIVATE=github.com/greenbone
 
 GOIMPORTS       = go run golang.org/x/tools/cmd/goimports@latest
 GOFUMPT			= go run mvdan.cc/gofumpt@latest
-GOLANGCI-LINT   = go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+GOLANGCI-LINT   = go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 GO-MOD-OUTDATED = go run github.com/psampaz/go-mod-outdated@latest
 GO-MOD-UPGRADE  = go run github.com/oligot/go-mod-upgrade@latest
 SWAG            = github.com/swaggo/swag/cmd/swag@v1.16.2
