@@ -401,21 +401,24 @@ func (c *Client) DeleteByQuery(indexName string, requestBody []byte) error {
 func (c *Client) deleteByQuery(indexName string, requestBody []byte, isAsync bool) error {
 	waitForCompletion := !isAsync
 
+	params := opensearchapi.DocumentDeleteByQueryParams{
+		WaitForCompletion: &waitForCompletion,
+	}
+
+	if waitForCompletion {
+		// Only add refresh=true when we wait for the deletion to complete
+		params.Refresh = opensearchapi.ToPointer(true)
+	}
+
 	_, err := c.openSearchProjectClient.Document.DeleteByQuery(
 		context.Background(),
 		opensearchapi.DocumentDeleteByQueryReq{
 			Indices: []string{indexName},
 			Body:    bytes.NewReader(requestBody),
-			Params: opensearchapi.DocumentDeleteByQueryParams{
-				WaitForCompletion: &waitForCompletion,
-			},
+			Params:  params,
 		},
 	)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // SerializeDocumentsForBulkUpdate serializes documents for bulk update. Can be used in conjunction with BulkUpdate.
