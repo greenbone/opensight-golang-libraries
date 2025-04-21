@@ -5,10 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
-	"github.com/rs/zerolog/log"
 	"io"
 	"time"
+
+	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
+	"github.com/rs/zerolog/log"
 )
 
 type SyncUpdateClient struct {
