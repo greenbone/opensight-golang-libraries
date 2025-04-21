@@ -25,6 +25,7 @@ import (
 type Client struct {
 	openSearchProjectClient *opensearchapi.Client
 	updateQueue             *UpdateQueue
+	syncUpdate              SyncUpdateClient
 }
 
 // NewClient creates a new OpenSearch client.
@@ -37,6 +38,7 @@ func NewClient(openSearchProjectClient *opensearchapi.Client, updateMaxRetries i
 		openSearchProjectClient: openSearchProjectClient,
 	}
 	c.updateQueue = NewRequestQueue(openSearchProjectClient, updateMaxRetries, updateRetryDelay)
+	c.syncUpdate = SyncUpdateClient{openSearchProjectClient, updateMaxRetries, updateRetryDelay}
 	return c
 }
 
@@ -376,6 +378,11 @@ func processResponse(response *opensearchapi.ScrollGetResp, writer *io.PipeWrite
 // requestBody is the request body to send to OpenSearch specifying the update.
 func (c *Client) Update(indexName string, requestBody []byte) (responseBody []byte, err error) {
 	return c.updateQueue.Update(indexName, requestBody)
+}
+
+// SyncUpdate updates documents in the given index synchronously.
+func (c *Client) SyncUpdate(indexName string, requestBody []byte) (responseBody []byte, err error) {
+	return c.syncUpdate.Update(indexName, requestBody)
 }
 
 // AsyncDeleteByQuery updates documents in the given index asynchronously.
