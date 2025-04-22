@@ -46,19 +46,18 @@ func (s *SyncUpdateClient) Update(indexName string, requestBody []byte) ([]byte,
 			},
 		)
 		if err != nil {
-			log.Warn().Err(err).
-				Int("attempt_number", i+1).
-				Msgf("attempt %d: error in UpdateByQuery", i+1)
+			log.Warn().Err(err).Msgf("attempt %d: error in UpdateByQuery", i+1)
 			time.Sleep(s.updateRetryDelay)
 			continue
 		}
 
 		body := updateResponse.Inspect().Response.Body
 		result, err = io.ReadAll(body)
+		if body != nil {
+			body.Close()
+		}
 		if err != nil {
-			log.Warn().Err(err).
-				Int("attempt_number", i+1).
-				Msgf("attempt %d: error in io.ReadAll", i+1)
+			log.Warn().Err(err).Msgf("attempt %d: error in io.ReadAll", i+1)
 			time.Sleep(s.updateRetryDelay)
 			continue
 		}
@@ -67,11 +66,14 @@ func (s *SyncUpdateClient) Update(indexName string, requestBody []byte) ([]byte,
 
 		var responseMap map[string]interface{}
 		if err := json.Unmarshal(result, &responseMap); err != nil {
-			return result, err
+			return nil, fmt.Errorf("failed to unmarschal result: %w", err)
 		}
 		if failures, ok := responseMap["failures"]; ok {
 			if len(failures.([]interface{})) > 0 {
-				return result, fmt.Errorf("sync update failed - even after retries: %s", string(result))
+				err = fmt.Errorf("sync update returned failures: %v", failures)
+				log.Warn().Msgf("attempt %d: %v", i+1, err)
+				time.Sleep(s.updateRetryDelay)
+				continue
 			}
 		}
 

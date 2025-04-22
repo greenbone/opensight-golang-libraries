@@ -25,7 +25,7 @@ import (
 type Client struct {
 	openSearchProjectClient *opensearchapi.Client
 	updateQueue             *UpdateQueue
-	syncUpdate              SyncUpdateClient
+	syncUpdate              *SyncUpdateClient
 }
 
 // NewClient creates a new OpenSearch client.
@@ -38,7 +38,7 @@ func NewClient(openSearchProjectClient *opensearchapi.Client, updateMaxRetries i
 		openSearchProjectClient: openSearchProjectClient,
 	}
 	c.updateQueue = NewRequestQueue(openSearchProjectClient, updateMaxRetries, updateRetryDelay)
-	c.syncUpdate = SyncUpdateClient{openSearchProjectClient, updateMaxRetries, updateRetryDelay}
+	c.syncUpdate = NewSyncUpdateClient(openSearchProjectClient, updateMaxRetries, updateRetryDelay)
 	return c
 }
 
