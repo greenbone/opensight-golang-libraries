@@ -85,7 +85,8 @@ func (c *Client) CreateNotification(ctx context.Context, notification Notificati
 		return fmt.Errorf("invalid url '%s': %w", c.notificationServiceAddress, err)
 	}
 
-	req, err := http.NewRequest(http.MethodPost, createNotificationEndpoint, bytes.NewReader(notificationSerialized))
+	req, err := http.NewRequest(http.MethodPost, createNotificationEndpoint,
+		bytes.NewReader(notificationSerialized))
 	if err != nil {
 		return fmt.Errorf("failed to build request: %w", err)
 	}
@@ -112,7 +113,8 @@ func (c *Client) GetAuthenticationToken(ctx context.Context) (string, error) {
 	data.Set("username", c.authentication.Username)
 	data.Set("grant_type", "password")
 
-	authenticationURL := fmt.Sprintf("%s/realms/%s/protocol/openid-connect/token", c.authentication.AuthURL, c.authentication.KeycloakRealm)
+	authenticationURL := fmt.Sprintf("%s/realms/%s/protocol/openid-connect/token",
+		c.authentication.AuthURL, c.authentication.KeycloakRealm)
 
 	req, err := http.NewRequest(http.MethodPost, authenticationURL, strings.NewReader(data.Encode()))
 	if err != nil {

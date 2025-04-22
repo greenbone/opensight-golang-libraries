@@ -7,14 +7,15 @@ package notifications
 import (
 	"context"
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type serverErrors struct { // set at most one of the fields to true
@@ -122,7 +123,8 @@ func setupMockNotificationServer(t *testing.T, serverCallCount *atomic.Int32, er
 		serverCallCount.Add(1)
 
 		token := r.Header.Get("Authorization")
-		require.Equal(t, "Bearer mock-token", token, "missing or incorrect Authorization header")
+		require.Equal(t, "Bearer mock-token", token,
+			"missing or incorrect Authorization header")
 
 		if !assert.Equal(t, basePath+createNotificationPath, r.RequestURI, "invalid request url") {
 			w.WriteHeader(http.StatusNotFound)
