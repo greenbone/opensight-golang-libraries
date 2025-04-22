@@ -55,6 +55,7 @@ func (s *SyncUpdateClient) Update(indexName string, requestBody []byte) ([]byte,
 
 		body := updateResponse.Inspect().Response.Body
 		result, err = io.ReadAll(body)
+		body.Close()
 		if err != nil {
 			log.Warn().Err(err).
 				Int("attempt_number", i+1).
