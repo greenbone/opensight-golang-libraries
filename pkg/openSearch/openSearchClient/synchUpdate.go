@@ -53,7 +53,9 @@ func (s *SyncUpdateClient) Update(indexName string, requestBody []byte) ([]byte,
 
 		body := updateResponse.Inspect().Response.Body
 		result, err = io.ReadAll(body)
-		body.Close()
+		if body != nil {
+			body.Close()
+		}
 		if err != nil {
 			log.Warn().Err(err).Msgf("attempt %d: error in io.ReadAll", i+1)
 			time.Sleep(s.updateRetryDelay)
