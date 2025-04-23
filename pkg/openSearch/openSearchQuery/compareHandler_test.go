@@ -233,6 +233,7 @@ func TestHandleCompareOperatorDateRange(t *testing.T) {
 		})
 	}
 }
+
 func TestHandleCompareOperatorTextContains(t *testing.T) {
 	field := "description" // same for all tests
 	tests := []struct {
