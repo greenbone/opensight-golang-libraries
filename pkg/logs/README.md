@@ -40,7 +40,7 @@ const (
 ```
 
 <a name="Ctx"></a>
-## func [Ctx](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/logs/logs.go#L62>)
+## func [Ctx](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/logs/logs.go#L61>)
 
 ```go
 func Ctx(ctx context.Context) *zerolog.Logger
@@ -49,7 +49,7 @@ func Ctx(ctx context.Context) *zerolog.Logger
 Ctx retrieves the zerolog logger from the given context. If the context does not have a logger attached, the global logger is returned instead.
 
 <a name="SetupLogger"></a>
-## func [SetupLogger](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/logs/logs.go#L50>)
+## func [SetupLogger](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/logs/logs.go#L49>)
 
 ```go
 func SetupLogger(logLevel string) error
@@ -57,7 +57,7 @@ func SetupLogger(logLevel string) error
 
 SetupLogger configures the global log level for the zerolog logger.
 
-It takes a string \`logLevel\` representing the desired logging level \(e.g. "debug", "info", "warn"\). If the provided log level is invalid, it returns an error including the list of allowed levels.
+It takes a string \`logLevel\` representing the desired logging level \(e.g. "debug", "info", "warn"\).
 
 Parameters:
 
@@ -77,7 +77,7 @@ if err != nil {
 ```
 
 <a name="WithCorrelationID"></a>
-## func [WithCorrelationID](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/logs/logs.go#L106>)
+## func [WithCorrelationID](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/logs/logs.go#L105>)
 
 ```go
 func WithCorrelationID(ctx context.Context, correlationID string) context.Context
@@ -86,7 +86,7 @@ func WithCorrelationID(ctx context.Context, correlationID string) context.Contex
 WithCorrelationID adds a correlation ID to the logger in the context and returns the updated context.
 
 <a name="WithCtxField"></a>
-## func [WithCtxField](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/logs/logs.go#L88>)
+## func [WithCtxField](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/logs/logs.go#L87>)
 
 ```go
 func WithCtxField(ctx context.Context, key, value string) context.Context
@@ -113,7 +113,7 @@ ctx = WithCtxField(ctx, "request_id", "abc123")
 ```
 
 <a name="WithJob"></a>
-## func [WithJob](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/logs/logs.go#L101>)
+## func [WithJob](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/logs/logs.go#L100>)
 
 ```go
 func WithJob(ctx context.Context, jobName string) context.Context
@@ -122,7 +122,7 @@ func WithJob(ctx context.Context, jobName string) context.Context
 WithJob adds a job name field to the logger in the context and returns the updated context.
 
 <a name="WithNewCorrelationID"></a>
-## func [WithNewCorrelationID](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/logs/logs.go#L112>)
+## func [WithNewCorrelationID](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/logs/logs.go#L111>)
 
 ```go
 func WithNewCorrelationID(ctx context.Context) context.Context

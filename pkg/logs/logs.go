@@ -33,7 +33,6 @@ const (
 // SetupLogger configures the global log level for the zerolog logger.
 //
 // It takes a string `logLevel` representing the desired logging level (e.g. "debug", "info", "warn").
-// If the provided log level is invalid, it returns an error including the list of allowed levels.
 //
 // Parameters:
 //   - logLevel: a string indicating the desired log verbosity level.
