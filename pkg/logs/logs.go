@@ -8,7 +8,7 @@
 // It includes:
 //   - Setting the global logging level.
 //   - Extracting loggers from context, with fallback to the global logger.
-//   - Attaching metadata (e.g., job name, correlation IDs) to loggers via context.
+//   - Attaching metadata (e.g. job name, correlation IDs) to loggers via context.
 //
 // This package ensures consistent logging behavior and makes it easy to trace
 // log output using structured fields like correlation IDs, even across goroutines or services.
@@ -58,22 +58,7 @@ func SetupLogger(logLevel string) error {
 }
 
 // Ctx retrieves the zerolog logger from the given context.
-//
-// If the context does not have a logger attached, zerolog.Ctx(ctx) returns a disabled logger.
-// In such cases, this function returns the global logger instead.
-//
-// This ensures that a valid logger is always returned, preventing logging from being silently disabled.
-//
-// Parameters:
-//   - ctx: the context from which to retrieve the logger.
-//
-// Returns:
-//   - *zerolog.Logger: the logger extracted from the context, or the global logger if none is found.
-//
-// Example:
-//
-//	logger := Ctx(r.Context())
-//	logger.Info().Msg("request received")
+// If the context does not have a logger attached, the global logger is returned instead.
 func Ctx(ctx context.Context) *zerolog.Logger {
 	l := zerolog.Ctx(ctx)
 	if l.GetLevel() == zerolog.Disabled {
@@ -113,23 +98,17 @@ func WithCtxField(ctx context.Context, key, value string) context.Context {
 }
 
 // WithJob adds a job name field to the logger in the context and returns the updated context.
-//
-// Internally calls WithCtxField with the appropriate key.
 func WithJob(ctx context.Context, jobName string) context.Context {
 	return WithCtxField(ctx, jobKey, jobName)
 }
 
 // WithCorrelationID adds a correlation ID to the logger in the context and returns the updated context.
-//
-// Useful for tracing requests across services or components.
 func WithCorrelationID(ctx context.Context, correlationID string) context.Context {
 	return WithCtxField(ctx, correlationIDKey, correlationID)
 }
 
 // WithNewCorrelationID generates a new correlation ID, adds it to the logger in the context,
 // and returns the updated context.
-//
-// This is useful for initiating a trace when handling a new incoming request or job.
 func WithNewCorrelationID(ctx context.Context) context.Context {
 	return WithCorrelationID(ctx, uuid.New().String())
 }
