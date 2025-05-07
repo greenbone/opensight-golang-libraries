@@ -40,7 +40,7 @@ func NewPostgresQueryBuilder(querySetting *Settings) *Builder
 NewPostgresQueryBuilder creates a new instance of the query builder with the provided settings.
 
 <a name="Builder.Build"></a>
-### func \(\*Builder\) [Build](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L144>)
+### func \(\*Builder\) [Build](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L150>)
 
 ```go
 func (qb *Builder) Build(resultSelector query.ResultSelector) (query string, args []any, err error)

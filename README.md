@@ -21,6 +21,7 @@ The following functionalities are provided:
 * [secretfiles](pkg/secretfiles/README.md) - helps with accessing secrets stored in files
 * [slices](pkg/slices/README.md) - utility functions for slices
 * [testFolder](pkg/testFolder/README.md) - access to test data from the file system
+* [logs](pkg/logs/README.md) - context-aware structured logging utilities based on zerolog.
 
 ## Maintainer
 

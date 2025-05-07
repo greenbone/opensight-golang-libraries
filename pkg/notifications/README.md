@@ -13,15 +13,17 @@ Package Notifications provides a client to communicate with the OpenSight Notifi
 ## Index
 
 - [type Client](<#Client>)
-  - [func NewClient\(httpClient \*http.Client, config Config\) \*Client](<#NewClient>)
+  - [func NewClient\(httpClient \*http.Client, config Config, authentication KeycloakAuthentication\) \*Client](<#NewClient>)
   - [func \(c \*Client\) CreateNotification\(ctx context.Context, notification Notification\) error](<#Client.CreateNotification>)
+  - [func \(c \*Client\) GetAuthenticationToken\(ctx context.Context\) \(string, error\)](<#Client.GetAuthenticationToken>)
 - [type Config](<#Config>)
+- [type KeycloakAuthentication](<#KeycloakAuthentication>)
 - [type Level](<#Level>)
 - [type Notification](<#Notification>)
 
 
 <a name="Client"></a>
-## type [Client](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L26-L32>)
+## type [Client](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L27-L34>)
 
 Client can be used to send notifications
 
@@ -32,25 +34,34 @@ type Client struct {
 ```
 
 <a name="NewClient"></a>
-### func [NewClient](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L44>)
+### func [NewClient](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L56>)
 
 ```go
-func NewClient(httpClient *http.Client, config Config) *Client
+func NewClient(httpClient *http.Client, config Config, authentication KeycloakAuthentication) *Client
 ```
 
 NewClient returns a new [Client](<#Client>) with the notification service address \(host:port\) set. As httpClient you can use e.g. \[http.DefaultClient\].
 
 <a name="Client.CreateNotification"></a>
-### func \(\*Client\) [CreateNotification](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L57>)
+### func \(\*Client\) [CreateNotification](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L71>)
 
 ```go
 func (c *Client) CreateNotification(ctx context.Context, notification Notification) error
 ```
 
-CreateNotification sends a notification to the notification service. The request is retried up to the configured number of retries with an exponential backoff. So it can take some time until the functions returns.
+CreateNotification sends a notification to the notification service. The request is authenticated, serialized, and sent via an HTTP POST request. It is retried up to the configured number of retries with an exponential backoff, So it can take some time until the functions returns.
+
+<a name="Client.GetAuthenticationToken"></a>
+### func \(\*Client\) [GetAuthenticationToken](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L109>)
+
+```go
+func (c *Client) GetAuthenticationToken(ctx context.Context) (string, error)
+```
+
+GetAuthenticationToken retrieves an authentication token using client credentials. It constructs a form\-encoded request, sends it with retry logic, and parses the response.
 
 <a name="Config"></a>
-## type [Config](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L35-L40>)
+## type [Config](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L37-L42>)
 
 Config configures the notification service client
 
@@ -60,6 +71,21 @@ type Config struct {
     MaxRetries   int
     RetryWaitMin time.Duration
     RetryWaitMax time.Duration
+}
+```
+
+<a name="KeycloakAuthentication"></a>
+## type [KeycloakAuthentication](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L46-L52>)
+
+KeycloakAuthentication holds the credentials and configuration details required for Keycloak authentication in the notification service.
+
+```go
+type KeycloakAuthentication struct {
+    ClientID      string
+    Username      string
+    Password      string
+    AuthURL       string
+    KeycloakRealm string
 }
 ```
 
