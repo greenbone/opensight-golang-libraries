@@ -26,6 +26,10 @@ Package esextensions provides extensions for https://github.com/aquasecurity/esq
 - [type NestedQuery](<#NestedQuery>)
   - [func Nested\(field string, q esquery.BoolQuery\) \*NestedQuery](<#Nested>)
   - [func \(nq \*NestedQuery\) Map\(\) map\[string\]interface\{\}](<#NestedQuery.Map>)
+- [type ScriptedMetricAggregation](<#ScriptedMetricAggregation>)
+  - [func NewScriptedMetricAggregation\(name string, initScript string, mapScript string, combineScript string, reduceScript string\) \*ScriptedMetricAggregation](<#NewScriptedMetricAggregation>)
+  - [func \(a \*ScriptedMetricAggregation\) Map\(\) map\[string\]interface\{\}](<#ScriptedMetricAggregation.Map>)
+  - [func \(a \*ScriptedMetricAggregation\) Name\(\) string](<#ScriptedMetricAggregation.Name>)
 - [type ScriptedSumAggregation](<#ScriptedSumAggregation>)
   - [func ScriptedSumAgg\(name string, script string\) \*ScriptedSumAggregation](<#ScriptedSumAgg>)
   - [func \(a \*ScriptedSumAggregation\) Map\(\) map\[string\]interface\{\}](<#ScriptedSumAggregation.Map>)
@@ -169,6 +173,50 @@ func (nq *NestedQuery) Map() map[string]interface{}
 ```
 
 Map returns a map representation of the NestedQuery, thus implementing the esquery.Mappable interface. Used for serialization to JSON.
+
+<a name="ScriptedMetricAggregation"></a>
+## type [ScriptedMetricAggregation](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/scriptedMetricAggregation.go#L10-L16>)
+
+ScriptedMetricAggregation represents a scripted\_metric aggregation for Elasticsearch.
+
+```go
+type ScriptedMetricAggregation struct {
+    // contains filtered or unexported fields
+}
+```
+
+<a name="NewScriptedMetricAggregation"></a>
+### func [NewScriptedMetricAggregation](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/scriptedMetricAggregation.go#L43-L49>)
+
+```go
+func NewScriptedMetricAggregation(name string, initScript string, mapScript string, combineScript string, reduceScript string) *ScriptedMetricAggregation
+```
+
+ScriptedMetricAgg is a function that creates a new instance of ScriptedMetricAggregation. It takes the name, init script, map script, combine script, and reduce script as parameters and returns a pointer to the ScriptedMetricAggregation struct.
+
+Example usage:
+
+```
+a := NewScriptedMetricAggregation("unique_asset_ids", initScript, mapScript, combineScript, reduceScript)
+```
+
+<a name="ScriptedMetricAggregation.Map"></a>
+### func \(\*ScriptedMetricAggregation\) [Map](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/scriptedMetricAggregation.go#L25>)
+
+```go
+func (a *ScriptedMetricAggregation) Map() map[string]interface{}
+```
+
+Map returns a map representation of the ScriptedMetricAggregation, thus implementing the esquery.Mappable interface. Used for serialization to JSON.
+
+<a name="ScriptedMetricAggregation.Name"></a>
+### func \(\*ScriptedMetricAggregation\) [Name](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/scriptedMetricAggregation.go#L19>)
+
+```go
+func (a *ScriptedMetricAggregation) Name() string
+```
+
+Name returns the name of the ScriptedMetricAggregation, needed for the esquery.Aggregation interface.
 
 <a name="ScriptedSumAggregation"></a>
 ## type [ScriptedSumAggregation](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/scriptedSumAgg.go#L13-L16>)
