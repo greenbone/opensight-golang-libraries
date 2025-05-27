@@ -28,7 +28,7 @@ func NewIndexFunction(openSearchProjectClient *opensearchapi.Client) *IndexFunct
 
 // CreateIndex creates an index
 func (i *IndexFunction) CreateIndex(indexName string, indexSchema []byte) error {
-	_, err := i.openSearchProjectClient.Indices.Create(
+	resp, err := i.openSearchProjectClient.Indices.Create(
 		context.Background(),
 		opensearchapi.IndicesCreateReq{
 			Index: indexName,
@@ -40,6 +40,11 @@ func (i *IndexFunction) CreateIndex(indexName string, indexSchema []byte) error 
 		// see details in https://repost.aws/knowledge-center/opensearch-403-clusterblockexception
 		log.Err(err).Msg("error while creating index: please check disk space and memory usage")
 		return err
+	}
+	defer resp.Inspect().Response.Body.Close()
+
+	if resp.Inspect().Response.IsError() {
+		return fmt.Errorf("error while creating index %s: %s", indexName, resp.Inspect().Response.String())
 	}
 
 	return nil
@@ -280,6 +285,12 @@ func (i *IndexFunction) RefreshIndex(index string) error {
 	if err != nil {
 		return err
 	}
+	defer refreshResp.Inspect().Response.Body.Close()
+
+	if refreshResp.Inspect().Response.IsError() {
+		return fmt.Errorf("error refreshing index %s: %s", index, refreshResp.Inspect().Response.String())
+	}
+
 	log.Debug().Msgf("Index %s refreshed with staus code: %d", index,
 		refreshResp.Inspect().Response.StatusCode)
 	return nil
@@ -327,6 +338,11 @@ func (i *IndexFunction) SetIndexSettings(index string, settingsBody io.Reader) e
 	if err != nil {
 		return err
 	}
+	defer settingsPutResp.Inspect().Response.Body.Close()
+
+	if settingsPutResp.Inspect().Response.IsError() {
+		return fmt.Errorf("error applying settings to index %s: %s", index, settingsPutResp.Inspect().Response.String())
+	}
 
 	log.Debug().Msgf("Settings applied to index %s: %t", index, settingsPutResp.Acknowledged)
 	return nil
@@ -345,6 +361,11 @@ func (i *IndexFunction) ForceMerge(index string, maximumNumberOfSegments int) er
 	)
 	if err != nil {
 		return err
+	}
+	defer forceMergeResponse.Inspect().Response.Body.Close()
+
+	if forceMergeResponse.Inspect().Response.IsError() {
+		return fmt.Errorf("error applying forcemerge to index %s: %s", index, forceMergeResponse.Inspect().Response.String())
 	}
 	log.Debug().Msgf("Forcemerge applied to index %s: with status %+v", index, forceMergeResponse.Inspect().Response)
 	return nil

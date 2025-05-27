@@ -417,7 +417,7 @@ func (c *Client) deleteByQuery(indexName string, requestBody []byte, isAsync boo
 		params.Refresh = opensearchapi.ToPointer(true)
 	}
 
-	_, err := c.openSearchProjectClient.Document.DeleteByQuery(
+	resp, err := c.openSearchProjectClient.Document.DeleteByQuery(
 		context.Background(),
 		opensearchapi.DocumentDeleteByQueryReq{
 			Indices: []string{indexName},
@@ -425,7 +425,17 @@ func (c *Client) deleteByQuery(indexName string, requestBody []byte, isAsync boo
 			Params:  params,
 		},
 	)
-	return err
+	if err != nil {
+		return err
+	}
+	defer resp.Inspect().Response.Body.Close()
+
+	if resp.Inspect().Response.IsError() {
+		return fmt.Errorf("error while deleting documents in index %s: %s",
+			indexName, resp.Inspect().Response.String())
+	}
+
+	return nil
 }
 
 // SerializeDocumentsForBulkUpdate serializes documents for bulk update. Can be used in conjunction with BulkUpdate.
@@ -459,7 +469,7 @@ func SerializeDocumentsForBulkUpdate[T any](indexName string, documents []T) ([]
 // indexName is the name of the index to update.
 // requestBody is the request body to send to OpenSearch specifying the bulk update.
 func (c *Client) BulkUpdate(indexName string, requestBody []byte) error {
-	_, err := c.openSearchProjectClient.Bulk(
+	resp, err := c.openSearchProjectClient.Bulk(
 		context.Background(),
 		opensearchapi.BulkReq{
 			Index: indexName,
@@ -471,6 +481,12 @@ func (c *Client) BulkUpdate(indexName string, requestBody []byte) error {
 	)
 	if err != nil {
 		return err
+	}
+	defer resp.Inspect().Response.Body.Close()
+
+	if resp.Inspect().Response.IsError() {
+		return fmt.Errorf("error while performing bulk update on index %s: %s",
+			indexName, resp.Inspect().Response.String())
 	}
 
 	return nil
