@@ -116,7 +116,7 @@ func (i *IndexFunction) IndexExists(indexName string) (bool, error) {
 }
 
 func (i *IndexFunction) DeleteIndex(indexName string) error {
-	_, err := i.openSearchProjectClient.Indices.Delete(
+	resp, err := i.openSearchProjectClient.Indices.Delete(
 		context.Background(),
 		opensearchapi.IndicesDeleteReq{
 			Indices: []string{indexName},
@@ -125,12 +125,22 @@ func (i *IndexFunction) DeleteIndex(indexName string) error {
 	if err != nil {
 		return err
 	}
+	defer resp.Inspect().Response.Body.Close()
+
+	if resp.Inspect().Response.StatusCode == http.StatusNotFound {
+		log.Debug().Msgf("index %s does not exist, nothing to delete", indexName)
+		return nil
+	}
+
+	if resp.Inspect().Response.IsError() {
+		return fmt.Errorf("error while deleting index %s: %s", indexName, resp.Inspect().Response.String())
+	}
 
 	return nil
 }
 
 func (i *IndexFunction) CreateOrPutAlias(aliasName string, indexNames ...string) error {
-	_, err := i.openSearchProjectClient.Indices.Alias.Put(
+	resp, err := i.openSearchProjectClient.Indices.Alias.Put(
 		context.Background(),
 		opensearchapi.AliasPutReq{
 			Indices: indexNames,
@@ -141,12 +151,22 @@ func (i *IndexFunction) CreateOrPutAlias(aliasName string, indexNames ...string)
 		log.Debug().Err(err).Msg("error while creating and putting alias")
 		return err
 	}
+	defer resp.Inspect().Response.Body.Close()
+
+	if resp.Inspect().Response.StatusCode == http.StatusConflict {
+		log.Debug().Msgf("alias %s already exists, nothing to create", aliasName)
+		return nil
+	}
+
+	if resp.Inspect().Response.IsError() {
+		return fmt.Errorf("error while creating or putting alias %s: %s", aliasName, resp.Inspect().Response.String())
+	}
 
 	return nil
 }
 
 func (i *IndexFunction) DeleteAliasFromIndex(indexName string, aliasName string) error {
-	_, err := i.openSearchProjectClient.Indices.Alias.Delete(
+	resp, err := i.openSearchProjectClient.Indices.Alias.Delete(
 		context.Background(),
 		opensearchapi.AliasDeleteReq{
 			Indices: []string{indexName},
@@ -155,6 +175,16 @@ func (i *IndexFunction) DeleteAliasFromIndex(indexName string, aliasName string)
 	)
 	if err != nil {
 		return err
+	}
+	defer resp.Inspect().Response.Body.Close()
+
+	if resp.Inspect().Response.StatusCode == http.StatusNotFound {
+		log.Debug().Msgf("alias %s does not exist on index %s, nothing to delete", aliasName, indexName)
+		return nil
+	}
+
+	if resp.Inspect().Response.IsError() {
+		return fmt.Errorf("error while deleting alias %s from index %s: %s", aliasName, indexName, resp.Inspect().Response.String())
 	}
 
 	return nil
@@ -169,12 +199,17 @@ func (i *IndexFunction) IndexHasAlias(indexNames []string, aliasNames []string) 
 		},
 	)
 	if err != nil {
-		if response != nil && response.StatusCode == http.StatusNotFound {
-			return false, nil
-		}
-
 		log.Debug().Err(err).Msg("error while checking the index alias")
 		return false, err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode == http.StatusNotFound {
+		return false, nil
+	}
+
+	if response.IsError() {
+		return false, fmt.Errorf("error while checking if index has alias: %s", response.String())
 	}
 
 	return true, nil
@@ -188,10 +223,16 @@ func (i *IndexFunction) AliasExists(aliasName string) (bool, error) {
 		},
 	)
 	if err != nil {
-		if response != nil && response.Inspect().Response.StatusCode == http.StatusNotFound {
-			return false, nil
-		}
 		return false, err
+	}
+	defer response.Inspect().Response.Body.Close()
+
+	if response.Inspect().Response.StatusCode == http.StatusNotFound {
+		return false, nil
+	}
+
+	if response.Inspect().Response.IsError() {
+		return false, fmt.Errorf("error while checking if alias exists: %s", response.Inspect().Response.String())
 	}
 
 	if len(response.Aliases) == 0 {
