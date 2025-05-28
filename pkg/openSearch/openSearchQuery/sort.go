@@ -36,16 +36,15 @@ var sortFieldMapping = map[string]effectiveSortField{
 		aggregationName:  nil,
 		aggregationValue: "uniqueAssetCount.value",
 	},
-	// TODO: 28.05.25 rmeixner - implement sorting for the following fields
 	"epssScore": {
-		plainField:       nil,
-		aggregationName:  nil,
-		aggregationValue: "",
+		plainField:       strPtr("vulnerabilityTest.epssMaxEpssScore"),
+		aggregationName:  strPtr("maxEpssScore"),
+		aggregationValue: "maxEpssScore.value",
 	},
 	"epssPercentage": {
-		plainField:       nil,
-		aggregationName:  nil,
-		aggregationValue: "",
+		plainField:       strPtr("vulnerabilityTest.epssMaxEpssPercentile"),
+		aggregationName:  strPtr("maxEpssPercentile"),
+		aggregationValue: "maxEpssPercentile.value",
 	},
 }
 
