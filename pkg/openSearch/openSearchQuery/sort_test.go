@@ -60,7 +60,7 @@ func TestSorting(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			q := NewBoolQueryBuilder(&QuerySettings{})
 			subAggs := []esquery.Aggregation{}
-			subAggs, err := AddMaxAggForSorting(subAggs, testCases[name].SortingRequest)
+			subAggs, err := AddMaxAggForSorting(subAggs, testCases[name].SortingRequest, sortFieldMapping)
 			if testCases[name].ExpectedErrorMessage != "" {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), testCases[name].ExpectedErrorMessage)
@@ -70,10 +70,27 @@ func TestSorting(t *testing.T) {
 			}
 			termsAggregation := esquery.TermsAgg("vulnerabilityWithAssetCountAgg", "vulnerabilityTest.oid.keyword").
 				Aggs(subAggs...)
-			termsAggregation, err = AddOrder(termsAggregation, testCases[name].SortingRequest)
+			termsAggregation, err = AddOrder(termsAggregation, testCases[name].SortingRequest, sortFieldMapping)
 			resultingJson, queryErr := esquery.Search().Query(q.Build()).Aggs(termsAggregation).Size(0).MarshalJSON()
 			assert.Nil(t, queryErr)
 			assert.JSONEq(t, testCases[name].ExpectedQueryJson, string(resultingJson))
 		})
 	}
+}
+
+var sortFieldMapping = map[string]EffectiveSortField{
+	"severity": {
+		PlainField:       strPtr("vulnerabilityTest.severityCvss.override"),
+		AggregationName:  strPtr("maxSeverity"),
+		AggregationValue: "maxSeverity.value",
+	},
+	"qod": {
+		PlainField:       strPtr("qod"),
+		AggregationName:  strPtr("maxQod"),
+		AggregationValue: "maxQod.value",
+	},
+}
+
+func strPtr(s string) *string {
+	return &s
 }
