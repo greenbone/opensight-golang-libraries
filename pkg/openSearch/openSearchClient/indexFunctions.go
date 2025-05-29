@@ -184,7 +184,8 @@ func (i *IndexFunction) DeleteAliasFromIndex(indexName string, aliasName string)
 	}
 
 	if resp.Inspect().Response.IsError() {
-		return fmt.Errorf("error while deleting alias %s from index %s: %s", aliasName, indexName, resp.Inspect().Response.String())
+		return fmt.Errorf("error while deleting alias %s from index %s: %s", aliasName,
+			indexName, resp.Inspect().Response.String())
 	}
 
 	return nil
@@ -329,7 +330,8 @@ func (i *IndexFunction) RefreshIndex(index string) error {
 	defer refreshResp.Inspect().Response.Body.Close()
 
 	if refreshResp.Inspect().Response.IsError() {
-		return fmt.Errorf("error refreshing index %s: %s", index, refreshResp.Inspect().Response.String())
+		return fmt.Errorf("error refreshing index %s: %s", index,
+			refreshResp.Inspect().Response.String())
 	}
 
 	log.Debug().Msgf("Index %s refreshed with staus code: %d", index,
@@ -382,7 +384,8 @@ func (i *IndexFunction) SetIndexSettings(index string, settingsBody io.Reader) e
 	defer settingsPutResp.Inspect().Response.Body.Close()
 
 	if settingsPutResp.Inspect().Response.IsError() {
-		return fmt.Errorf("error applying settings to index %s: %s", index, settingsPutResp.Inspect().Response.String())
+		return fmt.Errorf("error applying settings to index %s: %s", index,
+			settingsPutResp.Inspect().Response.String())
 	}
 
 	log.Debug().Msgf("Settings applied to index %s: %t", index, settingsPutResp.Acknowledged)
@@ -406,7 +409,8 @@ func (i *IndexFunction) ForceMerge(index string, maximumNumberOfSegments int) er
 	defer forceMergeResponse.Inspect().Response.Body.Close()
 
 	if forceMergeResponse.Inspect().Response.IsError() {
-		return fmt.Errorf("error applying forcemerge to index %s: %s", index, forceMergeResponse.Inspect().Response.String())
+		return fmt.Errorf("error applying forcemerge to index %s: %s", index,
+			forceMergeResponse.Inspect().Response.String())
 	}
 	log.Debug().Msgf("Forcemerge applied to index %s: with status %+v", index, forceMergeResponse.Inspect().Response)
 	return nil

@@ -14,76 +14,50 @@ import (
 	"github.com/aquasecurity/esquery"
 )
 
-type effectiveSortField struct {
-	plainField       *string
-	aggregationName  *string
-	aggregationValue string
+type EffectiveSortField struct {
+	PlainField       *string
+	AggregationName  *string
+	AggregationValue string
 }
 
-var sortFieldMapping = map[string]effectiveSortField{
-	"severity": {
-		plainField:       strPtr("vulnerabilityTest.severityCvss.override"),
-		aggregationName:  strPtr("maxSeverity"),
-		aggregationValue: "maxSeverity.value",
-	},
-	"qod": {
-		plainField:       strPtr("qod"),
-		aggregationName:  strPtr("maxQod"),
-		aggregationValue: "maxQod.value",
-	},
-	"assetCount": {
-		plainField:       nil,
-		aggregationName:  nil,
-		aggregationValue: "uniqueAssetCount.value",
-	},
-	"epssScore": {
-		plainField:       strPtr("vulnerabilityTest.epssMaxEpssScore"),
-		aggregationName:  strPtr("maxEpssScore"),
-		aggregationValue: "maxEpssScore.value",
-	},
-	"epssPercentage": {
-		plainField:       strPtr("vulnerabilityTest.epssMaxEpssPercentile"),
-		aggregationName:  strPtr("maxEpssPercentile"),
-		aggregationValue: "maxEpssPercentile.value",
-	},
-}
-
-func strPtr(s string) *string {
-	return &s
-}
-
-func AddOrder(aggregation *esquery.TermsAggregation, sortingRequest *sorting.Request) (*esquery.TermsAggregation, error) {
+func AddOrder(aggregation *esquery.TermsAggregation, sortingRequest *sorting.Request,
+	sortFieldMapping map[string]EffectiveSortField,
+) (*esquery.TermsAggregation, error) {
 	if sortingRequest != nil {
-		field, err := effectiveSortFieldOf(*sortingRequest)
+		field, err := effectiveSortFieldOf(*sortingRequest, sortFieldMapping)
 		if err != nil {
 			return nil, err
 		}
-		return aggregation.Order(map[string]string{field.aggregationValue: sortingRequest.SortDirection.String()}), nil
+		return aggregation.Order(map[string]string{field.AggregationValue: sortingRequest.SortDirection.String()}), nil
 	}
 	return aggregation, nil
 }
 
-func AddMaxAggForSorting(aggs []esquery.Aggregation, sortingRequest *sorting.Request) ([]esquery.Aggregation, error) {
+func AddMaxAggForSorting(aggs []esquery.Aggregation, sortingRequest *sorting.Request,
+	sortFieldMapping map[string]EffectiveSortField,
+) ([]esquery.Aggregation, error) {
 	if sortingRequest == nil {
 		return aggs, nil
 	}
 
-	field, err := effectiveSortFieldOf(*sortingRequest)
+	field, err := effectiveSortFieldOf(*sortingRequest, sortFieldMapping)
 	if err != nil {
 		return nil, err
 	}
 
 	// refers to an existing aggregation that does not need to be created
-	if field.plainField == nil || field.aggregationName == nil {
+	if field.PlainField == nil || field.AggregationName == nil {
 		return aggs, nil
 	}
 
-	agg := esquery.Max(*field.aggregationName, *field.plainField)
+	agg := esquery.Max(*field.AggregationName, *field.PlainField)
 	return append(aggs, agg), nil
 }
 
 // BucketSortAgg is capable to sort all existing buckets, but is currently only used for paging
-func BucketSortAgg(sortingRequest *sorting.Request, pagingRequest *paging.Request) (*esquery.CustomAggMap, error) {
+func BucketSortAgg(sortingRequest *sorting.Request, sortFieldMapping map[string]EffectiveSortField,
+	pagingRequest *paging.Request,
+) (*esquery.CustomAggMap, error) {
 	if sortingRequest == nil && pagingRequest == nil {
 		return nil, nil
 	}
@@ -91,7 +65,7 @@ func BucketSortAgg(sortingRequest *sorting.Request, pagingRequest *paging.Reques
 	sorting := map[string]interface{}{}
 
 	if sortingRequest != nil {
-		field, err := effectiveSortFieldOf(*sortingRequest)
+		field, err := effectiveSortFieldOf(*sortingRequest, sortFieldMapping)
 		if err != nil {
 			return nil, err
 		}
@@ -103,7 +77,7 @@ func BucketSortAgg(sortingRequest *sorting.Request, pagingRequest *paging.Reques
 
 		sorting = map[string]interface{}{
 			"sort": []map[string]interface{}{
-				{field.aggregationValue: map[string]interface{}{
+				{field.AggregationValue: map[string]interface{}{
 					"order": order,
 				}},
 			},
@@ -122,9 +96,10 @@ func BucketSortAgg(sortingRequest *sorting.Request, pagingRequest *paging.Reques
 }
 
 func AddBucketSortAgg(aggs []esquery.Aggregation, sortingRequest *sorting.Request,
+	sortFieldMapping map[string]EffectiveSortField,
 	pagingRequest *paging.Request,
 ) ([]esquery.Aggregation, error) {
-	agg, err := BucketSortAgg(sortingRequest, pagingRequest)
+	agg, err := BucketSortAgg(sortingRequest, sortFieldMapping, pagingRequest)
 	if err != nil {
 		return nil, err
 	}
@@ -147,18 +122,18 @@ func getOrder(sortingRequest *sorting.Request) (esquery.Order, error) {
 	}
 }
 
-func effectiveSortFieldOf(sortingRequest sorting.Request) (effectiveSortField, error) {
+func effectiveSortFieldOf(sortingRequest sorting.Request, sortFieldMapping map[string]EffectiveSortField) (EffectiveSortField, error) {
 	field, ok := sortFieldMapping[sortingRequest.SortColumn]
 
 	if !ok {
-		return effectiveSortField{}, fmt.Errorf("%s is no valid sort column, possible values: %s",
-			sortingRequest.SortColumn, strings.Join(validSortColumns(), ","))
+		return EffectiveSortField{}, fmt.Errorf("%s is no valid sort column, possible values: %s",
+			sortingRequest.SortColumn, strings.Join(validSortColumns(sortFieldMapping), ","))
 	}
 	return field, nil
 }
 
 // TODO replace with generic function
-func validSortColumns() []string {
+func validSortColumns(sortFieldMapping map[string]EffectiveSortField) []string {
 	validSortColumns := make([]string, 0, len(sortFieldMapping))
 	for k := range sortFieldMapping {
 		validSortColumns = append(validSortColumns, k)
