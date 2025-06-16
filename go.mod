@@ -13,9 +13,9 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.7
 	github.com/json-iterator/go v1.1.12
 	github.com/lib/pq v1.10.9
-	github.com/opensearch-project/opensearch-go/v4 v4.4.0
+	github.com/opensearch-project/opensearch-go/v4 v4.5.0
 	github.com/rs/zerolog v1.34.0
-	github.com/samber/lo v1.50.0
+	github.com/samber/lo v1.51.0
 	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.10.0
 	github.com/swaggo/files/v2 v2.0.2
@@ -111,7 +111,7 @@ require (
 	github.com/tklauser/go-sysconf v0.3.15 // indirect
 	github.com/tklauser/numcpus v0.10.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
-	github.com/ugorji/go/codec v1.2.14 // indirect
+	github.com/ugorji/go/codec v1.3.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.61.0 // indirect
