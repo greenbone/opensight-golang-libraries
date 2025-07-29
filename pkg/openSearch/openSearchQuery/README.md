@@ -43,10 +43,10 @@ Package openSearchQuery provides a query builder for OpenSearch.
 
 ## Index
 
-- [func AddBucketSortAgg\(aggs \[\]esquery.Aggregation, sortingRequest \*sorting.Request, pagingRequest \*paging.Request\) \(\[\]esquery.Aggregation, error\)](<#AddBucketSortAgg>)
-- [func AddMaxAggForSorting\(aggs \[\]esquery.Aggregation, sortingRequest \*sorting.Request\) \(\[\]esquery.Aggregation, error\)](<#AddMaxAggForSorting>)
-- [func AddOrder\(aggregation \*esquery.TermsAggregation, sortingRequest \*sorting.Request\) \(\*esquery.TermsAggregation, error\)](<#AddOrder>)
-- [func BucketSortAgg\(sortingRequest \*sorting.Request, pagingRequest \*paging.Request\) \(\*esquery.CustomAggMap, error\)](<#BucketSortAgg>)
+- [func AddBucketSortAgg\(aggs \[\]esquery.Aggregation, sortingRequest \*sorting.Request, sortFieldMapping map\[string\]EffectiveSortField, pagingRequest \*paging.Request\) \(\[\]esquery.Aggregation, error\)](<#AddBucketSortAgg>)
+- [func AddMaxAggForSorting\(aggs \[\]esquery.Aggregation, sortingRequest \*sorting.Request, sortFieldMapping map\[string\]EffectiveSortField\) \(\[\]esquery.Aggregation, error\)](<#AddMaxAggForSorting>)
+- [func AddOrder\(aggregation \*esquery.TermsAggregation, sortingRequest \*sorting.Request, sortFieldMapping map\[string\]EffectiveSortField\) \(\*esquery.TermsAggregation, error\)](<#AddOrder>)
+- [func BucketSortAgg\(sortingRequest \*sorting.Request, sortFieldMapping map\[string\]EffectiveSortField, pagingRequest \*paging.Request\) \(\*esquery.CustomAggMap, error\)](<#BucketSortAgg>)
 - [func HandleCompareOperatorBeginsWith\(fieldName string, fieldKeys \[\]string, fieldValue any, querySettings \*QuerySettings\) esquery.Mappable](<#HandleCompareOperatorBeginsWith>)
 - [func HandleCompareOperatorBetweenDates\(fieldName string, \_ \[\]string, fieldValue any, \_ \*QuerySettings\) esquery.Mappable](<#HandleCompareOperatorBetweenDates>)
 - [func HandleCompareOperatorContains\(fieldName string, fieldKeys \[\]string, fieldValue any, querySettings \*QuerySettings\) esquery.Mappable](<#HandleCompareOperatorContains>)
@@ -77,43 +77,44 @@ Package openSearchQuery provides a query builder for OpenSearch.
   - [func \(q \*BoolQueryBuilder\) ReplaceCompareOperators\(operators \[\]CompareOperator\) \*BoolQueryBuilder](<#BoolQueryBuilder.ReplaceCompareOperators>)
 - [type CompareOperator](<#CompareOperator>)
 - [type CompareOperatorHandler](<#CompareOperatorHandler>)
+- [type EffectiveSortField](<#EffectiveSortField>)
 - [type NestedQueryFieldDefinition](<#NestedQueryFieldDefinition>)
 - [type QuerySettings](<#QuerySettings>)
 - [type RatingRange](<#RatingRange>)
 
 
 <a name="AddBucketSortAgg"></a>
-## func [AddBucketSortAgg](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/sort.go#L114-L116>)
+## func [AddBucketSortAgg](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/sort.go#L98-L101>)
 
 ```go
-func AddBucketSortAgg(aggs []esquery.Aggregation, sortingRequest *sorting.Request, pagingRequest *paging.Request) ([]esquery.Aggregation, error)
+func AddBucketSortAgg(aggs []esquery.Aggregation, sortingRequest *sorting.Request, sortFieldMapping map[string]EffectiveSortField, pagingRequest *paging.Request) ([]esquery.Aggregation, error)
 ```
 
 
 
 <a name="AddMaxAggForSorting"></a>
-## func [AddMaxAggForSorting](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/sort.go#L56>)
+## func [AddMaxAggForSorting](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/sort.go#L36-L38>)
 
 ```go
-func AddMaxAggForSorting(aggs []esquery.Aggregation, sortingRequest *sorting.Request) ([]esquery.Aggregation, error)
+func AddMaxAggForSorting(aggs []esquery.Aggregation, sortingRequest *sorting.Request, sortFieldMapping map[string]EffectiveSortField) ([]esquery.Aggregation, error)
 ```
 
 
 
 <a name="AddOrder"></a>
-## func [AddOrder](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/sort.go#L45>)
+## func [AddOrder](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/sort.go#L23-L25>)
 
 ```go
-func AddOrder(aggregation *esquery.TermsAggregation, sortingRequest *sorting.Request) (*esquery.TermsAggregation, error)
+func AddOrder(aggregation *esquery.TermsAggregation, sortingRequest *sorting.Request, sortFieldMapping map[string]EffectiveSortField) (*esquery.TermsAggregation, error)
 ```
 
 
 
 <a name="BucketSortAgg"></a>
-## func [BucketSortAgg](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/sort.go#L76>)
+## func [BucketSortAgg](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/sort.go#L58-L60>)
 
 ```go
-func BucketSortAgg(sortingRequest *sorting.Request, pagingRequest *paging.Request) (*esquery.CustomAggMap, error)
+func BucketSortAgg(sortingRequest *sorting.Request, sortFieldMapping map[string]EffectiveSortField, pagingRequest *paging.Request) (*esquery.CustomAggMap, error)
 ```
 
 BucketSortAgg is capable to sort all existing buckets, but is currently only used for paging
@@ -414,6 +415,19 @@ fieldName is the name of the field. fieldKeys is a list of keys used only for ne
 ```go
 type CompareOperatorHandler func(fieldName string, fieldKeys []string, fieldValue any,
     querySettings *QuerySettings) esquery.Mappable
+```
+
+<a name="EffectiveSortField"></a>
+## type [EffectiveSortField](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchQuery/sort.go#L17-L21>)
+
+
+
+```go
+type EffectiveSortField struct {
+    PlainField       *string
+    AggregationName  *string
+    AggregationValue string
+}
 ```
 
 <a name="NestedQueryFieldDefinition"></a>

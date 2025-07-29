@@ -72,7 +72,7 @@ test: ## run all tests
 .PHONY: generate_docs
 generate_docs: check_tools
 	gomarkdoc -e --output '{{.Dir}}/README.md' \
-		--exclude-dirs .,./pkg/configReader/helper,./pkg/dbcrypt/config,./pkg/openSearch/openSearchClient/config \
+		--exclude-dirs .,./pkg/configReader/helper,./pkg/dbcrypt/config,./pkg/openSearch/openSearchClient/config,./pkg/swagger/ginSwagger.go \
 		./...
 
 check_tools:

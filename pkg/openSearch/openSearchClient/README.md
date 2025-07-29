@@ -171,7 +171,7 @@ NewOpenSearchProjectClient creates a new official OpenSearch client \(package gi
 ctx is the context to use for the connection. config is the configuration for the client.
 
 <a name="SerializeDocumentsForBulkUpdate"></a>
-## func [SerializeDocumentsForBulkUpdate](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L436>)
+## func [SerializeDocumentsForBulkUpdate](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L446>)
 
 ```go
 func SerializeDocumentsForBulkUpdate[T any](indexName string, documents []T) ([]byte, error)
@@ -336,7 +336,7 @@ AsyncDeleteByQuery updates documents in the given index asynchronously. It does 
 indexName is the name of the index to delete from. requestBody is the request body to send to OpenSearch to identify the documents to be deleted.
 
 <a name="Client.BulkUpdate"></a>
-### func \(\*Client\) [BulkUpdate](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L461>)
+### func \(\*Client\) [BulkUpdate](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L471>)
 
 ```go
 func (c *Client) BulkUpdate(indexName string, requestBody []byte) error
@@ -347,7 +347,7 @@ BulkUpdate performs a bulk update in the given index. It returns an error in cas
 indexName is the name of the index to update. requestBody is the request body to send to OpenSearch specifying the bulk update.
 
 <a name="Client.Close"></a>
-### func \(\*Client\) [Close](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L480>)
+### func \(\*Client\) [Close](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/client.go#L496>)
 
 ```go
 func (c *Client) Close()
@@ -567,7 +567,7 @@ func NewIndexFunction(openSearchProjectClient *opensearchapi.Client) *IndexFunct
 
 
 <a name="IndexFunction.AliasExists"></a>
-### func \(\*IndexFunction\) [AliasExists](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L178>)
+### func \(\*IndexFunction\) [AliasExists](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L219>)
 
 ```go
 func (i *IndexFunction) AliasExists(aliasName string) (bool, error)
@@ -585,7 +585,7 @@ func (i *IndexFunction) CreateIndex(indexName string, indexSchema []byte) error
 CreateIndex creates an index
 
 <a name="IndexFunction.CreateOrPutAlias"></a>
-### func \(\*IndexFunction\) [CreateOrPutAlias](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L127>)
+### func \(\*IndexFunction\) [CreateOrPutAlias](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L142>)
 
 ```go
 func (i *IndexFunction) CreateOrPutAlias(aliasName string, indexNames ...string) error
@@ -594,7 +594,7 @@ func (i *IndexFunction) CreateOrPutAlias(aliasName string, indexNames ...string)
 
 
 <a name="IndexFunction.DeleteAliasFromIndex"></a>
-### func \(\*IndexFunction\) [DeleteAliasFromIndex](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L143>)
+### func \(\*IndexFunction\) [DeleteAliasFromIndex](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L168>)
 
 ```go
 func (i *IndexFunction) DeleteAliasFromIndex(indexName string, aliasName string) error
@@ -603,7 +603,7 @@ func (i *IndexFunction) DeleteAliasFromIndex(indexName string, aliasName string)
 
 
 <a name="IndexFunction.DeleteIndex"></a>
-### func \(\*IndexFunction\) [DeleteIndex](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L113>)
+### func \(\*IndexFunction\) [DeleteIndex](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L118>)
 
 ```go
 func (i *IndexFunction) DeleteIndex(indexName string) error
@@ -612,7 +612,7 @@ func (i *IndexFunction) DeleteIndex(indexName string) error
 
 
 <a name="IndexFunction.ForceMerge"></a>
-### func \(\*IndexFunction\) [ForceMerge](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L335>)
+### func \(\*IndexFunction\) [ForceMerge](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L395>)
 
 ```go
 func (i *IndexFunction) ForceMerge(index string, maximumNumberOfSegments int) error
@@ -621,7 +621,7 @@ func (i *IndexFunction) ForceMerge(index string, maximumNumberOfSegments int) er
 
 
 <a name="IndexFunction.GetIndexSettings"></a>
-### func \(\*IndexFunction\) [GetIndexSettings](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L288>)
+### func \(\*IndexFunction\) [GetIndexSettings](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L342>)
 
 ```go
 func (i *IndexFunction) GetIndexSettings(index string) (map[string]interface{}, error)
@@ -630,7 +630,7 @@ func (i *IndexFunction) GetIndexSettings(index string) (map[string]interface{}, 
 
 
 <a name="IndexFunction.GetIndexes"></a>
-### func \(\*IndexFunction\) [GetIndexes](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L48>)
+### func \(\*IndexFunction\) [GetIndexes](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L53>)
 
 ```go
 func (i *IndexFunction) GetIndexes(pattern string) ([]string, error)
@@ -639,7 +639,7 @@ func (i *IndexFunction) GetIndexes(pattern string) ([]string, error)
 
 
 <a name="IndexFunction.GetIndexesForAlias"></a>
-### func \(\*IndexFunction\) [GetIndexesForAlias](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L201>)
+### func \(\*IndexFunction\) [GetIndexesForAlias](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L248>)
 
 ```go
 func (i *IndexFunction) GetIndexesForAlias(aliasName string) ([]string, error)
@@ -648,7 +648,7 @@ func (i *IndexFunction) GetIndexesForAlias(aliasName string) ([]string, error)
 previously AliasPointsToIndex
 
 <a name="IndexFunction.IndexExists"></a>
-### func \(\*IndexFunction\) [IndexExists](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L89>)
+### func \(\*IndexFunction\) [IndexExists](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L94>)
 
 ```go
 func (i *IndexFunction) IndexExists(indexName string) (bool, error)
@@ -657,7 +657,7 @@ func (i *IndexFunction) IndexExists(indexName string) (bool, error)
 
 
 <a name="IndexFunction.IndexHasAlias"></a>
-### func \(\*IndexFunction\) [IndexHasAlias](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L158>)
+### func \(\*IndexFunction\) [IndexHasAlias](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L194>)
 
 ```go
 func (i *IndexFunction) IndexHasAlias(indexNames []string, aliasNames []string) (bool, error)
@@ -666,7 +666,7 @@ func (i *IndexFunction) IndexHasAlias(indexNames []string, aliasNames []string) 
 
 
 <a name="IndexFunction.RefreshIndex"></a>
-### func \(\*IndexFunction\) [RefreshIndex](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L271>)
+### func \(\*IndexFunction\) [RefreshIndex](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L318>)
 
 ```go
 func (i *IndexFunction) RefreshIndex(index string) error
@@ -675,7 +675,7 @@ func (i *IndexFunction) RefreshIndex(index string) error
 
 
 <a name="IndexFunction.RemoveIndexesFromAlias"></a>
-### func \(\*IndexFunction\) [RemoveIndexesFromAlias](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L220>)
+### func \(\*IndexFunction\) [RemoveIndexesFromAlias](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L267>)
 
 ```go
 func (i *IndexFunction) RemoveIndexesFromAlias(indexesToRemove []string, aliasName string) error
@@ -684,7 +684,7 @@ func (i *IndexFunction) RemoveIndexesFromAlias(indexesToRemove []string, aliasNa
 
 
 <a name="IndexFunction.SetIndexSettings"></a>
-### func \(\*IndexFunction\) [SetIndexSettings](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L316>)
+### func \(\*IndexFunction\) [SetIndexSettings](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/openSearchClient/indexFunctions.go#L370>)
 
 ```go
 func (i *IndexFunction) SetIndexSettings(index string, settingsBody io.Reader) error
