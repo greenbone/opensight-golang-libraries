@@ -65,7 +65,6 @@ func NewClient(httpClient *http.Client, config Config, authentication KeycloakAu
 }
 
 // CreateNotification sends a notification to the notification service.
-// The request is authenticated, serialized, and sent via an HTTP POST request.
 // It is retried up to the configured number of retries with an exponential backoff,
 // So it can take some time until the functions returns.
 func (c *Client) CreateNotification(ctx context.Context, notification Notification) error {

@@ -25,48 +25,82 @@ type serverErrors struct { // set at most one of the fields to true
 	unexpectedResponse bool
 }
 
-func TestClient_CreateNotification(t *testing.T) {
-	tests := []struct {
-		name         string
-		serverErrors serverErrors
-		wantErr      bool
-	}{
-		{
-			name:         "notification can be sent",
-			serverErrors: serverErrors{}, // no server errors
-			wantErr:      false,
-		},
-		{
-			name:         "notification can be sent despite temporary server failure",
-			serverErrors: serverErrors{retryableFail: true},
-			wantErr:      false,
-		},
-		{
-			name:         "client returns error on non retryable notification service error",
-			serverErrors: serverErrors{fatalFail: true},
-			wantErr:      true,
-		},
-		{
-			name:         "client fails on authentication error",
-			serverErrors: serverErrors{authenticationFail: true},
-			wantErr:      true,
-		},
-		{
-			name:         "sending notification fails after maximum number of retries",
-			serverErrors: serverErrors{unexpectedResponse: true},
-			wantErr:      true,
-		},
-	}
+const checkForCurrentTimestamp = "marker to check for current timestamp"
 
+func TestClient_CreateNotification(t *testing.T) {
 	notification := Notification{
 		Origin:       "Example Task XY",
-		Timestamp:    time.Time{},
+		Timestamp:    time.Date(1, 2, 3, 4, 5, 6, 7, time.UTC),
 		Title:        "Example Task XY failed",
 		Detail:       "Example Task XY failed because ...",
 		Level:        LevelError,
 		CustomFields: map[string]any{"extraProperty": "value"},
 	}
 
+	notificationWithoutTimestamp := notification
+	notificationWithoutTimestamp.Timestamp = time.Time{}
+
+	wantNotification := notificationModel{
+		Origin:       "Example Task XY",
+		Timestamp:    "0001-02-03T04:05:06.000000007Z",
+		Title:        "Example Task XY failed",
+		Detail:       "Example Task XY failed because ...",
+		Level:        LevelError,
+		CustomFields: map[string]any{"extraProperty": "value"},
+	}
+	wantNotificationWithoutTimestamp := wantNotification
+	wantNotificationWithoutTimestamp.Timestamp = checkForCurrentTimestamp // can't test exact timestamp
+
+	tests := []struct {
+		name                 string
+		notification         Notification
+		serverErrors         serverErrors
+		wantNotificationSent notificationModel // expected on server side
+		wantErr              bool
+	}{
+		{
+			name:                 "notification can be sent",
+			notification:         notification,
+			serverErrors:         serverErrors{}, // no server errors
+			wantNotificationSent: wantNotification,
+			wantErr:              false,
+		},
+		{
+			name:                 "success, adding timestamp when unset",
+			notification:         notificationWithoutTimestamp,
+			serverErrors:         serverErrors{}, // no server errors
+			wantNotificationSent: wantNotificationWithoutTimestamp,
+			wantErr:              false,
+		},
+		{
+			name:                 "notification can be sent despite temporary server failure",
+			notification:         notification,
+			serverErrors:         serverErrors{retryableFail: true},
+			wantNotificationSent: wantNotification,
+			wantErr:              false,
+		},
+		{
+			name:                 "client returns error on non retryable notification service error",
+			notification:         notification,
+			serverErrors:         serverErrors{fatalFail: true},
+			wantNotificationSent: wantNotification,
+			wantErr:              true,
+		},
+		{
+			name:                 "client fails on authentication error",
+			notification:         notification,
+			serverErrors:         serverErrors{authenticationFail: true},
+			wantNotificationSent: wantNotification,
+			wantErr:              true,
+		},
+		{
+			name:                 "sending notification fails after maximum number of retries",
+			notification:         notification,
+			serverErrors:         serverErrors{unexpectedResponse: true},
+			wantNotificationSent: wantNotification,
+			wantErr:              true,
+		},
+	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var serverCallCount atomic.Int32
@@ -74,7 +108,7 @@ func TestClient_CreateNotification(t *testing.T) {
 			mockAuthServer := setupMockAuthServer(t, tt.serverErrors.authenticationFail)
 			defer mockAuthServer.Close()
 
-			mockNotificationServer := setupMockNotificationServer(t, &serverCallCount, tt.serverErrors)
+			mockNotificationServer := setupMockNotificationServer(t, &serverCallCount, tt.wantNotificationSent, tt.serverErrors)
 			defer mockNotificationServer.Close()
 
 			config := Config{
@@ -92,7 +126,7 @@ func TestClient_CreateNotification(t *testing.T) {
 			}
 
 			client := NewClient(http.DefaultClient, config, authentication)
-			err := client.CreateNotification(context.Background(), notification)
+			err := client.CreateNotification(context.Background(), tt.notification)
 
 			if !tt.serverErrors.authenticationFail {
 				require.True(t, serverCallCount.Load() > 0, "server was not called")
@@ -118,7 +152,7 @@ func setupMockAuthServer(t *testing.T, failAuth bool) *httptest.Server {
 	}))
 }
 
-func setupMockNotificationServer(t *testing.T, serverCallCount *atomic.Int32, errors serverErrors) *httptest.Server {
+func setupMockNotificationServer(t *testing.T, serverCallCount *atomic.Int32, wantNotification notificationModel, errors serverErrors) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		serverCallCount.Add(1)
 
@@ -133,14 +167,21 @@ func setupMockNotificationServer(t *testing.T, serverCallCount *atomic.Int32, er
 
 		requestBody, err := io.ReadAll(r.Body)
 		require.NoError(t, err, "failed to read request body")
-		assert.JSONEq(t, `{
-			"origin": "Example Task XY",
-			"timestamp": "0001-01-01T00:00:00Z",
-			"title": "Example Task XY failed",
-			"detail": "Example Task XY failed because ...",
-			"level": "error",
-			"customFields": {"extraProperty": "value"}
-		}`, string(requestBody), "request body is incorrect")
+		var gotNotification notificationModel
+		err = json.Unmarshal(requestBody, &gotNotification)
+		require.NoError(t, err, "failed to unmarshal request body")
+
+		if wantNotification.Timestamp == checkForCurrentTimestamp {
+			gotTime, err := time.Parse(time.RFC3339Nano, gotNotification.Timestamp)
+			assert.NoError(t, err, "failed to parse timestamp from request body")
+
+			assert.NotEqual(t, time.Time{}, gotTime, "cliend did not set timestamp")
+			assert.True(t, gotTime.Before(time.Now()), "timestamp is in the future")
+			assert.True(t, gotTime.After(time.Now().Add(-time.Minute)), "timestamp is too far in the past")
+			// timestamp was checked, ignore in other comparisons
+			wantNotification.Timestamp = gotNotification.Timestamp
+		}
+		assert.Equal(t, wantNotification, gotNotification)
 
 		// error simulation (fail on first attempt, if configured)
 		if serverCallCount.Load() == 1 {

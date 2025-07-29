@@ -43,16 +43,16 @@ func NewClient(httpClient *http.Client, config Config, authentication KeycloakAu
 NewClient returns a new [Client](<#Client>) with the notification service address \(host:port\) set. As httpClient you can use e.g. \[http.DefaultClient\].
 
 <a name="Client.CreateNotification"></a>
-### func \(\*Client\) [CreateNotification](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L71>)
+### func \(\*Client\) [CreateNotification](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L70>)
 
 ```go
 func (c *Client) CreateNotification(ctx context.Context, notification Notification) error
 ```
 
-CreateNotification sends a notification to the notification service. The request is authenticated, serialized, and sent via an HTTP POST request. It is retried up to the configured number of retries with an exponential backoff, So it can take some time until the functions returns.
+CreateNotification sends a notification to the notification service. It is retried up to the configured number of retries with an exponential backoff, So it can take some time until the functions returns.
 
 <a name="Client.GetAuthenticationToken"></a>
-### func \(\*Client\) [GetAuthenticationToken](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L109>)
+### func \(\*Client\) [GetAuthenticationToken](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L108>)
 
 ```go
 func (c *Client) GetAuthenticationToken(ctx context.Context) (string, error)
@@ -117,9 +117,9 @@ const (
 type Notification struct {
     // omit property `Id` here, as it is read only
     Origin       string
-    OriginUri    string // can be used to provide a link to the origin
-    Timestamp    time.Time
-    Title        string // can also be seen as the 'type'
+    OriginUri    string    // can be used to provide a link to the origin
+    Timestamp    time.Time // client will set timestamp if not set
+    Title        string    // can also be seen as the 'type'
     Detail       string
     Level        Level
     CustomFields map[string]any // can contain arbitrary structured information about the notification
