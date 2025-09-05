@@ -9,9 +9,9 @@ import "time"
 type Notification struct {
 	// omit property `Id` here, as it is read only
 	Origin       string
-	OriginUri    string // can be used to provide a link to the origin
-	Timestamp    time.Time
-	Title        string // can also be seen as the 'type'
+	OriginUri    string    // can be used to provide a link to the origin
+	Timestamp    time.Time // client will set timestamp if not set
+	Title        string    // can also be seen as the 'type'
 	Detail       string
 	Level        Level
 	CustomFields map[string]any // can contain arbitrary structured information about the notification
@@ -39,7 +39,13 @@ const (
 	LevelError   Level = "error"
 )
 
+// toNotificationModel converts a Notification to the rest model for the notification service.
+// It also adds the current time as timestamp if it is not set.
 func toNotificationModel(n Notification) notificationModel {
+	if n.Timestamp.IsZero() {
+		n.Timestamp = time.Now().UTC()
+	}
+
 	return notificationModel{
 		Origin:       n.Origin,
 		OriginUri:    n.OriginUri,
