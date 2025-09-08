@@ -37,6 +37,7 @@ Package esextensions provides extensions for https://github.com/aquasecurity/esq
 - [type TermsSource](<#TermsSource>)
   - [func Terms\(name string, field string\) \*TermsSource](<#Terms>)
   - [func \(t \*TermsSource\) Map\(\) map\[string\]interface\{\}](<#TermsSource.Map>)
+  - [func \(t \*TermsSource\) MissingBucket\(\) \*TermsSource](<#TermsSource.MissingBucket>)
   - [func \(t \*TermsSource\) Order\(order string\) \*TermsSource](<#TermsSource.Order>)
 
 
@@ -261,7 +262,7 @@ func (a *ScriptedSumAggregation) Name() string
 Name returns the name of the ScriptedSumAggregation, needed for the esquery.Aggregation interface.
 
 <a name="TermsSource"></a>
-## type [TermsSource](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/termsSource.go#L8-L12>)
+## type [TermsSource](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/termsSource.go#L8-L13>)
 
 TermsSource represents a terms value source in composite aggregations.
 
@@ -272,7 +273,7 @@ type TermsSource struct {
 ```
 
 <a name="Terms"></a>
-### func [Terms](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/termsSource.go#L18>)
+### func [Terms](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/termsSource.go#L19>)
 
 ```go
 func Terms(name string, field string) *TermsSource
@@ -283,7 +284,7 @@ Terms creates a new TermsSource.
 name: The name of the terms TermsSource. field: The name of the field referenced.
 
 <a name="TermsSource.Map"></a>
-### func \(\*TermsSource\) [Map](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/termsSource.go#L34>)
+### func \(\*TermsSource\) [Map](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/termsSource.go#L42>)
 
 ```go
 func (t *TermsSource) Map() map[string]interface{}
@@ -291,8 +292,17 @@ func (t *TermsSource) Map() map[string]interface{}
 
 Map returns a map representation of the TermsSource.
 
+<a name="TermsSource.MissingBucket"></a>
+### func \(\*TermsSource\) [MissingBucket](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/termsSource.go#L29>)
+
+```go
+func (t *TermsSource) MissingBucket() *TermsSource
+```
+
+MissingBucket sets the missing\_bucket flag to true in the TermsSource.
+
 <a name="TermsSource.Order"></a>
-### func \(\*TermsSource\) [Order](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/termsSource.go#L28>)
+### func \(\*TermsSource\) [Order](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/esextension/termsSource.go#L36>)
 
 ```go
 func (t *TermsSource) Order(order string) *TermsSource
