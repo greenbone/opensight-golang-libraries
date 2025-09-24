@@ -68,7 +68,7 @@ func ValidateFilter(request *Request, requestOptions []RequestOption) error {
 					}
 				} else {
 					if strVal, ok := field.Value.(string); ok {
-						field.Value = strings.TrimSpace(strVal)
+						request.Fields[i].Value = strings.TrimSpace(strVal)
 					}
 					err := validateFieldValueType(requestOption, field.Name, field.Value)
 					if err != nil {
