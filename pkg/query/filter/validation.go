@@ -45,12 +45,7 @@ func ValidateFilter(request *Request, requestOptions []RequestOption) error {
 				// validate field value
 				if requestOption.MultiSelect {
 					if vals, ok := field.Value.([]interface{}); ok {
-						for idx, v := range vals {
-							if strVal, ok := v.(string); ok {
-								vals[idx] = strings.TrimSpace(strVal)
-							}
-						}
-						field.Value = vals
+						trimSpaces(vals, field)
 					} else {
 						return NewValidationError("field '%s' must be from type '[]%s'", field.Name, requestOption.Control.Type)
 					}
@@ -141,4 +136,13 @@ func validateFieldValueType(requestOption RequestOption, fieldName string, field
 		return NewValidationError("request option control type '%s' is not supported", requestOption.Control.Type)
 	}
 	return nil
+}
+
+func trimSpaces(vals []interface{}, field RequestField) {
+	for idx, v := range vals {
+		if strVal, ok := v.(string); ok {
+			vals[idx] = strings.TrimSpace(strVal)
+		}
+	}
+	field.Value = vals
 }
