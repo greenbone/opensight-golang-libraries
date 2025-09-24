@@ -44,7 +44,14 @@ func ValidateFilter(request *Request, requestOptions []RequestOption) error {
 
 				// validate field value
 				if requestOption.MultiSelect {
-					if _, ok := field.Value.([]interface{}); !ok {
+					if vals, ok := field.Value.([]interface{}); ok {
+						for idx, v := range vals {
+							if strVal, ok := v.(string); ok {
+								vals[idx] = strings.TrimSpace(strVal)
+							}
+						}
+						field.Value = vals
+					} else {
 						return NewValidationError("field '%s' must be from type '[]%s'", field.Name, requestOption.Control.Type)
 					}
 
