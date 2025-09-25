@@ -51,8 +51,68 @@ func TestRequestOptionValidation(t *testing.T) {
 				},
 				MultiSelect: false,
 			},
+			{
+				Name: ReadableValue[string]{
+					Value: "optionNameThree",
+				},
+				Control: RequestOptionType{
+					Type: ControlTypeString,
+				},
+				Operators: []ReadableValue[CompareOperator]{
+					{
+						Value: CompareOperatorIsStringEqualTo,
+					},
+					{
+						Value: CompareOperatorIsStringNotEqualTo,
+					},
+				},
+				MultiSelect: false,
+			},
 		}
 	}
+
+	t.Run("testValidateFilter_TrimSpacesInSingleValues", func(t *testing.T) {
+		setup(t)
+
+		req := &Request{
+			Operator: LogicOperatorAnd,
+			Fields: []RequestField{
+				{
+					Name:     "optionNameThree",
+					Operator: CompareOperatorIsStringEqualTo,
+					Value:    " First ",
+				},
+			},
+		}
+
+		err := ValidateFilter(req, requestOptions)
+		require.NoError(t, err)
+
+		vals := req.Fields[0].Value.(string)
+		assert.Equal(t, "First", vals)
+	})
+
+	t.Run("testValidateFilter_TrimSpacesInMultiSelectValues", func(t *testing.T) {
+		setup(t)
+
+		req := &Request{
+			Operator: LogicOperatorAnd,
+			Fields: []RequestField{
+				{
+					Name:     "optionNameOne",
+					Operator: CompareOperatorContains,
+					Value:    []interface{}{" First ", "Second "},
+				},
+			},
+		}
+
+		err := ValidateFilter(req, requestOptions)
+		require.NoError(t, err)
+
+		vals := req.Fields[0].Value.([]interface{})
+		assert.Equal(t, "First", vals[0])
+		assert.Equal(t, "Second", vals[1])
+	})
 
 	t.Run("shouldAllowUnsetFilter", func(t *testing.T) {
 		setup(t)
