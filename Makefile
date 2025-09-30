@@ -67,6 +67,10 @@ build: build-common ## build go library packages
 test: ## run all tests
 	go test -test.short ./...
 
+.PHONY: test-codecov
+test-codecov:
+	go test -cover -coverprofile=coverage.txt ./...
+
 .PHONY: all build test clean
 
 .PHONY: generate_docs
