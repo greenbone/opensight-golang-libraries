@@ -175,7 +175,7 @@ func setupMockNotificationServer(t *testing.T, serverCallCount *atomic.Int32, wa
 			gotTime, err := time.Parse(time.RFC3339Nano, gotNotification.Timestamp)
 			assert.NoError(t, err, "failed to parse timestamp from request body")
 
-			assert.NotEqual(t, time.Time{}, gotTime, "cliend did not set timestamp")
+			assert.NotEqual(t, time.Time{}, gotTime, "client did not set timestamp")
 			assert.True(t, gotTime.Before(time.Now()), "timestamp is in the future")
 			assert.True(t, gotTime.After(time.Now().Add(-time.Minute)), "timestamp is too far in the past")
 			// timestamp was checked, ignore in other comparisons
