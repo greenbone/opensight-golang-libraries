@@ -1,0 +1,15 @@
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "range": {
+            "testName": {
+              "lt": 5
+            }
+          }
+        }
+      ]
+    }
+  }
+}

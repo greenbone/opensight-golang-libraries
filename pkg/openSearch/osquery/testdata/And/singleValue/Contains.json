@@ -1,0 +1,15 @@
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "wildcard": {
+            "testName.keyword": {
+              "value": "*test*"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

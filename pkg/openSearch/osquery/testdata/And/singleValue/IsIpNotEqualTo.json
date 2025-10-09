@@ -1,0 +1,15 @@
+{
+  "query": {
+    "bool": {
+      "must_not": [
+        {
+          "term": {
+            "testName.keyword": {
+              "value": "127.0.0.1"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
