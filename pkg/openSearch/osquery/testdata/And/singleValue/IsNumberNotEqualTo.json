@@ -1,0 +1,15 @@
+{
+  "query": {
+    "bool": {
+      "must_not": [
+        {
+          "term": {
+            "testName": {
+              "value": "5"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

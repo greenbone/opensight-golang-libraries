@@ -1,0 +1,29 @@
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "bool": {
+            "should": [
+              {
+                "wildcard": {
+                  "testName.keyword": {
+                    "value": "*test1*"
+                  }
+                }
+              },
+              {
+                "wildcard": {
+                  "testName.keyword": {
+                    "value": "*test2*"
+                  }
+                }
+              }
+            ],
+            "minimum_should_match": 1
+          }
+        }
+      ]
+    }
+  }
+}

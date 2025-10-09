@@ -1,0 +1,16 @@
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "terms": {
+            "testName.keyword": [
+              5,
+              6
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
