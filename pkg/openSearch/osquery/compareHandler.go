@@ -23,11 +23,6 @@ func HandleCompareOperatorIsEqualTo(fieldName string, fieldKeys []string, fieldV
 	return createTermQuery(fieldName, fieldValue, fieldKeys, querySettings)
 }
 
-// HandleCompareOperatorIsKeywordEqualTo handles is keyword field equal to
-func HandleCompareOperatorIsKeywordEqualTo(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
-	return createTermQuery(fieldName+".keyword", fieldValue, fieldKeys, querySettings)
-}
-
 // HandleCompareOperatorContains handles contains.
 // In the index mapping the given field must be a string of type `keyword`.
 func HandleCompareOperatorContains(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
@@ -35,22 +30,16 @@ func HandleCompareOperatorContains(fieldName string, fieldKeys []string, fieldVa
 		querySettings.UseNestedMatchQueryFields[fieldName] {
 		return nestedHandleCompareOperatorContains(fieldName, fieldKeys, fieldValue, querySettings)
 	}
-	// for list of values
-	if querySettings.WildcardArrays != nil &&
-		querySettings.WildcardArrays[fieldName] {
-		return handleCompareOperatorContainsDifferent(fieldName, nil, fieldValue, querySettings)
-	} else {
-		if values, ok := fieldValue.([]interface{}); ok {
-			return esquery.Bool().
-				Should(
-					lo.Map[interface{}, esquery.Mappable](values, func(value interface{}, _ int) esquery.Mappable {
-						return esquery.Wildcard(fieldName+".keyword", "*"+ValueToString(value)+"*")
-					})...,
-				).
-				MinimumShouldMatch(1)
-		} else { // for single values
-			return esquery.Wildcard(fieldName+".keyword", "*"+ValueToString(fieldValue)+"*")
-		}
+	if values, ok := fieldValue.([]interface{}); ok {
+		return esquery.Bool().
+			Should(
+				lo.Map[interface{}, esquery.Mappable](values, func(value interface{}, _ int) esquery.Mappable {
+					return esquery.Wildcard(fieldName, "*"+ValueToString(value)+"*")
+				})...,
+			).
+			MinimumShouldMatch(1)
+	} else { // for single values
+		return esquery.Wildcard(fieldName, "*"+ValueToString(fieldValue)+"*")
 	}
 }
 
@@ -65,20 +54,6 @@ func nestedHandleCompareOperatorContains(fieldName string, fieldKeys []string, f
 		return query1
 	}
 	return nil
-}
-
-func handleCompareOperatorContainsDifferent(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
-	if values, ok := fieldValue.([]interface{}); ok {
-		return esquery.Bool().
-			Should(
-				lo.Map[interface{}, esquery.Mappable](values, func(value interface{}, _ int) esquery.Mappable {
-					return esquery.Wildcard(fieldName, "*"+ValueToString(value)+"*")
-				})...,
-			).
-			MinimumShouldMatch(1)
-	} else { // for single values
-		return esquery.Wildcard(fieldName, "*"+fieldValue.(string)+"*")
-	}
 }
 
 // HandleCompareOperatorTextContains performs a full text search on the given field.
@@ -99,15 +74,7 @@ func HandleCompareOperatorTextContains(fieldName string, _ []string, fieldValue 
 
 // HandleCompareOperatorBeginsWith handles begins with
 func HandleCompareOperatorBeginsWith(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
-	isWildcardArray := querySettings.WildcardArrays != nil && querySettings.WildcardArrays[fieldName]
-	field := fieldName + ".keyword"
-
-	// if the query settings specify that it is a wildcard array, use the default field name without '.keyword' appended
-	if isWildcardArray {
-		field = fieldName
-	}
-
-	return handleCompareOperatorBeginsWith(field, fieldValue)
+	return handleCompareOperatorBeginsWith(fieldName, fieldValue)
 }
 
 func handleCompareOperatorBeginsWith(fieldName string, fieldValue any) esquery.Mappable {
@@ -133,11 +100,11 @@ func HandleCompareOperatorNotBeginsWith(fieldName string, fieldKeys []string, fi
 		return esquery.Bool().
 			MustNot(
 				lo.Map[interface{}, esquery.Mappable](values, func(value interface{}, _ int) esquery.Mappable {
-					return esquery.Prefix(fieldName+".keyword", ValueToString(value))
+					return esquery.Prefix(fieldName, ValueToString(value))
 				})...,
 			)
 	} else { // for single values
-		return esquery.Prefix(fieldName+".keyword", fieldValue.(string))
+		return esquery.Prefix(fieldName, fieldValue.(string))
 	}
 }
 
@@ -190,10 +157,6 @@ func createTermQuery(fieldName string, fieldValue any, fieldKeys []string, query
 			return nil
 		}
 
-		if querySettings.IsEqualToKeywordFields != nil &&
-			querySettings.IsEqualToKeywordFields[fieldName] {
-			fieldName = fieldName + ".keyword"
-		}
 		if querySettings.UseMatchPhrase != nil &&
 			querySettings.UseMatchPhrase[fieldName] {
 			return esquery.MatchPhrase(fieldName, values...)

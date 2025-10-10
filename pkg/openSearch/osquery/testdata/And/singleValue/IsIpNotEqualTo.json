@@ -4,7 +4,7 @@
       "must_not": [
         {
           "term": {
-            "testName.keyword": {
+            "testName": {
               "value": "127.0.0.1"
             }
           }
