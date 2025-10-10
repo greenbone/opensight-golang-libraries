@@ -5,7 +5,7 @@
       "should": [
         {
           "wildcard": {
-            "testName.keyword": {
+            "testName": {
               "value": "*test*"
             }
           }

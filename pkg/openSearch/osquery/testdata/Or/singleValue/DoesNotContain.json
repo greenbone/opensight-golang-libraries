@@ -8,7 +8,7 @@
             "must_not": [
               {
                 "wildcard": {
-                  "testName.keyword": {
+                  "testName": {
                     "value": "*test1*"
                   }
                 }

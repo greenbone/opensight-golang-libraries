@@ -28,7 +28,7 @@ type (
 	// fieldName is the name of the field.
 	// fieldKeys is a list of keys used only for nested fields.
 	// fieldValue is the value to compare against.
-	// querySettings are the settings to use for the query defining which fields are to be treated e.g. as wildcard array or keyword field.
+	// querySettings are the settings to use for the query.
 	CompareOperatorHandler func(fieldName string, fieldKeys []string, fieldValue any,
 		querySettings *QuerySettings) esquery.Mappable
 )
@@ -41,10 +41,6 @@ type RatingRange struct {
 
 // QuerySettings is used to configure the query builder.
 type QuerySettings struct {
-	// WildcardArrays is a map of field names to a boolean value indicating whether the field is to be treated as a wildcard array.
-	WildcardArrays map[string]bool
-	// IsEqualToKeywordFields is a map of field names to a boolean value indicating whether the field is to be treated as a keyword field.
-	IsEqualToKeywordFields map[string]bool
 	// UseNestedMatchQueryFields is a map of field names to a boolean value indicating whether the field is to be treated as a nested query field.
 	UseNestedMatchQueryFields map[string]bool
 	// NestedQueryFieldDefinitions is a list of nested query field definitions.
@@ -249,12 +245,12 @@ func defaultCompareOperators() []CompareOperator {
 			Operator: filter.CompareOperatorIsNumberNotEqualTo,
 			Handler:  HandleCompareOperatorIsEqualTo, MustCondition: false,
 		},
-		{Operator: filter.CompareOperatorIsIpEqualTo, Handler: HandleCompareOperatorIsKeywordEqualTo, MustCondition: true},
-		{Operator: filter.CompareOperatorIsIpNotEqualTo, Handler: HandleCompareOperatorIsKeywordEqualTo, MustCondition: false},
-		{Operator: filter.CompareOperatorIsStringEqualTo, Handler: HandleCompareOperatorIsKeywordEqualTo, MustCondition: true},
+		{Operator: filter.CompareOperatorIsIpEqualTo, Handler: HandleCompareOperatorIsEqualTo, MustCondition: true},
+		{Operator: filter.CompareOperatorIsIpNotEqualTo, Handler: HandleCompareOperatorIsEqualTo, MustCondition: false},
+		{Operator: filter.CompareOperatorIsStringEqualTo, Handler: HandleCompareOperatorIsEqualTo, MustCondition: true},
 		{
 			Operator: filter.CompareOperatorIsStringNotEqualTo,
-			Handler:  HandleCompareOperatorIsKeywordEqualTo, MustCondition: false,
+			Handler:  HandleCompareOperatorIsEqualTo, MustCondition: false,
 		},
 		{Operator: filter.CompareOperatorContains, Handler: HandleCompareOperatorContains, MustCondition: true},
 		{Operator: filter.CompareOperatorDoesNotContain, Handler: HandleCompareOperatorContains, MustCondition: false},

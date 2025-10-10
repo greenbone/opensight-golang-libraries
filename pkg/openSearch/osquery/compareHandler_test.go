@@ -15,10 +15,6 @@ import (
 
 func TestHandleCompareOperator(t *testing.T) {
 	querySettings := QuerySettings{
-		WildcardArrays: map[string]bool{
-			"asset.ips":          true,
-			"asset.macAddresses": true,
-		},
 		UseMatchPhrase: map[string]bool{
 			"vulnerabilityTest.family": true,
 		},
@@ -46,14 +42,6 @@ func TestHandleCompareOperator(t *testing.T) {
 			nil,
 			"10.0.0.1",
 			esquery.Term("asset.ips", "10.0.0.1"),
-		},
-		{
-			"IsKeywordEqualTo",
-			HandleCompareOperatorIsKeywordEqualTo,
-			"asset.hostnames",
-			nil,
-			"example.com",
-			esquery.Term("asset.hostnames.keyword", "example.com"),
 		},
 		{
 			"Contains",

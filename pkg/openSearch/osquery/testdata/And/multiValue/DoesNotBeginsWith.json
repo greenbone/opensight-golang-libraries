@@ -7,14 +7,14 @@
             "must_not": [
               {
                 "prefix": {
-                  "testName.keyword": {
+                  "testName": {
                     "value": "5"
                   }
                 }
               },
               {
                 "prefix": {
-                  "testName.keyword": {
+                  "testName": {
                     "value": "6"
                   }
                 }

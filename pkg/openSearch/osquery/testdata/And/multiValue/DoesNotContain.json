@@ -8,14 +8,14 @@
             "should": [
               {
                 "wildcard": {
-                  "testName.keyword": {
+                  "testName": {
                     "value": "*test1*"
                   }
                 }
               },
               {
                 "wildcard": {
-                  "testName.keyword": {
+                  "testName": {
                     "value": "*test2*"
                   }
                 }

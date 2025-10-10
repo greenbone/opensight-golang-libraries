@@ -4,7 +4,7 @@
       "must": [
         {
           "terms": {
-            "testName.keyword": [
+            "testName": [
               5,
               6
             ]
