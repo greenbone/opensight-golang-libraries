@@ -22,7 +22,7 @@ type BoolQueryBuilder struct {
 }
 
 type (
-	queryAppender func(fieldName string, fieldKeys []string, fieldValue any)
+	queryAppender func(fieldName string, fieldKeys []string, fieldValue any) error
 	// CompareOperatorHandler is a function that generates an appropriate query condition for the given field.
 	//
 	// fieldName is the name of the field.
@@ -30,7 +30,7 @@ type (
 	// fieldValue is the value to compare against.
 	// querySettings are the settings to use for the query.
 	CompareOperatorHandler func(fieldName string, fieldKeys []string, fieldValue any,
-		querySettings *QuerySettings) esquery.Mappable
+		querySettings *QuerySettings) (esquery.Mappable, error)
 )
 
 // QuerySettings is used to configure the query builder.
@@ -99,20 +99,28 @@ func (q *BoolQueryBuilder) AddTermFilter(fieldName string, value interface{}) *B
 }
 
 func (q *BoolQueryBuilder) addToMust(call CompareOperatorHandler) queryAppender {
-	return func(fieldName string, fieldKeys []string, fieldValue any) {
-		value := call(fieldName, fieldKeys, fieldValue, q.querySettings)
+	return func(fieldName string, fieldKeys []string, fieldValue any) error {
+		value, err := call(fieldName, fieldKeys, fieldValue, q.querySettings)
+		if err != nil {
+			return err
+		}
 		if value != nil {
 			q.Must = append(q.Must, value)
 		}
+		return nil
 	}
 }
 
 func (q *BoolQueryBuilder) addToMustNot(call CompareOperatorHandler) queryAppender {
-	return func(fieldName string, fieldKeys []string, fieldValue any) {
-		value := call(fieldName, fieldKeys, fieldValue, q.querySettings)
+	return func(fieldName string, fieldKeys []string, fieldValue any) error {
+		value, err := call(fieldName, fieldKeys, fieldValue, q.querySettings)
+		if err != nil {
+			return err
+		}
 		if value != nil {
 			q.MustNot = append(q.MustNot, value)
 		}
+		return nil
 	}
 }
 
@@ -148,7 +156,10 @@ func (q *BoolQueryBuilder) AddFilterRequest(request *filter.Request) error {
 
 	for _, field := range effectiveRequest.Fields {
 		if handler, ok := operatorMapping[field.Operator]; ok {
-			handler(field.Name, field.Keys, field.Value)
+			err := handler(field.Name, field.Keys, field.Value)
+			if err != nil {
+				return fmt.Errorf("failed to transform filter to database query: %w", err)
+			}
 		} else {
 			return fmt.Errorf("field '%s' with unknown operator '%s'", field.Name, field.Operator)
 		}
