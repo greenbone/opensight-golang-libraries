@@ -140,28 +140,47 @@ func (i *IndexFunction) DeleteIndex(indexName string) error {
 }
 
 func (i *IndexFunction) CreateOrPutAlias(aliasName string, indexNames ...string) error {
-	resp, err := i.openSearchProjectClient.Indices.Alias.Put(
+	var actions []map[string]interface{}
+	for _, idx := range indexNames {
+		actions = append(actions, map[string]interface{}{
+			"add": map[string]interface{}{
+				"index": idx,
+				"alias": aliasName,
+			},
+		})
+	}
+	body := map[string]interface{}{
+		"actions": actions,
+	}
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(body); err != nil {
+		return fmt.Errorf("failed to encode alias body: %w", err)
+	}
+
+	resp, err := i.openSearchProjectClient.Client.Do(
 		context.Background(),
-		opensearchapi.AliasPutReq{
-			Indices: indexNames,
-			Alias:   aliasName,
+		opensearchapi.AliasesReq{
+			Body: &buf,
 		},
+		nil,
 	)
 	if err != nil {
 		log.Debug().Err(err).Msg("error while creating and putting alias")
 		return err
 	}
-	defer resp.Inspect().Response.Body.Close()
+	defer resp.Body.Close()
 
-	if resp.Inspect().Response.StatusCode == http.StatusConflict {
+	if resp.StatusCode == http.StatusConflict {
 		log.Debug().Msgf("alias %s already exists, nothing to create", aliasName)
 		return nil
 	}
 
-	if resp.Inspect().Response.IsError() {
-		return fmt.Errorf("error while creating or putting alias %s: %s", aliasName, resp.Inspect().Response.String())
+	if resp.IsError() {
+		return fmt.Errorf("error while creating or putting alias %s: %s", aliasName, resp.String())
 	}
 
+	log.Debug().Msgf("alias %s created or updated successfully", aliasName)
 	return nil
 }
 
