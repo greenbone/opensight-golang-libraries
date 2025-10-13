@@ -140,10 +140,6 @@ func (i *IndexFunction) DeleteIndex(indexName string) error {
 }
 
 func (i *IndexFunction) CreateOrPutAlias(aliasName string, indexNames ...string) error {
-	if len(indexNames) == 0 {
-		return fmt.Errorf("no index names provided for alias %q", aliasName)
-	}
-
 	var actions []map[string]interface{}
 	for _, idx := range indexNames {
 		actions = append(actions, map[string]interface{}{
