@@ -170,13 +170,18 @@ func (i *IndexFunction) CreateOrPutAlias(aliasName string, indexNames ...string)
 		nil,
 	)
 	if err != nil {
-		log.Debug().Err(err).Msg("error while creating alias")
+		log.Debug().Err(err).Msg("error while creating and putting alias")
 		return err
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode == http.StatusConflict {
+		log.Debug().Msgf("alias %s already exists, nothing to create", aliasName)
+		return nil
+	}
+
 	if resp.IsError() {
-		return fmt.Errorf("error creating alias %s: %s", aliasName, resp.String())
+		return fmt.Errorf("error while creating or putting alias %s: %s", aliasName, resp.String())
 	}
 
 	log.Debug().Msgf("alias %s created or updated successfully", aliasName)
