@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -149,4 +150,39 @@ func TestIndexCheck(t *testing.T) {
 	doesNotExists, err = iFunc.IndexExists("testindex2")
 	require.NoError(t, err)
 	assert.Equal(t, false, doesNotExists)
+}
+
+func TestCreateOrPutAliasWithLargeIndexes(t *testing.T) {
+	ctx := context.Background()
+	currentTime := time.Now().UTC()
+	opensearchContainer, conf, err := StartOpensearchTestContainer(ctx)
+	require.NoError(t, err)
+	require.NotNil(t, opensearchContainer)
+	defer func() {
+		opensearchContainer.Terminate(ctx)
+	}()
+
+	client, err := NewOpenSearchProjectClient(context.Background(), conf, nil)
+	require.NoError(t, err)
+	iFunc := NewIndexFunction(client)
+
+	indexNames := make([]string, 365)
+	for i := 0; i < 365; i++ {
+		date := currentTime.AddDate(0, 0, -i)
+		indexName := fmt.Sprintf("go_vulnerability_%s_1", date.Format("20060102"))
+		indexNames[i] = indexName
+		err := iFunc.CreateIndex(indexName, []byte(testIndex))
+		require.NoError(t, err)
+	}
+
+	aliasName := "go_last_365_days_vulnerability"
+	err = iFunc.CreateOrPutAlias(aliasName, indexNames...)
+	require.NoError(t, err)
+
+	indexes, err := iFunc.GetIndexesForAlias(aliasName)
+	require.NoError(t, err)
+	assert.Len(t, indexes, 365)
+	for _, name := range indexNames {
+		assert.Contains(t, indexes, name)
+	}
 }
