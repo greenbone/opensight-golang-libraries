@@ -2,6 +2,9 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+// Package ostesting provides a way to conveniently test against a real openSearch instance.
+// It is in the same fashion of https://github.com/peterldowns/pgtestdb
+// You need to have an OpenSearch instance running that the tests can connect to.
 package ostesting
 
 import (
@@ -19,12 +22,22 @@ import (
 	"github.com/google/uuid"
 	"github.com/opensearch-project/opensearch-go/v4"
 	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
-	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
+// KeepFailedEnv when set keeps the environment and test data after test execution failed.
+// This is useful for debugging failed tests.
+const KeepFailedEnv = "TEST_KEEP_FAILED"
+
+type ClientConfig struct {
+	Address  string
+	User     string
+	Password string
+}
+
 const (
-	// defaultTestPassword used to connect to the client, same as hardcoded in ./tests/docker-compose.yml
+	// defaultTestPassword used to connect to the client, same as hardcoded in compose.yml
 	defaultTestPassword = "secureTestPassword444!"
 	defaultTestAddress  = "https://localhost:9300"
 	defaultTestUser     = "admin"
@@ -33,12 +46,10 @@ const (
 var (
 	// defaultOSConf is the default configuration used for testing OpenSearch to connect
 	// to the test OpenSearch instance running in docker
-	defaultOSConf = config.OpenSearch{
-		Address:             defaultTestAddress,
-		SkipSSLVerification: true,
-		User:                defaultTestUser,
-		Password:            defaultTestPassword,
-		AuthMethod:          config.BasicAuth,
+	defaultOSConf = ClientConfig{
+		Address:  defaultTestAddress,
+		User:     defaultTestUser,
+		Password: defaultTestPassword,
 	}
 )
 
@@ -49,7 +60,7 @@ type Tester struct {
 
 	osClient *opensearchapi.Client
 
-	conf     config.OpenSearch
+	conf     ClientConfig
 	parallel bool
 }
 
@@ -69,8 +80,8 @@ func WithAddress(address string) TesterOption {
 	}
 }
 
-// WithConfig is an option to use custom [config.OpenSearch] for tester.
-func WithConfig(conf config.OpenSearch) TesterOption {
+// WithConfig is an option to use custom [ClientConfig] for tester.
+func WithConfig(conf ClientConfig) TesterOption {
 	return func(tst *Tester) {
 		tst.conf = conf
 	}
@@ -124,7 +135,7 @@ func (tst Tester) T() *testing.T {
 
 // Config returns opensearch config that can be used to initialize
 // client using test OpenSearch instance
-func (tst Tester) Config() config.OpenSearch {
+func (tst Tester) Config() ClientConfig {
 	return tst.conf
 }
 
@@ -209,7 +220,7 @@ func (tst Tester) NewIndexAlias(t *testing.T, prefix string, mapping *string) (i
 // NewTestTypeIndexAlias creates new index appropriate to use with [testType] documents
 // with given index and alias names [prefix] and returns new index and alias names.
 // Internally it calls [Tester.NewIndexAlias].
-func (tst Tester) NewTestTypeIndexAlias(t *testing.T, prefix string) (string, string) {
+func (tst Tester) NewTestTypeIndexAlias(t *testing.T, prefix string) (index, alias string) {
 	return tst.NewIndexAlias(t, prefix, &testTypeMapping)
 }
 
@@ -232,7 +243,7 @@ func (tst Tester) NewNamedIndexAlias(t *testing.T, name string, mapping *string)
 // the IDs for created documents will be generated.
 func (tst Tester) CreateDocuments(t *testing.T, index string, docs []any, ids []string) {
 	err := tst.CreateDocumentsReturningError(index, docs, ids)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 // CreateDocumentsReturningError creates documents [docs] on index [index] with IDs [ids]. If provided [ids] is nil
@@ -298,7 +309,7 @@ func GetDocumentsReturningError[T any](tester *Tester, index string) ([]T, error
         "match_all": {}
     }
 }`
-	searchResponse, err := tester.osClient.Search(
+	resp, err := tester.osClient.Search(
 		context.Background(),
 		&opensearchapi.SearchReq{
 			Indices: []string{index},
@@ -308,29 +319,19 @@ func GetDocumentsReturningError[T any](tester *Tester, index string) ([]T, error
 			},
 		},
 	)
-	var resp *opensearch.Response
-	if searchResponse != nil {
-		resp = searchResponse.Inspect().Response
-	}
-
-	defer func() { //close response body
-		if resp != nil {
-			if err := resp.Body.Close(); err != nil {
-				log.Error().Msgf("failed to close response body: %v", err)
-			}
-		}
-	}()
-
 	if err != nil {
 		return nil, fmt.Errorf("search call failed: %w", err)
 	}
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("reading response body failed: %w", err)
+	hits := resp.Hits.Hits
+	docs := make([]T, len(hits))
+	for i, hit := range hits {
+		err = json.Unmarshal(hit.Source, &docs[i])
+		if err != nil {
+			return nil, fmt.Errorf("could not unmarshal document source: %w", err)
+		}
 	}
 
-	docs, _, err := dtos.ParseOpenSearchListResponse[T](body)
 	return docs, err
 }
 
@@ -384,7 +385,7 @@ func (tst Tester) addIndexToAlias(t *testing.T, index string, alias string) {
 
 func (tst Tester) deleteIndexOnCleanup(t *testing.T, index string) {
 	t.Cleanup(func() {
-		if os.Getenv(testconfig.KeepFailedEnv) != "" {
+		if os.Getenv(KeepFailedEnv) != "" {
 			if t.Failed() {
 				return
 			}
@@ -405,4 +406,14 @@ func (tst Tester) refreshIndex(index string) error {
 	}
 
 	return nil
+}
+
+// ToAnySlice converts a slice of any type to a slice of []any.
+// Useful when passing documents to [Tester.CreateDocuments].
+func ToAnySlice[T any](input []T) []any {
+	anySlice := make([]any, len(input))
+	for index, elem := range input {
+		anySlice[index] = elem
+	}
+	return anySlice
 }
