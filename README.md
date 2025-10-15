@@ -2,6 +2,7 @@
 
 # OpenSight GoLang libraries
 
+[![codecov](https://codecov.io/gh/greenbone/opensight-golang-libraries/graph/badge.svg?token=n6yUi6Cnmx)](https://codecov.io/gh/greenbone/opensight-golang-libraries)
 [![GitHub releases](https://img.shields.io/github/release/greenbone/opensight-golang-libraries.svg)](https://github.com/greenbone/opensight-golang-libraries/releases)
 
 ## About
