@@ -4,7 +4,6 @@ description: 'Setup go and cache and go download mods'
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v4
     - uses: actions/setup-go@v4
       with:
         cache: true

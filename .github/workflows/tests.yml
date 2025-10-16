@@ -13,5 +13,29 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: ./.github/actions/go-setup
-      - run: |
-          go test -v ./...
+      - run: make test-codecov
+      - name: Upload unit test coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: cov-unit-tests.out
+          flags: unit-tests
+          name: Unit Tests
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+
+  opensearch-test:
+    name: Execute Opensearch tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/go-setup
+      - name: Execute OpenSearch tests
+        run: make test-opensearch
+      - name: Upload OpenSearch test coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: cov-os-tests.out
+          flags: opensearch-tests
+          name: OpenSearch Tests
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true

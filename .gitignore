@@ -1,1 +1,6 @@
+# common IDEs
 .idea
+.vscode
+
+# coverage reports
+*.out
