@@ -135,6 +135,9 @@ func (q *BoolQueryBuilder) AddFilterRequest(request *filter.Request) error {
 	if request == nil || len(request.Fields) == 0 {
 		return nil
 	}
+	if request.Operator == "" && len(request.Fields) == 1 { // for single filter `Operator` is not relevant
+		request.Operator = filter.LogicOperatorAnd
+	}
 
 	effectiveRequest, err := effectiveFilterFields(*request, q.querySettings.FilterFieldMapping)
 	if err != nil {
@@ -170,8 +173,6 @@ func (q *BoolQueryBuilder) AddFilterRequest(request *filter.Request) error {
 			q.query = q.query.Should(shouldQueries...).MinimumShouldMatch(1)
 		}
 		return nil
-	case "":
-		return fmt.Errorf("missing mandatory field `Operator` in filter request")
 	default:
 		return fmt.Errorf("unknown operator '%s'", effectiveRequest.Operator)
 	}

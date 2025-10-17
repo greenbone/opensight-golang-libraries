@@ -34,19 +34,6 @@ func TestBoolQueryBuilder_BasicFunctionality(t *testing.T) {
 			wantJSON:      emptyBoolQueryJSON,
 			wantErr:       false,
 		},
-		"should fail with invalid filter request (missing logic operator)": {
-			filterRequest: &filter.Request{
-				Fields: []filter.RequestField{
-					{
-						Name:     "testName",
-						Operator: filter.CompareOperatorBeginsWith,
-						Value:    "start",
-					},
-				},
-				// missing `Operator`
-			},
-			wantErr: true,
-		},
 		"should fail with invalid filter request (empty field name)": {
 			filterRequest: &filter.Request{
 				Fields: []filter.RequestField{
