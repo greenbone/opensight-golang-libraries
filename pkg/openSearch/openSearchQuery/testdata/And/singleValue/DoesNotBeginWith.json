@@ -3,10 +3,16 @@
     "bool": {
       "must": [
         {
-          "prefix": {
-            "testName.keyword": {
-              "value": "5"
-            }
+          "bool": {
+            "must_not": [
+              {
+                "prefix": {
+                  "testName.keyword": {
+                    "value": "5"
+                  }
+                }
+              }
+            ]
           }
         }
       ]
