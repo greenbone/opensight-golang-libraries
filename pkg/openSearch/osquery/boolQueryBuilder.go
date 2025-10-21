@@ -6,6 +6,7 @@ package osquery
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/aquasecurity/esquery"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
@@ -156,6 +157,13 @@ func (q *BoolQueryBuilder) AddFilterRequest(request *filter.Request) error {
 
 	for _, field := range effectiveRequest.Fields {
 		if handler, ok := operatorMapping[field.Operator]; ok {
+			// disallow empty list values, as the there is no clear way to interpret this kind of filter
+			if t := reflect.TypeOf(field.Value); t.Kind() == reflect.Slice || t.Kind() == reflect.Array {
+				if reflect.ValueOf(field.Value).Len() == 0 {
+					return fmt.Errorf("field '%s' has empty list of values", field.Name)
+				}
+			}
+
 			err := handler(field.Name, field.Keys, field.Value)
 			if err != nil {
 				return fmt.Errorf("failed to transform filter to database query: %w", err)
