@@ -141,39 +141,48 @@ func ValueToString(value interface{}) string {
 }
 
 // HandleCompareOperatorBetweenDates constructs an OpenSearch range query for a given date field.
-// It accepts a field name and a field value, which must be either:
-// - A slice of two time.Time values ([]time.Time), representing the start and end of the range, or
-// - A slice of two RFC3339Nano-formatted strings ([]string), which are parsed into time.Time,  representing the start and end of the range.
+// It accepts a field name and a field value, which must be a slice of exactly 2 elements, representing the start and end of range. Accepted slice types:
+// - []time.Time,
+// - []string of two RFC3339Nano-formatted strings,
+// - []any, containing any combination of time.Time and RFC3339Nano-formatted string.
 //
 // The generated range query is inclusive of both the lower and upper bounds.
 // If a document’s timestamp is exactly equal to the start or end date, it will still match the query.
-//
-// If the slice length is not exactly 2, or if the string values cannot be parsed into valid dates,
-// the function logs an error and returns an empty query (MatchNone).
 func HandleCompareOperatorBetweenDates(fieldName string, _ []string, fieldValue any, _ *QuerySettings) (esquery.Mappable, error) {
-	switch dateValue := fieldValue.(type) {
-	case []time.Time:
-		if len(dateValue) != 2 {
-			return nil, fmt.Errorf("invalid fieldValue length for []time.Time: %v", fieldValue)
+	validateTimeValue := func(value any) error {
+		switch val := value.(type) {
+		case time.Time:
+		case string:
+			_, err := time.Parse(time.RFC3339Nano, val)
+			if err != nil {
+				return fmt.Errorf("invalid date string format: %w", err)
+			}
+		default:
+			return fmt.Errorf("unsupported type: %T, want: time.Time or string", value)
 		}
+
+		return nil
+	}
+
+	switch dateValue := fieldValue.(type) {
+	case []any:
+		if len(dateValue) != 2 {
+			return nil, fmt.Errorf("invalid fieldValue length for []any: %v", fieldValue)
+		}
+		err := validateTimeValue(dateValue[0])
+		if err != nil {
+			return nil, fmt.Errorf("invalid lower bound: %w", err)
+		}
+		err = validateTimeValue(dateValue[1])
+		if err != nil {
+			return nil, fmt.Errorf("invalid upper bound: %w", err)
+		}
+
 		return esquery.Range(fieldName).
 				Gte(dateValue[0]).
 				Lte(dateValue[1]),
 			nil
-	case []string:
-		if len(dateValue) != 2 {
-			return nil, fmt.Errorf("invalid fieldValue length for []string: %v", fieldValue)
-		}
-		start, err1 := time.Parse(time.RFC3339Nano, dateValue[0])
-		end, err2 := time.Parse(time.RFC3339Nano, dateValue[1])
-		if err1 != nil || err2 != nil {
-			return nil, fmt.Errorf("invalid date format in []string: %v, entry1 error: %v, entry2 error: %v", dateValue, err1, err2)
-		}
-		return esquery.Range(fieldName).
-				Gte(start).
-				Lte(end),
-			nil
 	default:
-		return nil, fmt.Errorf("unsupported fieldValue type: %T, want: []string, []time.Time", fieldValue)
+		return nil, fmt.Errorf("unsupported fieldValue type: %T, want: []string, []time.Time, []any", fieldValue)
 	}
 }

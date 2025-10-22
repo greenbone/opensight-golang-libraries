@@ -157,14 +157,35 @@ func (q *BoolQueryBuilder) AddFilterRequest(request *filter.Request) error {
 
 	for _, field := range effectiveRequest.Fields {
 		if handler, ok := operatorMapping[field.Operator]; ok {
-			// disallow empty list values, as the there is no clear way to interpret this kind of filter
-			if t := reflect.TypeOf(field.Value); t.Kind() == reflect.Slice || t.Kind() == reflect.Array {
-				if reflect.ValueOf(field.Value).Len() == 0 {
-					return fmt.Errorf("field '%s' has empty list of values", field.Name)
-				}
+			value := field.Value
+
+			if field.Operator == filter.CompareOperatorExists {
+				value = "" // exists operator does not need a value, but for more consistent handling just pass a dummy value
+			}
+			if value == nil {
+				return fmt.Errorf("field '%s' has no value set", field.Name)
 			}
 
-			err := handler(field.Name, field.Keys, field.Value)
+			if t := reflect.TypeOf(value); t.Kind() == reflect.Slice || t.Kind() == reflect.Array {
+				slice := reflect.ValueOf(value)
+
+				if slice.Len() == 0 { // disallow empty list values, as the there is no clear way to interpret this kind of filter
+					return fmt.Errorf("field '%s' has empty list of values", field.Name)
+				}
+				// convert to []any, so that handlers don't need to deal with different slice types
+				var values []any
+				if v, ok := value.([]any); ok {
+					values = v
+				} else {
+					values = make([]any, slice.Len())
+					for i := 0; i < slice.Len(); i++ {
+						values[i] = slice.Index(i).Interface()
+					}
+				}
+				value = values
+			}
+
+			err := handler(field.Name, field.Keys, value)
 			if err != nil {
 				return fmt.Errorf("failed to transform filter to database query: %w", err)
 			}
