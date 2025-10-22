@@ -12,8 +12,6 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	esextensions "github.com/greenbone/opensight-golang-libraries/pkg/openSearch/esextension"
-
 	"github.com/aquasecurity/esquery"
 	"github.com/samber/lo"
 )
@@ -26,10 +24,6 @@ func HandleCompareOperatorIsEqualTo(fieldName string, fieldKeys []string, fieldV
 // HandleCompareOperatorContains handles contains.
 // In the index mapping the given field must be a string of type `keyword`.
 func HandleCompareOperatorContains(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
-	if querySettings.UseNestedMatchQueryFields != nil &&
-		querySettings.UseNestedMatchQueryFields[fieldName] {
-		return nestedHandleCompareOperatorContains(fieldName, fieldKeys, fieldValue, querySettings)
-	}
 	if values, ok := fieldValue.([]interface{}); ok {
 		return esquery.Bool().
 			Should(
@@ -41,19 +35,6 @@ func HandleCompareOperatorContains(fieldName string, fieldKeys []string, fieldVa
 	} else { // for single values
 		return esquery.Wildcard(fieldName, "*"+ValueToString(fieldValue)+"*")
 	}
-}
-
-func nestedHandleCompareOperatorContains(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
-	// Special case as now for one input we need to queries to be set (for name and value)
-	nestedFieldSetting := findNestedFieldByName(fieldName, querySettings)
-	if nestedFieldSetting != nil && len(fieldKeys) == 1 {
-		query1 := esextensions.Nested(nestedFieldSetting.FieldKeyName, *esquery.Bool().
-			Must(
-				esquery.Match(nestedFieldSetting.FieldKeyName, fieldKeys[0]),
-				esquery.Wildcard(nestedFieldSetting.FieldValueName, "*"+ValueToString(fieldValue)+"*")))
-		return query1
-	}
-	return nil
 }
 
 // HandleCompareOperatorTextContains performs a full text search on the given field.
@@ -134,23 +115,7 @@ func HandleCompareOperatorIsLessThan(fieldName string, fieldKeys []string, field
 		Lt(fieldValue)
 }
 
-func simpleNestedMatchQuery(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
-	// Special case as now for one input we need to queries to be set (for name and value)
-	nestedFieldSetting := findNestedFieldByName(fieldName, querySettings)
-	if nestedFieldSetting != nil && len(fieldKeys) == 1 {
-		query1 := esextensions.Nested(nestedFieldSetting.FieldName, *esquery.Bool().Must(
-			esquery.Match(nestedFieldSetting.FieldKeyName, fieldKeys[0]),
-			esquery.Match(nestedFieldSetting.FieldValueName, fieldValue)))
-		return query1
-	}
-	return nil
-}
-
 func createTermQuery(fieldName string, fieldValue any, fieldKeys []string, querySettings *QuerySettings) esquery.Mappable {
-	if querySettings.UseNestedMatchQueryFields != nil &&
-		querySettings.UseNestedMatchQueryFields[fieldName] {
-		return simpleNestedMatchQuery(fieldName, fieldKeys, fieldValue, querySettings)
-	}
 	// for list of values
 	if values, ok := fieldValue.([]interface{}); ok {
 		return esquery.Terms(fieldName, values...)
@@ -159,23 +124,8 @@ func createTermQuery(fieldName string, fieldValue any, fieldKeys []string, query
 	}
 }
 
-func HandleCompareOperatorExists(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
-	if len(fieldKeys) == 0 {
-		return nil
-	}
-	nestedFieldSetting := findNestedFieldByName(fieldName, querySettings)
-	if nestedFieldSetting != nil && len(fieldKeys) == 1 {
-		termQuery := esquery.Term(nestedFieldSetting.FieldKeyName, fieldKeys[0])
-
-		nestedQuery := esextensions.Nested(nestedFieldSetting.FieldName, *esquery.Bool().Must(termQuery))
-
-		if strVal, ok := fieldValue.(string); ok && strVal == "yes" {
-			return nestedQuery
-		} else {
-			return esquery.Bool().MustNot(nestedQuery)
-		}
-	}
-	return nil
+func HandleCompareOperatorExists(fieldName string, _ []string, _ any, _ *QuerySettings) esquery.Mappable {
+	return esquery.Exists(fieldName)
 }
 
 func HandleCompareOperatorIsGreaterThanRating(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) esquery.Mappable {
@@ -241,18 +191,6 @@ func ValueToString(value interface{}) string {
 	default:
 		return fmt.Sprint(value)
 	}
-}
-
-func findNestedFieldByName(name string, querySettings *QuerySettings) *NestedQueryFieldDefinition {
-	if querySettings.NestedQueryFieldDefinitions == nil {
-		return nil
-	}
-	for _, field := range querySettings.NestedQueryFieldDefinitions {
-		if field.FieldName == name {
-			return &field // Gibt die Adresse des gefundenen Feldes zurück
-		}
-	}
-	return nil // Kein passendes Feld gefunden
 }
 
 func getStringRange(fieldName string, rating string, querySettings *QuerySettings) RatingRange {

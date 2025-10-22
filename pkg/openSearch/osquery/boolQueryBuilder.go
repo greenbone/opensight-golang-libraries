@@ -41,23 +41,9 @@ type RatingRange struct {
 
 // QuerySettings is used to configure the query builder.
 type QuerySettings struct {
-	// UseNestedMatchQueryFields is a map of field names to a boolean value indicating whether the field is to be treated as a nested query field.
-	UseNestedMatchQueryFields map[string]bool
-	// NestedQueryFieldDefinitions is a list of nested query field definitions.
-	NestedQueryFieldDefinitions []NestedQueryFieldDefinition
-	FilterFieldMapping          map[string]string
+	FilterFieldMapping map[string]string
 	// StringFieldRating is a map for field names with a rating. The rating is used to determine the compare order of the field in the query.
 	StringFieldRating map[string]map[string]RatingRange
-}
-
-// NestedQueryFieldDefinition is a definition of a nested query field.
-type NestedQueryFieldDefinition struct {
-	// FieldName is the name of the field.
-	FieldName string
-	// FieldKeyName is the name of the key field.
-	FieldKeyName string
-	// FieldValueName is the name of the value field.
-	FieldValueName string
 }
 
 // CompareOperator defines a mapping between a filter.CompareOperator and a function to generate an appropriate
