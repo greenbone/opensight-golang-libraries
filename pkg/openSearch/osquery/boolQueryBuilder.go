@@ -33,17 +33,9 @@ type (
 		querySettings *QuerySettings) esquery.Mappable
 )
 
-// RatingRange represent a closed interval of float32 values.
-type RatingRange struct {
-	Min float32 // Lower bound of the rating range (inclusive)
-	Max float32 // Upper bound of the rating range (inclusive)
-}
-
 // QuerySettings is used to configure the query builder.
 type QuerySettings struct {
 	FilterFieldMapping map[string]string
-	// StringFieldRating is a map for field names with a rating. The rating is used to determine the compare order of the field in the query.
-	StringFieldRating map[string]map[string]RatingRange
 }
 
 // CompareOperator defines a mapping between a filter.CompareOperator and a function to generate an appropriate
@@ -256,30 +248,6 @@ func defaultCompareOperators() []CompareOperator {
 		{Operator: filter.CompareOperatorIsLessThan, Handler: HandleCompareOperatorIsLessThan, MustCondition: true},
 		{Operator: filter.CompareOperatorAfterDate, Handler: HandleCompareOperatorIsGreaterThan, MustCondition: true},
 		{Operator: filter.CompareOperatorBeforeDate, Handler: HandleCompareOperatorIsLessThan, MustCondition: true},
-		{
-			Operator: filter.CompareOperatorIsGreaterThanRating,
-			Handler:  HandleCompareOperatorIsGreaterThanRating, MustCondition: true,
-		},
-		{
-			Operator: filter.CompareOperatorIsLessThanRating,
-			Handler:  HandleCompareOperatorIsLessThanRating, MustCondition: true,
-		},
-		{
-			Operator: filter.CompareOperatorIsGreaterThanOrEqualToRating,
-			Handler:  HandleCompareOperatorIsGreaterThanOrEqualToRating, MustCondition: true,
-		},
-		{
-			Operator: filter.CompareOperatorIsLessThanOrEqualToRating,
-			Handler:  HandleCompareOperatorIsLessThanOrEqualToRating, MustCondition: true,
-		},
-		{
-			Operator: filter.CompareOperatorIsEqualToRating,
-			Handler:  HandleCompareOperatorIsEqualToRating, MustCondition: true,
-		},
-		{
-			Operator: filter.CompareOperatorIsNotEqualToRating,
-			Handler:  HandleCompareOperatorIsNotEqualToRating, MustCondition: true,
-		},
 		{
 			Operator: filter.CompareOperatorBetweenDates,
 			Handler:  HandleCompareOperatorBetweenDates, MustCondition: true,
