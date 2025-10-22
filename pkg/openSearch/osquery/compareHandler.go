@@ -153,20 +153,8 @@ func createTermQuery(fieldName string, fieldValue any, fieldKeys []string, query
 	}
 	// for list of values
 	if values, ok := fieldValue.([]interface{}); ok {
-		if len(values) == 0 {
-			return nil
-		}
-
-		if querySettings.UseMatchPhrase != nil &&
-			querySettings.UseMatchPhrase[fieldName] {
-			return esquery.MatchPhrase(fieldName, values...)
-		}
 		return esquery.Terms(fieldName, values...)
 	} else { // for single values
-		if querySettings.UseMatchPhrase != nil &&
-			querySettings.UseMatchPhrase[fieldName] {
-			return esquery.MatchPhrase(fieldName, fieldValue)
-		}
 		return esquery.Term(fieldName, fieldValue)
 	}
 }

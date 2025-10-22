@@ -45,9 +45,7 @@ type QuerySettings struct {
 	UseNestedMatchQueryFields map[string]bool
 	// NestedQueryFieldDefinitions is a list of nested query field definitions.
 	NestedQueryFieldDefinitions []NestedQueryFieldDefinition
-	// UseMatchPhraseFields is a map of field names to a boolean value indicating whether the field should use a match phrase query.
-	UseMatchPhrase     map[string]bool
-	FilterFieldMapping map[string]string
+	FilterFieldMapping          map[string]string
 	// StringFieldRating is a map for field names with a rating. The rating is used to determine the compare order of the field in the query.
 	StringFieldRating map[string]map[string]RatingRange
 }
