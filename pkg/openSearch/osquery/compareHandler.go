@@ -83,28 +83,72 @@ func HandleCompareOperatorNotBeginsWith(fieldName string, fieldKeys []string, fi
 
 // HandleCompareOperatorIsLessThanOrEqualTo handles is less than or equal to
 func HandleCompareOperatorIsLessThanOrEqualTo(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) (esquery.Mappable, error) {
-	return esquery.Range(fieldName).
-		Lte(fieldValue), nil
+	if values, ok := fieldValue.([]any); ok {
+		return esquery.Bool(). // chain by OR
+					Should(
+				lo.Map(values, func(value any, _ int) esquery.Mappable {
+					return esquery.Range(fieldName).
+						Lte(value)
+				})...,
+			).
+			MinimumShouldMatch(1), nil
+	} else {
+		return esquery.Range(fieldName).
+			Lte(fieldValue), nil
+	}
 }
 
 // HandleCompareOperatorIsGreaterThanOrEqualTo handles is greater than or equal to
 func HandleCompareOperatorIsGreaterThanOrEqualTo(fieldName string, fieldKeys []string,
 	fieldValue any, querySettings *QuerySettings,
 ) (esquery.Mappable, error) {
-	return esquery.Range(fieldName).
-		Gte(fieldValue), nil
+	if values, ok := fieldValue.([]any); ok {
+		return esquery.Bool(). // chain by OR
+					Should(
+				lo.Map(values, func(value any, _ int) esquery.Mappable {
+					return esquery.Range(fieldName).
+						Gte(value)
+				})...,
+			).
+			MinimumShouldMatch(1), nil
+	} else {
+		return esquery.Range(fieldName).
+			Gte(fieldValue), nil
+	}
 }
 
 // HandleCompareOperatorIsGreaterThan handles is greater than
 func HandleCompareOperatorIsGreaterThan(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) (esquery.Mappable, error) {
-	return esquery.Range(fieldName).
-		Gt(fieldValue), nil
+	if values, ok := fieldValue.([]any); ok {
+		return esquery.Bool(). // chain by OR
+					Should(
+				lo.Map(values, func(value any, _ int) esquery.Mappable {
+					return esquery.Range(fieldName).
+						Gt(value)
+				})...,
+			).
+			MinimumShouldMatch(1), nil
+	} else {
+		return esquery.Range(fieldName).
+			Gt(fieldValue), nil
+	}
 }
 
 // HandleCompareOperatorIsLessThan handles is less than
 func HandleCompareOperatorIsLessThan(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) (esquery.Mappable, error) {
-	return esquery.Range(fieldName).
-		Lt(fieldValue), nil
+	if values, ok := fieldValue.([]any); ok {
+		return esquery.Bool(). // chain by OR
+					Should(
+				lo.Map(values, func(value any, _ int) esquery.Mappable {
+					return esquery.Range(fieldName).
+						Lt(value)
+				})...,
+			).
+			MinimumShouldMatch(1), nil
+	} else {
+		return esquery.Range(fieldName).
+			Lt(fieldValue), nil
+	}
 }
 
 func createTermQuery(fieldName string, fieldValue any, fieldKeys []string, querySettings *QuerySettings) (esquery.Mappable, error) {
