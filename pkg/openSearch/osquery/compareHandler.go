@@ -7,7 +7,6 @@ package osquery
 import (
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/aquasecurity/esquery"
@@ -38,17 +37,16 @@ func HandleCompareOperatorContains(fieldName string, fieldKeys []string, fieldVa
 // HandleCompareOperatorTextContains performs a full text search on the given field.
 // In the index mapping it must be a string of type `text`.
 func HandleCompareOperatorTextContains(fieldName string, _ []string, fieldValue any, _ *QuerySettings) (esquery.Mappable, error) {
-	var value string
-	if values, ok := fieldValue.([]any); ok { // value as list and value as space separated string should result in same query
-		stringValues := make([]string, 0, len(values))
-		for _, val := range values {
-			stringValues = append(stringValues, ValueToString(val))
-		}
-		value = strings.Join(stringValues, " ")
-	} else {
-		value = ValueToString(fieldValue)
+	if values, ok := fieldValue.([]any); ok {
+		return esquery.Bool(). // chain by OR
+					Should(
+				lo.Map(values, func(value any, _ int) esquery.Mappable {
+					return esquery.Match(fieldName, ValueToString(value)).MinimumShouldMatch("100%")
+				})...,
+			).
+			MinimumShouldMatch(1), nil
 	}
-	return esquery.Match(fieldName, value).MinimumShouldMatch("100%"), nil // no query term is optional
+	return esquery.Match(fieldName, ValueToString(fieldValue)).MinimumShouldMatch("100%"), nil // no query term is optional
 }
 
 // HandleCompareOperatorBeginsWith handles begins with
