@@ -56,33 +56,25 @@ func HandleCompareOperatorTextContains(fieldName string, fieldValue any) (esquer
 
 // HandleCompareOperatorBeginsWith handles begins with
 func HandleCompareOperatorBeginsWith(fieldName string, fieldValue any) (esquery.Mappable, error) {
+	// for a list of values
 	if values, ok := fieldValue.([]any); ok {
-		// for a list of values
-		return esquery.Bool().
-			Should(
-				lo.Map[any, esquery.Mappable](values, func(value any, _ int) esquery.Mappable {
-					return esquery.Prefix(fieldName, ValueToString(value))
-				})...,
-			).
+		prefixQueries := make([]esquery.Mappable, 0, len(values))
+		for _, value := range values {
+
+			valueStr, ok := value.(string)
+			if !ok {
+				return nil, fmt.Errorf("operator only supported for string: got value %v of type %T", value, value)
+			}
+			prefixQueries = append(prefixQueries, esquery.Prefix(fieldName, valueStr))
+		}
+		return esquery.Bool().Should(prefixQueries...).
 			MinimumShouldMatch(1), nil
-	}
-
-	// for single value
-	return esquery.Prefix(fieldName, ValueToString(fieldValue)), nil
-}
-
-// HandleCompareOperatorNotBeginsWith handles not begins with
-func HandleCompareOperatorNotBeginsWith(fieldName string, fieldValue any) (esquery.Mappable, error) {
-	// for list of values
-	if values, ok := fieldValue.([]interface{}); ok {
-		return esquery.Bool().
-			MustNot(
-				lo.Map[interface{}, esquery.Mappable](values, func(value interface{}, _ int) esquery.Mappable {
-					return esquery.Prefix(fieldName, ValueToString(value))
-				})...,
-			), nil
-	} else { // for single values
-		return esquery.Prefix(fieldName, fieldValue.(string)), nil
+	} else { // for single value
+		value, ok := fieldValue.(string)
+		if !ok {
+			return nil, fmt.Errorf("operator only supported for string: got value %v of type %T", fieldValue, fieldValue)
+		}
+		return esquery.Prefix(fieldName, value), nil
 	}
 }
 

@@ -179,7 +179,7 @@ func (q *BoolQueryBuilder) AddFilterRequest(request *filter.Request) error {
 
 			err := handler(field.Name, field.Keys, value)
 			if err != nil {
-				return fmt.Errorf("failed to transform filter to database query: %w", err)
+				return fmt.Errorf("failed to transform filter with operator %q to database query: %w", field.Operator, err)
 			}
 		} else {
 			return fmt.Errorf("field '%s' with unknown operator '%s'", field.Name, field.Operator)
@@ -266,7 +266,7 @@ func defaultCompareOperators() []CompareOperator {
 		{Operator: filter.CompareOperatorBeginsWith, Handler: HandleCompareOperatorBeginsWith, MustCondition: true},
 		{
 			Operator: filter.CompareOperatorDoesNotBeginWith,
-			Handler:  HandleCompareOperatorNotBeginsWith, MustCondition: true,
+			Handler:  HandleCompareOperatorBeginsWith, MustCondition: false,
 		},
 		{
 			Operator: filter.CompareOperatorIsLessThanOrEqualTo,
