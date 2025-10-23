@@ -14,13 +14,18 @@ import (
 )
 
 // HandleCompareOperatorIsEqualTo handles is equal to
-func HandleCompareOperatorIsEqualTo(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) (esquery.Mappable, error) {
-	return createTermQuery(fieldName, fieldValue, fieldKeys, querySettings)
+func HandleCompareOperatorIsEqualTo(fieldName string, fieldValue any) (esquery.Mappable, error) {
+	// for list of values
+	if values, ok := fieldValue.([]interface{}); ok {
+		return esquery.Terms(fieldName, values...), nil
+	} else { // for single values
+		return esquery.Term(fieldName, fieldValue), nil
+	}
 }
 
 // HandleCompareOperatorContains handles contains.
 // In the index mapping the given field must be a string of type `keyword`.
-func HandleCompareOperatorContains(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) (esquery.Mappable, error) {
+func HandleCompareOperatorContains(fieldName string, fieldValue any) (esquery.Mappable, error) {
 	if values, ok := fieldValue.([]interface{}); ok {
 		return esquery.Bool().
 			Should(
@@ -36,7 +41,7 @@ func HandleCompareOperatorContains(fieldName string, fieldKeys []string, fieldVa
 
 // HandleCompareOperatorTextContains performs a full text search on the given field.
 // In the index mapping it must be a string of type `text`.
-func HandleCompareOperatorTextContains(fieldName string, _ []string, fieldValue any, _ *QuerySettings) (esquery.Mappable, error) {
+func HandleCompareOperatorTextContains(fieldName string, fieldValue any) (esquery.Mappable, error) {
 	if values, ok := fieldValue.([]any); ok {
 		return esquery.Bool(). // chain by OR
 					Should(
@@ -50,7 +55,7 @@ func HandleCompareOperatorTextContains(fieldName string, _ []string, fieldValue 
 }
 
 // HandleCompareOperatorBeginsWith handles begins with
-func HandleCompareOperatorBeginsWith(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) (esquery.Mappable, error) {
+func HandleCompareOperatorBeginsWith(fieldName string, fieldValue any) (esquery.Mappable, error) {
 	if values, ok := fieldValue.([]any); ok {
 		// for a list of values
 		return esquery.Bool().
@@ -67,7 +72,7 @@ func HandleCompareOperatorBeginsWith(fieldName string, fieldKeys []string, field
 }
 
 // HandleCompareOperatorNotBeginsWith handles not begins with
-func HandleCompareOperatorNotBeginsWith(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) (esquery.Mappable, error) {
+func HandleCompareOperatorNotBeginsWith(fieldName string, fieldValue any) (esquery.Mappable, error) {
 	// for list of values
 	if values, ok := fieldValue.([]interface{}); ok {
 		return esquery.Bool().
@@ -82,7 +87,7 @@ func HandleCompareOperatorNotBeginsWith(fieldName string, fieldKeys []string, fi
 }
 
 // HandleCompareOperatorIsLessThanOrEqualTo handles is less than or equal to
-func HandleCompareOperatorIsLessThanOrEqualTo(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) (esquery.Mappable, error) {
+func HandleCompareOperatorIsLessThanOrEqualTo(fieldName string, fieldValue any) (esquery.Mappable, error) {
 	if values, ok := fieldValue.([]any); ok {
 		return esquery.Bool(). // chain by OR
 					Should(
@@ -99,9 +104,7 @@ func HandleCompareOperatorIsLessThanOrEqualTo(fieldName string, fieldKeys []stri
 }
 
 // HandleCompareOperatorIsGreaterThanOrEqualTo handles is greater than or equal to
-func HandleCompareOperatorIsGreaterThanOrEqualTo(fieldName string, fieldKeys []string,
-	fieldValue any, querySettings *QuerySettings,
-) (esquery.Mappable, error) {
+func HandleCompareOperatorIsGreaterThanOrEqualTo(fieldName string, fieldValue any) (esquery.Mappable, error) {
 	if values, ok := fieldValue.([]any); ok {
 		return esquery.Bool(). // chain by OR
 					Should(
@@ -118,7 +121,7 @@ func HandleCompareOperatorIsGreaterThanOrEqualTo(fieldName string, fieldKeys []s
 }
 
 // HandleCompareOperatorIsGreaterThan handles is greater than
-func HandleCompareOperatorIsGreaterThan(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) (esquery.Mappable, error) {
+func HandleCompareOperatorIsGreaterThan(fieldName string, fieldValue any) (esquery.Mappable, error) {
 	if values, ok := fieldValue.([]any); ok {
 		return esquery.Bool(). // chain by OR
 					Should(
@@ -135,7 +138,7 @@ func HandleCompareOperatorIsGreaterThan(fieldName string, fieldKeys []string, fi
 }
 
 // HandleCompareOperatorIsLessThan handles is less than
-func HandleCompareOperatorIsLessThan(fieldName string, fieldKeys []string, fieldValue any, querySettings *QuerySettings) (esquery.Mappable, error) {
+func HandleCompareOperatorIsLessThan(fieldName string, fieldValue any) (esquery.Mappable, error) {
 	if values, ok := fieldValue.([]any); ok {
 		return esquery.Bool(). // chain by OR
 					Should(
@@ -151,16 +154,7 @@ func HandleCompareOperatorIsLessThan(fieldName string, fieldKeys []string, field
 	}
 }
 
-func createTermQuery(fieldName string, fieldValue any, fieldKeys []string, querySettings *QuerySettings) (esquery.Mappable, error) {
-	// for list of values
-	if values, ok := fieldValue.([]interface{}); ok {
-		return esquery.Terms(fieldName, values...), nil
-	} else { // for single values
-		return esquery.Term(fieldName, fieldValue), nil
-	}
-}
-
-func HandleCompareOperatorExists(fieldName string, _ []string, _ any, _ *QuerySettings) (esquery.Mappable, error) {
+func HandleCompareOperatorExists(fieldName string, _ any) (esquery.Mappable, error) {
 	return esquery.Exists(fieldName), nil
 }
 
@@ -192,7 +186,7 @@ func ValueToString(value interface{}) string {
 //
 // The generated range query is inclusive of both the lower and upper bounds.
 // If a document’s timestamp is exactly equal to the start or end date, it will still match the query.
-func HandleCompareOperatorBetweenDates(fieldName string, _ []string, fieldValue any, _ *QuerySettings) (esquery.Mappable, error) {
+func HandleCompareOperatorBetweenDates(fieldName string, fieldValue any) (esquery.Mappable, error) {
 	validateTimeValue := func(value any) error {
 		switch val := value.(type) {
 		case time.Time:

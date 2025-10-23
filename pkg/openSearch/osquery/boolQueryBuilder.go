@@ -25,13 +25,7 @@ type BoolQueryBuilder struct {
 type (
 	queryAppender func(fieldName string, fieldKeys []string, fieldValue any) error
 	// CompareOperatorHandler is a function that generates an appropriate query condition for the given field.
-	//
-	// fieldName is the name of the field.
-	// fieldKeys is a list of keys used only for nested fields.
-	// fieldValue is the value to compare against.
-	// querySettings are the settings to use for the query.
-	CompareOperatorHandler func(fieldName string, fieldKeys []string, fieldValue any,
-		querySettings *QuerySettings) (esquery.Mappable, error)
+	CompareOperatorHandler func(fieldName string, fieldValue any) (esquery.Mappable, error)
 )
 
 // QuerySettings is used to configure the query builder.
@@ -67,22 +61,6 @@ func NewBoolQueryBuilderWith(query *esquery.BoolQuery, querySettings *QuerySetti
 	}
 }
 
-// ReplaceCompareOperators replaces the set of CompareOperator to be used for this query builder.
-//
-// operators is the new set of CompareOperator to use.
-func (q *BoolQueryBuilder) ReplaceCompareOperators(operators []CompareOperator) *BoolQueryBuilder {
-	q.compareOperators = operators
-	return q
-}
-
-// AddCompareOperators adds the given set of CompareOperator to the set of CompareOperator to be used for this query builder.
-//
-// operators is the set of CompareOperator to add.
-func (q *BoolQueryBuilder) AddCompareOperators(operators ...CompareOperator) *BoolQueryBuilder {
-	q.compareOperators = append(q.compareOperators, operators...)
-	return q
-}
-
 // AddTermsFilter adds a terms filter to this query.
 //
 // values is the list of values to filter for.
@@ -115,7 +93,7 @@ func (q *BoolQueryBuilder) AddTermFilter(fieldName string, value interface{}) er
 
 func (q *BoolQueryBuilder) addToMust(call CompareOperatorHandler) queryAppender {
 	return func(fieldName string, fieldKeys []string, fieldValue any) error {
-		value, err := call(fieldName, fieldKeys, fieldValue, q.querySettings)
+		value, err := call(fieldName, fieldValue)
 		if err != nil {
 			return err
 		}
@@ -128,7 +106,7 @@ func (q *BoolQueryBuilder) addToMust(call CompareOperatorHandler) queryAppender 
 
 func (q *BoolQueryBuilder) addToMustNot(call CompareOperatorHandler) queryAppender {
 	return func(fieldName string, fieldKeys []string, fieldValue any) error {
-		value, err := call(fieldName, fieldKeys, fieldValue, q.querySettings)
+		value, err := call(fieldName, fieldValue)
 		if err != nil {
 			return err
 		}
