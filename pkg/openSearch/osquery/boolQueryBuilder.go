@@ -86,17 +86,31 @@ func (q *BoolQueryBuilder) AddCompareOperators(operators ...CompareOperator) *Bo
 // AddTermsFilter adds a terms filter to this query.
 //
 // values is the list of values to filter for.
-func (q *BoolQueryBuilder) AddTermsFilter(fieldName string, values ...interface{}) *BoolQueryBuilder {
-	q.query = q.query.Filter(esquery.Terms(fieldName, values...))
-	return q
+func (q *BoolQueryBuilder) AddTermsFilter(fieldName string, values ...interface{}) error {
+	if len(values) == 0 {
+		return fmt.Errorf("need at least one value for terms filter")
+	}
+
+	entityName, ok := q.querySettings.FilterFieldMapping[fieldName]
+	if !ok {
+		return fmt.Errorf("Mapping for filter field '%s' is currently not implemented.", fieldName)
+	}
+
+	q.query = q.query.Filter(esquery.Terms(entityName, values...))
+	return nil
 }
 
 // AddTermFilter adds a term filter to this query.
 //
 // value is the value to filter for.
-func (q *BoolQueryBuilder) AddTermFilter(fieldName string, value interface{}) *BoolQueryBuilder {
-	q.query = q.query.Filter(esquery.Term(fieldName, value))
-	return q
+func (q *BoolQueryBuilder) AddTermFilter(fieldName string, value interface{}) error {
+	entityName, ok := q.querySettings.FilterFieldMapping[fieldName]
+	if !ok {
+		return fmt.Errorf("Mapping for filter field '%s' is currently not implemented.", fieldName)
+	}
+
+	q.query = q.query.Filter(esquery.Term(entityName, value))
+	return nil
 }
 
 func (q *BoolQueryBuilder) addToMust(call CompareOperatorHandler) queryAppender {
