@@ -36,7 +36,7 @@ func NewOpenSearchProjectClient(ctx context.Context, config config.OpensearchCli
 			Client: opensearch.Config{
 				Transport: &http.Transport{
 					TLSClientConfig: &tls.Config{
-						InsecureSkipVerify: true, // nolint:gosec
+						InsecureSkipVerify: true, //nolint:gosec
 					},
 				},
 				Addresses: []string{

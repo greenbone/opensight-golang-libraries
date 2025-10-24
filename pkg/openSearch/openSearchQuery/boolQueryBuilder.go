@@ -224,7 +224,7 @@ func createMappedField(dtoField filter.RequestField, fieldMapping map[string]str
 	entityName, ok := fieldMapping[dtoField.Name]
 	if !ok {
 		return filter.RequestField{}, filter.NewInvalidFilterFieldError(
-			"Mapping for filter field '%s' is currently not implemented.", dtoField.Name)
+			"mapping for filter field '%s' is currently not implemented", dtoField.Name)
 	}
 
 	return filter.RequestField{

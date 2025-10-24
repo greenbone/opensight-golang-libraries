@@ -203,7 +203,7 @@ NewIndexAlias creates new uniquely named index together with associated alias us
 
 Internally opensearchapi.Client is called directly rather than opensearch.Client, to avoid using tested object in testing setup and to not have to adjust opensearch.Client methods just for the sake of being used by Tester \(as tester use\-case of generating unique index/alias with custom mapping differs from production use\-cases\).
 
-Upon succesful creation the function returns index and associated alias names, in case of error \[t\] is used to mark test as failed. Note: usually the index should be accessed through alias name. In some cases the method needs to receive the concrete index instead.
+Upon successful creation the function returns index and associated alias names, in case of error \[t\] is used to mark test as failed. Note: usually the index should be accessed through alias name. In some cases the method needs to receive the concrete index instead.
 
 <a name="Tester.NewNamedIndexAlias"></a>
 ### func \(Tester\) [NewNamedIndexAlias](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L235>)

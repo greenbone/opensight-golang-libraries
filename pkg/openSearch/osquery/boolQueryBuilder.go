@@ -71,7 +71,7 @@ func (q *BoolQueryBuilder) AddTermsFilter(fieldName string, values ...any) error
 
 	entityName, ok := q.querySettings.FilterFieldMapping[fieldName]
 	if !ok {
-		return fmt.Errorf("Mapping for filter field '%s' is currently not implemented.", fieldName)
+		return fmt.Errorf("mapping for filter field '%s' is currently not implemented", fieldName)
 	}
 
 	q.query = q.query.Filter(esquery.Terms(entityName, values...))
@@ -84,7 +84,7 @@ func (q *BoolQueryBuilder) AddTermsFilter(fieldName string, values ...any) error
 func (q *BoolQueryBuilder) AddTermFilter(fieldName string, value any) error {
 	entityName, ok := q.querySettings.FilterFieldMapping[fieldName]
 	if !ok {
-		return fmt.Errorf("Mapping for filter field '%s' is currently not implemented.", fieldName)
+		return fmt.Errorf("mapping for filter field '%s' is currently not implemented", fieldName)
 	}
 
 	q.query = q.query.Filter(esquery.Term(entityName, value))
@@ -229,7 +229,7 @@ func createMappedField(dtoField filter.RequestField, fieldMapping map[string]str
 	entityName, ok := fieldMapping[dtoField.Name]
 	if !ok {
 		return filter.RequestField{}, filter.NewInvalidFilterFieldError(
-			"Mapping for filter field '%s' is currently not implemented.", dtoField.Name)
+			"mapping for filter field '%s' is currently not implemented", dtoField.Name)
 	}
 
 	return filter.RequestField{

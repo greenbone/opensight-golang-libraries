@@ -104,7 +104,7 @@ func NewTester(t *testing.T, opts ...TesterOption) *Tester {
 	osClient, err := opensearchapi.NewClient(opensearchapi.Config{
 		Client: opensearch.Config{
 			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // not for production use
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, //nolint:gosec // not for production use
 			},
 			Addresses: []string{tst.conf.Address},
 			Username:  tst.conf.User,
@@ -205,7 +205,7 @@ func (tst Tester) NewTestTypeIndex(t *testing.T, prefix string) string {
 // the sake of being used by Tester (as tester use-case of generating unique index/alias with
 // custom mapping differs from production use-cases).
 //
-// Upon succesful creation the function returns index and associated alias names, in case of error [t] is used to mark test
+// Upon successful creation the function returns index and associated alias names, in case of error [t] is used to mark test
 // as failed.
 // Note: usually the index should be accessed through alias name. In some cases the method needs
 // to receive the concrete index instead.
