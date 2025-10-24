@@ -34,7 +34,7 @@ type QuerySettings struct {
 }
 
 // CompareOperator defines a mapping between a filter.CompareOperator and a function to generate an appropriate
-// query condition in from of a CompareOperatorHandler.
+// query condition in form of a CompareOperatorHandler.
 type CompareOperator struct {
 	Operator filter.CompareOperator
 	Handler  CompareOperatorHandler
@@ -64,7 +64,7 @@ func NewBoolQueryBuilderWith(query *esquery.BoolQuery, querySettings *QuerySetti
 // AddTermsFilter adds a terms filter to this query.
 //
 // values is the list of values to filter for.
-func (q *BoolQueryBuilder) AddTermsFilter(fieldName string, values ...interface{}) error {
+func (q *BoolQueryBuilder) AddTermsFilter(fieldName string, values ...any) error {
 	if len(values) == 0 {
 		return fmt.Errorf("need at least one value for terms filter")
 	}
@@ -81,7 +81,7 @@ func (q *BoolQueryBuilder) AddTermsFilter(fieldName string, values ...interface{
 // AddTermFilter adds a term filter to this query.
 //
 // value is the value to filter for.
-func (q *BoolQueryBuilder) AddTermFilter(fieldName string, value interface{}) error {
+func (q *BoolQueryBuilder) AddTermFilter(fieldName string, value any) error {
 	entityName, ok := q.querySettings.FilterFieldMapping[fieldName]
 	if !ok {
 		return fmt.Errorf("Mapping for filter field '%s' is currently not implemented.", fieldName)

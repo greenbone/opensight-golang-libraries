@@ -6,7 +6,6 @@ package osquery
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/aquasecurity/esquery"
@@ -16,7 +15,7 @@ import (
 // HandleCompareOperatorIsEqualTo handles is equal to
 func HandleCompareOperatorIsEqualTo(fieldName string, fieldValue any) (esquery.Mappable, error) {
 	// for list of values
-	if values, ok := fieldValue.([]interface{}); ok {
+	if values, ok := fieldValue.([]any); ok {
 		return esquery.Terms(fieldName, values...), nil
 	} else { // for single values
 		return esquery.Term(fieldName, fieldValue), nil
@@ -26,16 +25,25 @@ func HandleCompareOperatorIsEqualTo(fieldName string, fieldValue any) (esquery.M
 // HandleCompareOperatorContains handles contains.
 // In the index mapping the given field must be a string of type `keyword`.
 func HandleCompareOperatorContains(fieldName string, fieldValue any) (esquery.Mappable, error) {
-	if values, ok := fieldValue.([]interface{}); ok {
-		return esquery.Bool().
-			Should(
-				lo.Map[interface{}, esquery.Mappable](values, func(value interface{}, _ int) esquery.Mappable {
-					return esquery.Wildcard(fieldName, "*"+ValueToString(value)+"*")
-				})...,
-			).
+	// for a list of values
+	if values, ok := fieldValue.([]any); ok {
+		queries := make([]esquery.Mappable, 0, len(values))
+		for _, value := range values {
+
+			valueStr, ok := value.(string)
+			if !ok {
+				return nil, fmt.Errorf("operator only supports string values: got value %v of type %T", value, value)
+			}
+			queries = append(queries, esquery.Wildcard(fieldName, "*"+valueStr+"*"))
+		}
+		return esquery.Bool().Should(queries...).
 			MinimumShouldMatch(1), nil
 	} else { // for single values
-		return esquery.Wildcard(fieldName, "*"+ValueToString(fieldValue)+"*"), nil
+		value, ok := fieldValue.(string)
+		if !ok {
+			return nil, fmt.Errorf("operator only supports string values: got value %v of type %T", fieldValue, fieldValue)
+		}
+		return esquery.Wildcard(fieldName, "*"+value+"*"), nil
 	}
 }
 
@@ -46,12 +54,12 @@ func HandleCompareOperatorTextContains(fieldName string, fieldValue any) (esquer
 		return esquery.Bool(). // chain by OR
 					Should(
 				lo.Map(values, func(value any, _ int) esquery.Mappable {
-					return esquery.Match(fieldName, ValueToString(value)).MinimumShouldMatch("100%")
+					return esquery.Match(fieldName, value).MinimumShouldMatch("100%")
 				})...,
 			).
 			MinimumShouldMatch(1), nil
 	}
-	return esquery.Match(fieldName, ValueToString(fieldValue)).MinimumShouldMatch("100%"), nil // no query term is optional
+	return esquery.Match(fieldName, fieldValue).MinimumShouldMatch("100%"), nil // no query term is optional
 }
 
 // HandleCompareOperatorBeginsWith handles begins with
@@ -63,7 +71,7 @@ func HandleCompareOperatorBeginsWith(fieldName string, fieldValue any) (esquery.
 
 			valueStr, ok := value.(string)
 			if !ok {
-				return nil, fmt.Errorf("operator only supported for string: got value %v of type %T", value, value)
+				return nil, fmt.Errorf("operator only supports string values: got value %v of type %T", value, value)
 			}
 			prefixQueries = append(prefixQueries, esquery.Prefix(fieldName, valueStr))
 		}
@@ -72,7 +80,7 @@ func HandleCompareOperatorBeginsWith(fieldName string, fieldValue any) (esquery.
 	} else { // for single value
 		value, ok := fieldValue.(string)
 		if !ok {
-			return nil, fmt.Errorf("operator only supported for string: got value %v of type %T", fieldValue, fieldValue)
+			return nil, fmt.Errorf("operator only supports string values: got value %v of type %T", fieldValue, fieldValue)
 		}
 		return esquery.Prefix(fieldName, value), nil
 	}
@@ -148,26 +156,6 @@ func HandleCompareOperatorIsLessThan(fieldName string, fieldValue any) (esquery.
 
 func HandleCompareOperatorExists(fieldName string, _ any) (esquery.Mappable, error) {
 	return esquery.Exists(fieldName), nil
-}
-
-// ValueToString converts the given value to a string.
-// Compared to [fmt.Sprint] it will give RFC3339 format for [time.Time] value
-// and a specific formatting of numbers.
-func ValueToString(value interface{}) string {
-	switch v := value.(type) {
-	case string:
-		return v
-	case int:
-		return strconv.Itoa(v)
-	case float32:
-		return strconv.FormatFloat(float64(v), 'f', -1, 32)
-	case float64:
-		return strconv.FormatFloat(v, 'f', -1, 64)
-	case time.Time:
-		return v.Format(time.RFC3339)
-	default:
-		return fmt.Sprint(value)
-	}
 }
 
 // HandleCompareOperatorBetweenDates constructs an OpenSearch range query for a given date field.
