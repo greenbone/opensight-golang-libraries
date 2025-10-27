@@ -69,7 +69,7 @@ func (qb *Builder) addFilters(request *filter.Request) (args []any, err error) {
 		args = append(args, extractFieldValues(field.Value, field.Operator)...)
 		qb.query.WriteString(conditionTemplate)
 	}
-	return
+	return args, nil
 }
 
 // likeReplacer is used for escaping LIKE and ILIKE clauses wildcards and backslashes
@@ -150,27 +150,24 @@ func (qb *Builder) Build(resultSelector query.ResultSelector) (query string, arg
 	if resultSelector.Filter != nil {
 		args, err = qb.addFilters(resultSelector.Filter)
 		if err != nil {
-			err = fmt.Errorf("error adding filter query: %w", err)
-			return
+			return "", nil, fmt.Errorf("error adding filter query: %w", err)
 		}
 	}
 
 	if resultSelector.Sorting != nil {
-		sortingErr := qb.addSorting(resultSelector.Sorting)
-		if sortingErr != nil {
-			err = fmt.Errorf("error adding sort query: %w", sortingErr)
-			return
+		err := qb.addSorting(resultSelector.Sorting)
+		if err != nil {
+			return "", nil, fmt.Errorf("error adding sort query: %w", err)
 		}
 	}
 
 	if resultSelector.Paging != nil {
 		err = qb.addPaging(resultSelector.Paging)
 		if err != nil {
-			err = fmt.Errorf("error adding paging query: %w", err)
-			return
+			return "", nil, fmt.Errorf("error adding paging query: %w", err)
 		}
 	}
 
 	query = qb.query.String()
-	return
+	return query, args, nil
 }
