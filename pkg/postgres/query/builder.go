@@ -26,12 +26,12 @@ type Settings struct {
 // Builder represents a query builder used to construct PostgresSQL conditional query strings
 // with sorting and paging functionalities.
 type Builder struct {
-	querySettings *Settings       // Settings used to configure the query builder
+	querySettings Settings        // Settings used to configure the query builder
 	query         strings.Builder // strings.Builder to construct the query string
 }
 
 // NewPostgresQueryBuilder creates a new instance of the query builder with the provided settings.
-func NewPostgresQueryBuilder(querySetting *Settings) *Builder {
+func NewPostgresQueryBuilder(querySetting Settings) *Builder {
 	return &Builder{
 		querySettings: querySetting,
 	}
