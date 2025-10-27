@@ -44,8 +44,7 @@ func simpleOperatorCondition(
 	if valueIsList {
 		valueList, ok := field.Value.([]any)
 		if !ok {
-			err = errors.New("couldn't not get field list values")
-			return
+			return "", fmt.Errorf("value is of type %T, expected []any", field.Value)
 		}
 		placeholders := make([]string, len(valueList))
 		for i := range valueList {
@@ -88,8 +87,7 @@ func likeOperatorCondition(
 	if valueIsList {
 		valueList, ok := field.Value.([]any)
 		if !ok {
-			err = errors.New("could not get field list values")
-			return
+			return "", fmt.Errorf("value is of type %T, expected []any", field.Value)
 		}
 		for _, element := range valueList {
 			if _, ok := element.(string); !ok {
