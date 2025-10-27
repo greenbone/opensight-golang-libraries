@@ -6,7 +6,6 @@
 package query
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -18,9 +17,15 @@ import (
 
 // Settings is a configuration struct used to customize the behavior of the query builder.
 type Settings struct {
-	// FilterFieldMapping is the mapping of filter fields for query customization
-	// also serves as safeguard against sql injection
+	// FilterFieldMapping is the mapping of filter (or sorting) fields to columns in the database.
+	// The columns will be part of the `WHERE` or `ORDER BY` clause, so depending on the query the entry
+	// needs to be prefixed with the table name or alias used in the query.
+	// It also serves as safeguard against sql injection.
 	FilterFieldMapping map[string]string
+	// Column used as tie breaker when sorting results. It should have a unique value for each row.
+	// It will be part of the `ORDER BY` clause, so depending on the query the entry needs to be prefixed
+	// with the table name or alias used in the query.
+	SortingTieBreakerColumn string
 }
 
 // Builder represents a query builder used to construct PostgresSQL conditional query strings
@@ -31,10 +36,12 @@ type Builder struct {
 }
 
 // NewPostgresQueryBuilder creates a new instance of the query builder with the provided settings.
-func NewPostgresQueryBuilder(querySetting Settings) *Builder {
-	return &Builder{
-		querySettings: querySetting,
+func NewPostgresQueryBuilder(querySetting Settings) (*Builder, error) {
+	if querySetting.SortingTieBreakerColumn == "" {
+		return nil, fmt.Errorf("missing sorting tie breaker column in query settings")
 	}
+
+	return &Builder{querySettings: querySetting}, nil
 }
 
 // addFilters builds and appends filter conditions to the query builder based on the provided filter request.
@@ -110,17 +117,20 @@ func extractFieldValues(input any, compareOperator filter.CompareOperator) (resp
 // addSorting appends sorting conditions to the query builder based on the provided sorting request.
 // It constructs the ORDER BY clause using the specified sort column and direction.
 func (qb *Builder) addSorting(sort *sorting.Request) error {
-	if sort == nil {
-		return errors.New("missing sorting fields, add sort request or remove call to addSorting()")
-	}
+	sortFragment := " ORDER BY"
 
-	dbColumnName, ok := qb.querySettings.FilterFieldMapping[sort.SortColumn]
-	if !ok {
-		return filter.NewInvalidFilterFieldError(
-			"missing filter field mapping for '%s'", sort.SortColumn)
+	if sort != nil {
+		dbColumnName, ok := qb.querySettings.FilterFieldMapping[sort.SortColumn]
+		if !ok {
+			return filter.NewInvalidFilterFieldError(
+				"missing filter field mapping for '%s'", sort.SortColumn)
+		}
+		sortFragment += fmt.Sprintf(" %s %s,", dbColumnName, sort.SortDirection)
 	}
+	// add tie breaker to ensure consistent sorting
+	sortFragment += fmt.Sprintf(" %s ASC", qb.querySettings.SortingTieBreakerColumn)
 
-	qb.query.WriteString(fmt.Sprintf(" ORDER BY %s %s", dbColumnName, sort.SortDirection))
+	qb.query.WriteString(sortFragment)
 	return nil
 }
 
@@ -155,11 +165,9 @@ func (qb *Builder) Build(resultSelector query.ResultSelector) (query string, arg
 		}
 	}
 
-	if resultSelector.Sorting != nil {
-		err := qb.addSorting(resultSelector.Sorting)
-		if err != nil {
-			return "", nil, fmt.Errorf("error adding sort query: %w", err)
-		}
+	err = qb.addSorting(resultSelector.Sorting) // sorting is always applied
+	if err != nil {
+		return "", nil, fmt.Errorf("error adding sort query: %w", err)
 	}
 
 	if resultSelector.Paging != nil {
