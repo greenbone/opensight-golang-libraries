@@ -96,11 +96,31 @@ test-opensearch:
 	$(MAKE) stop-opensearch-test-service; \
 	exit $$status
 
+.PHONY: start-postgres-test-service
+start-postgres-test-service:
+	docker compose -f ./internal/pgtesting/compose.yml -p postgres-test up -d --wait
+
+.PHONY: stop-postgres-test-service
+stop-postgres-test-service:
+	docker compose -f ./internal/pgtesting/compose.yml -p postgres-test down
+
+.PHONY: run-postgres-tests
+run-postgres-tests:
+	TEST_POSTGRES=1 go test ./pkg/postgres/query/... -coverprofile=cov-pg-tests.out
+
+.PHONY: test-postgres
+test-postgres:
+	$(MAKE) start-postgres-test-service
+	$(MAKE) run-postgres-tests; \
+	status=$$?; \
+	$(MAKE) stop-postgres-test-service; \
+	exit $$status
+
 .PHONY: generate_docs
 generate_docs: check_tools
 	gomarkdoc -e --output '{{.Dir}}/README.md' \
 		--exclude-dirs .,./pkg/configReader/helper,./pkg/dbcrypt/config,./pkg/openSearch/openSearchClient/config \
-		./...
+		./pkg/...
 
 check_tools:
 	@command -v gomarkdoc >/dev/null || $(INSTALL_GOMARKDOC)
