@@ -3,6 +3,7 @@ REGISTRY := docker-gps.greenbone.net
 # Define submodules
 PKG_DIR := pkg
 
+.PHONY: all
 all: build test
 
 .PHONY: help
@@ -27,6 +28,7 @@ OS="$(shell go env var GOOS | xargs)"
 ALL_GO_DIRS := $(shell find $(PKG_DIR) -name '*.go' -exec dirname {} \; | sort -u)
 
 # Clean up
+.PHONY: clean
 clean:
 	go clean -i ./...
 
@@ -64,19 +66,40 @@ build: build-common ## build go library packages
 	go build -trimpath ./...
 
 .PHONY: test
-test: ## run all tests
-	go test -test.short ./...
+test: ## run short tests
+	go test -short ./...
 
 .PHONY: test-codecov
 test-codecov:
-	go test -cover -coverprofile=coverage.txt ./...
+	go test -cover -coverprofile=cov-unit-tests.out ./...
 
-.PHONY: all build test clean
+.PHONY: start-opensearch-test-service
+start-opensearch-test-service:
+	docker compose -f ./pkg/openSearch/ostesting/compose.yml -p opensearch-test up -d --wait --wait-timeout=120
+
+.PHONY: stop-opensearch-test-service
+stop-opensearch-test-service:
+	docker compose -f ./pkg/openSearch/ostesting/compose.yml -p opensearch-test down -v
+
+.PHONY: run-opensearch-tests
+run-opensearch-tests:
+	TEST_OPENSEARCH=1 go test ./pkg/openSearch/osquery -coverprofile=cov-os-tests.out
+
+# test-opensearch runs whole opensearch execution with docker setup and cleanup
+# we want to stop-opensearch-test-service regardless of the result of run-opensearch-tests
+# and return the result of run-opensearch-tests
+.PHONY: test-opensearch
+test-opensearch:
+	$(MAKE) start-opensearch-test-service
+	$(MAKE) run-opensearch-tests; \
+	status=$$?; \
+	$(MAKE) stop-opensearch-test-service; \
+	exit $$status
 
 .PHONY: generate_docs
 generate_docs: check_tools
 	gomarkdoc -e --output '{{.Dir}}/README.md' \
-		--exclude-dirs .,./pkg/configReader/helper,./pkg/dbcrypt/config,./pkg/openSearch/openSearchClient/config,./pkg/swagger/ginSwagger.go \
+		--exclude-dirs .,./pkg/configReader/helper,./pkg/dbcrypt/config,./pkg/openSearch/openSearchClient/config \
 		./...
 
 check_tools:

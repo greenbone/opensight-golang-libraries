@@ -1,0 +1,23 @@
+services:
+  opensearch-test:
+      image: opensearchproject/opensearch:2.19.3
+      environment:
+        - cluster.name=opensearch-cluster
+        - node.name=opensearch-test
+        - discovery.type=single-node
+        - bootstrap.memory_lock=true
+        - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+        - OPENSEARCH_INITIAL_ADMIN_PASSWORD=secureTestPassword444!
+      volumes:
+        - opensearch-data-test:/usr/share/opensearch/data
+      ports:
+        - 9300:9200
+      healthcheck:
+        # verbose for the local setup
+        test: ["CMD-SHELL", "curl -k -u admin:secureTestPassword444! --no-progress-meter --fail-with-body https://localhost:9200/_cluster/health && echo ' -- health probe succeeded'"]
+        interval: 10s
+        timeout: 10s
+        retries: 15
+
+volumes:
+  opensearch-data-test:

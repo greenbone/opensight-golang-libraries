@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-package openSearchQuery
+package osquery
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/aquasecurity/esquery"
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
@@ -22,52 +23,18 @@ type BoolQueryBuilder struct {
 }
 
 type (
-	queryAppender func(fieldName string, fieldKeys []string, fieldValue any)
+	queryAppender func(fieldName string, fieldKeys []string, fieldValue any) error
 	// CompareOperatorHandler is a function that generates an appropriate query condition for the given field.
-	//
-	// fieldName is the name of the field.
-	// fieldKeys is a list of keys used only for nested fields.
-	// fieldValue is the value to compare against.
-	// querySettings are the settings to use for the query defining which fields are to be treated e.g. as wildcard array or keyword field.
-	CompareOperatorHandler func(fieldName string, fieldKeys []string, fieldValue any,
-		querySettings *QuerySettings) esquery.Mappable
+	CompareOperatorHandler func(fieldName string, fieldValue any) (esquery.Mappable, error)
 )
-
-// RatingRange represent a closed interval of float32 values.
-type RatingRange struct {
-	Min float32 // Lower bound of the rating range (inclusive)
-	Max float32 // Upper bound of the rating range (inclusive)
-}
 
 // QuerySettings is used to configure the query builder.
 type QuerySettings struct {
-	// WildcardArrays is a map of field names to a boolean value indicating whether the field is to be treated as a wildcard array.
-	WildcardArrays map[string]bool
-	// IsEqualToKeywordFields is a map of field names to a boolean value indicating whether the field is to be treated as a keyword field.
-	IsEqualToKeywordFields map[string]bool
-	// UseNestedMatchQueryFields is a map of field names to a boolean value indicating whether the field is to be treated as a nested query field.
-	UseNestedMatchQueryFields map[string]bool
-	// NestedQueryFieldDefinitions is a list of nested query field definitions.
-	NestedQueryFieldDefinitions []NestedQueryFieldDefinition
-	// UseMatchPhraseFields is a map of field names to a boolean value indicating whether the field should use a match phrase query.
-	UseMatchPhrase     map[string]bool
 	FilterFieldMapping map[string]string
-	// StringFieldRating is a map for field names with a rating. The rating is used to determine the compare order of the field in the query.
-	StringFieldRating map[string]map[string]RatingRange
-}
-
-// NestedQueryFieldDefinition is a definition of a nested query field.
-type NestedQueryFieldDefinition struct {
-	// FieldName is the name of the field.
-	FieldName string
-	// FieldKeyName is the name of the key field.
-	FieldKeyName string
-	// FieldValueName is the name of the value field.
-	FieldValueName string
 }
 
 // CompareOperator defines a mapping between a filter.CompareOperator and a function to generate an appropriate
-// query condition in from of a CompareOperatorHandler.
+// query condition in form of a CompareOperatorHandler.
 type CompareOperator struct {
 	Operator filter.CompareOperator
 	Handler  CompareOperatorHandler
@@ -94,53 +61,59 @@ func NewBoolQueryBuilderWith(query *esquery.BoolQuery, querySettings *QuerySetti
 	}
 }
 
-// ReplaceCompareOperators replaces the set of CompareOperator to be used for this query builder.
-//
-// operators is the new set of CompareOperator to use.
-func (q *BoolQueryBuilder) ReplaceCompareOperators(operators []CompareOperator) *BoolQueryBuilder {
-	q.compareOperators = operators
-	return q
-}
-
-// AddCompareOperators adds the given set of CompareOperator to the set of CompareOperator to be used for this query builder.
-//
-// operators is the set of CompareOperator to add.
-func (q *BoolQueryBuilder) AddCompareOperators(operators ...CompareOperator) *BoolQueryBuilder {
-	q.compareOperators = append(q.compareOperators, operators...)
-	return q
-}
-
 // AddTermsFilter adds a terms filter to this query.
 //
 // values is the list of values to filter for.
-func (q *BoolQueryBuilder) AddTermsFilter(fieldName string, values ...interface{}) *BoolQueryBuilder {
-	q.query = q.query.Filter(esquery.Terms(fieldName, values...))
-	return q
+func (q *BoolQueryBuilder) AddTermsFilter(fieldName string, values ...any) error {
+	if len(values) == 0 {
+		return fmt.Errorf("need at least one value for terms filter")
+	}
+
+	entityName, ok := q.querySettings.FilterFieldMapping[fieldName]
+	if !ok {
+		return fmt.Errorf("mapping for filter field '%s' is currently not implemented", fieldName)
+	}
+
+	q.query = q.query.Filter(esquery.Terms(entityName, values...))
+	return nil
 }
 
 // AddTermFilter adds a term filter to this query.
 //
 // value is the value to filter for.
-func (q *BoolQueryBuilder) AddTermFilter(fieldName string, value interface{}) *BoolQueryBuilder {
-	q.query = q.query.Filter(esquery.Term(fieldName, value))
-	return q
+func (q *BoolQueryBuilder) AddTermFilter(fieldName string, value any) error {
+	entityName, ok := q.querySettings.FilterFieldMapping[fieldName]
+	if !ok {
+		return fmt.Errorf("mapping for filter field '%s' is currently not implemented", fieldName)
+	}
+
+	q.query = q.query.Filter(esquery.Term(entityName, value))
+	return nil
 }
 
 func (q *BoolQueryBuilder) addToMust(call CompareOperatorHandler) queryAppender {
-	return func(fieldName string, fieldKeys []string, fieldValue any) {
-		value := call(fieldName, fieldKeys, fieldValue, q.querySettings)
+	return func(fieldName string, fieldKeys []string, fieldValue any) error {
+		value, err := call(fieldName, fieldValue)
+		if err != nil {
+			return err
+		}
 		if value != nil {
 			q.Must = append(q.Must, value)
 		}
+		return nil
 	}
 }
 
 func (q *BoolQueryBuilder) addToMustNot(call CompareOperatorHandler) queryAppender {
-	return func(fieldName string, fieldKeys []string, fieldValue any) {
-		value := call(fieldName, fieldKeys, fieldValue, q.querySettings)
+	return func(fieldName string, fieldKeys []string, fieldValue any) error {
+		value, err := call(fieldName, fieldValue)
+		if err != nil {
+			return err
+		}
 		if value != nil {
 			q.MustNot = append(q.MustNot, value)
 		}
+		return nil
 	}
 }
 
@@ -163,6 +136,9 @@ func (q *BoolQueryBuilder) AddFilterRequest(request *filter.Request) error {
 	if request == nil || len(request.Fields) == 0 {
 		return nil
 	}
+	if request.Operator == "" && len(request.Fields) == 1 { // for single filter `Operator` is not relevant
+		request.Operator = filter.LogicOperatorAnd
+	}
 
 	effectiveRequest, err := effectiveFilterFields(*request, q.querySettings.FilterFieldMapping)
 	if err != nil {
@@ -173,7 +149,38 @@ func (q *BoolQueryBuilder) AddFilterRequest(request *filter.Request) error {
 
 	for _, field := range effectiveRequest.Fields {
 		if handler, ok := operatorMapping[field.Operator]; ok {
-			handler(field.Name, field.Keys, field.Value)
+			value := field.Value
+
+			if field.Operator == filter.CompareOperatorExists {
+				value = "" // exists operator does not need a value, but for more consistent handling just pass a dummy value
+			}
+			if value == nil {
+				return fmt.Errorf("field '%s' has no value set", field.Name)
+			}
+
+			if t := reflect.TypeOf(value); t.Kind() == reflect.Slice || t.Kind() == reflect.Array {
+				slice := reflect.ValueOf(value)
+
+				if slice.Len() == 0 { // disallow empty list values, as the there is no clear way to interpret this kind of filter
+					return fmt.Errorf("field '%s' has empty list of values", field.Name)
+				}
+				// convert to []any, so that handlers don't need to deal with different slice types
+				var values []any
+				if v, ok := value.([]any); ok {
+					values = v
+				} else {
+					values = make([]any, slice.Len())
+					for i := 0; i < slice.Len(); i++ {
+						values[i] = slice.Index(i).Interface()
+					}
+				}
+				value = values
+			}
+
+			err := handler(field.Name, field.Keys, value)
+			if err != nil {
+				return fmt.Errorf("failed to transform filter with operator %q to database query: %w", field.Operator, err)
+			}
 		} else {
 			return fmt.Errorf("field '%s' with unknown operator '%s'", field.Name, field.Operator)
 		}
@@ -198,8 +205,6 @@ func (q *BoolQueryBuilder) AddFilterRequest(request *filter.Request) error {
 			q.query = q.query.Should(shouldQueries...).MinimumShouldMatch(1)
 		}
 		return nil
-	case "":
-		return fmt.Errorf("missing mandatory field `Operator` in filter request")
 	default:
 		return fmt.Errorf("unknown operator '%s'", effectiveRequest.Operator)
 	}
@@ -249,19 +254,19 @@ func defaultCompareOperators() []CompareOperator {
 			Operator: filter.CompareOperatorIsNumberNotEqualTo,
 			Handler:  HandleCompareOperatorIsEqualTo, MustCondition: false,
 		},
-		{Operator: filter.CompareOperatorIsIpEqualTo, Handler: HandleCompareOperatorIsKeywordEqualTo, MustCondition: true},
-		{Operator: filter.CompareOperatorIsIpNotEqualTo, Handler: HandleCompareOperatorIsKeywordEqualTo, MustCondition: false},
-		{Operator: filter.CompareOperatorIsStringEqualTo, Handler: HandleCompareOperatorIsKeywordEqualTo, MustCondition: true},
+		{Operator: filter.CompareOperatorIsIpEqualTo, Handler: HandleCompareOperatorIsEqualTo, MustCondition: true},
+		{Operator: filter.CompareOperatorIsIpNotEqualTo, Handler: HandleCompareOperatorIsEqualTo, MustCondition: false},
+		{Operator: filter.CompareOperatorIsStringEqualTo, Handler: HandleCompareOperatorIsEqualTo, MustCondition: true},
 		{
 			Operator: filter.CompareOperatorIsStringNotEqualTo,
-			Handler:  HandleCompareOperatorIsKeywordEqualTo, MustCondition: false,
+			Handler:  HandleCompareOperatorIsEqualTo, MustCondition: false,
 		},
 		{Operator: filter.CompareOperatorContains, Handler: HandleCompareOperatorContains, MustCondition: true},
 		{Operator: filter.CompareOperatorDoesNotContain, Handler: HandleCompareOperatorContains, MustCondition: false},
 		{Operator: filter.CompareOperatorBeginsWith, Handler: HandleCompareOperatorBeginsWith, MustCondition: true},
 		{
 			Operator: filter.CompareOperatorDoesNotBeginWith,
-			Handler:  HandleCompareOperatorNotBeginsWith, MustCondition: true,
+			Handler:  HandleCompareOperatorBeginsWith, MustCondition: false,
 		},
 		{
 			Operator: filter.CompareOperatorIsLessThanOrEqualTo,
@@ -276,30 +281,6 @@ func defaultCompareOperators() []CompareOperator {
 		{Operator: filter.CompareOperatorIsLessThan, Handler: HandleCompareOperatorIsLessThan, MustCondition: true},
 		{Operator: filter.CompareOperatorAfterDate, Handler: HandleCompareOperatorIsGreaterThan, MustCondition: true},
 		{Operator: filter.CompareOperatorBeforeDate, Handler: HandleCompareOperatorIsLessThan, MustCondition: true},
-		{
-			Operator: filter.CompareOperatorIsGreaterThanRating,
-			Handler:  HandleCompareOperatorIsGreaterThanRating, MustCondition: true,
-		},
-		{
-			Operator: filter.CompareOperatorIsLessThanRating,
-			Handler:  HandleCompareOperatorIsLessThanRating, MustCondition: true,
-		},
-		{
-			Operator: filter.CompareOperatorIsGreaterThanOrEqualToRating,
-			Handler:  HandleCompareOperatorIsGreaterThanOrEqualToRating, MustCondition: true,
-		},
-		{
-			Operator: filter.CompareOperatorIsLessThanOrEqualToRating,
-			Handler:  HandleCompareOperatorIsLessThanOrEqualToRating, MustCondition: true,
-		},
-		{
-			Operator: filter.CompareOperatorIsEqualToRating,
-			Handler:  HandleCompareOperatorIsEqualToRating, MustCondition: true,
-		},
-		{
-			Operator: filter.CompareOperatorIsNotEqualToRating,
-			Handler:  HandleCompareOperatorIsNotEqualToRating, MustCondition: true,
-		},
 		{
 			Operator: filter.CompareOperatorBetweenDates,
 			Handler:  HandleCompareOperatorBetweenDates, MustCondition: true,

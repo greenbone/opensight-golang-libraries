@@ -137,7 +137,7 @@ func HandleCompareOperatorNotBeginsWith(fieldName string, fieldKeys []string, fi
 				})...,
 			)
 	} else { // for single values
-		return esquery.Prefix(fieldName+".keyword", fieldValue.(string))
+		return esquery.Bool().MustNot(esquery.Prefix(fieldName+".keyword", fieldValue.(string)))
 	}
 }
 

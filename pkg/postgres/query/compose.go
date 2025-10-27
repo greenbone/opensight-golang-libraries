@@ -26,7 +26,7 @@ func composeQuery(
 		field.Name = dbColumnName
 	} else {
 		return "", filter.NewInvalidFilterFieldError(
-			"Mapping for filter field '%s' is currently not implemented.", field.Name)
+			"mapping for filter field '%s' is currently not implemented", field.Name)
 	}
 
 	switch field.Operator {
