@@ -37,12 +37,11 @@ func NewPostgresQueryBuilder(querySetting *Settings) *Builder {
 	}
 }
 
-// BuildQueryConditions builds and appends filter conditions to the query builder based on the provided filter request.
+// addFilters builds and appends filter conditions to the query builder based on the provided filter request.
 // It constructs conditional clauses using the logic operator specified in the request.
 // It uses the `?` query placeholder, so you can pass your parameter separately
 // It returns all individual field values in a single list
-// BuildQueryConditions can be used as a standalone function with Gorm
-func (qb *Builder) BuildQueryConditions(request *filter.Request) (args []any, err error) {
+func (qb *Builder) addFilters(request *filter.Request) (args []any, err error) {
 	if request == nil || len(request.Fields) == 0 {
 		return nil, nil
 	}
@@ -149,7 +148,7 @@ func (qb *Builder) addPaging(paging *paging.Request) error {
 // If any error occurs during the construction, it returns an empty string.
 func (qb *Builder) Build(resultSelector query.ResultSelector) (query string, args []any, err error) {
 	if resultSelector.Filter != nil {
-		args, err = qb.BuildQueryConditions(resultSelector.Filter)
+		args, err = qb.addFilters(resultSelector.Filter)
 		if err != nil {
 			err = fmt.Errorf("error adding filter query: %w", err)
 			return
