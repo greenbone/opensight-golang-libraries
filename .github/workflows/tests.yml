@@ -39,3 +39,20 @@ jobs:
           name: OpenSearch Tests
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
+
+  postgres-test:
+    name: Execute postgres tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/go-setup
+      - name: Execute Postgres tests
+        run: make test-postgres
+      - name: Upload Postgres test coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: cov-pg-tests.out
+          flags: postgres-tests
+          name: Postgres Tests
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
