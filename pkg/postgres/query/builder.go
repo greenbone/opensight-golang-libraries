@@ -126,9 +126,10 @@ func (qb *Builder) addSorting(sort *sorting.Request) error {
 
 // addPaging appends paging conditions to the query builder based on the provided paging request.
 // It constructs the OFFSET and LIMIT clauses according to the specified page index and page size.
-func (qb *Builder) addPaging(paging *paging.Request) error {
-	if paging == nil {
-		return errors.New("missing paging fields, add paging request or remove call to AddSize()")
+func (qb *Builder) addPaging(paging paging.Request) error {
+	if paging.PageSize < 0 || paging.PageIndex < 0 {
+		return fmt.Errorf("paging parameters must be non-negative, got page size: %d, page index: %d",
+			paging.PageSize, paging.PageIndex)
 	}
 
 	if paging.PageIndex > 0 {
@@ -162,7 +163,7 @@ func (qb *Builder) Build(resultSelector query.ResultSelector) (query string, arg
 	}
 
 	if resultSelector.Paging != nil {
-		err = qb.addPaging(resultSelector.Paging)
+		err = qb.addPaging(*resultSelector.Paging)
 		if err != nil {
 			return "", nil, fmt.Errorf("error adding paging query: %w", err)
 		}
