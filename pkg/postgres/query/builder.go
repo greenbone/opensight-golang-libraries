@@ -66,26 +66,23 @@ func (qb *Builder) addFilters(request *filter.Request) (args []any, err error) {
 		return nil, fmt.Errorf("invalid filter logic operator: %s", request.Operator)
 	}
 
-	qb.query.WriteString("WHERE")
-
+	qb.query.WriteString("WHERE ")
 	for index, field := range request.Fields {
-		var (
-			err               error
-			valueIsList       bool
-			conditionTemplate string
-		)
-		valueIsList, _, err = checkFieldValueType(field)
+		sanitizedValue, err := sanitizeFilterValue(field.Value)
 		if err != nil {
-			return nil, fmt.Errorf("error checking filter field value type '%s': %w", field, err)
+			return nil, fmt.Errorf("error sanitizing filter field value '%s': %w", field.Name, err)
 		}
-		conditionTemplate, err = composeQuery(qb.querySettings.FilterFieldMapping, field, valueIsList)
-		if err != nil {
-			return nil, fmt.Errorf("error composing query from filter field %w", err)
-		}
-		if index > 0 {
-			qb.query.WriteString(fmt.Sprintf(" %s", logicOperator))
-		}
+		field.Value = sanitizedValue
 		args = append(args, extractFieldValues(field.Value, field.Operator)...)
+
+		conditionTemplate, err := composeQuery(qb.querySettings.FilterFieldMapping, field)
+		if err != nil {
+			return nil, fmt.Errorf("error composing query from filter field %q:  %w", field.Name, err)
+		}
+
+		if index > 0 {
+			qb.query.WriteString(fmt.Sprintf(" %s ", logicOperator))
+		}
 		qb.query.WriteString(conditionTemplate)
 	}
 	return args, nil

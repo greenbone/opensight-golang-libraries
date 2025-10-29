@@ -68,12 +68,7 @@ func buildStringComparisonStatement(field filter.RequestField, negate bool, oper
 // [parameterStatement] is a statement involving the `?` parameter placeholder. In the simplest case just `?`.
 // Example: NOT ((field ILIKE ? || '%' ))
 func buildComparisonStatement(field filter.RequestField, negate bool, operator string, parameterStatement string) (string, error) {
-	quotedName, err := getQuotedName(field.Name)
-	if err != nil {
-		return "", fmt.Errorf("failed to parse quoted name: %w", err)
-	}
-
-	singleStatement := fmt.Sprintf("%s %s %s", quotedName, operator, parameterStatement)
+	singleStatement := fmt.Sprintf("%s %s %s", field.Name, operator, parameterStatement)
 
 	var count int
 	if valueList, ok := field.Value.([]any); ok {
@@ -105,29 +100,38 @@ func chainStatementsByOr(negate bool, singleStatement string, count int) string 
 	return builder.String()
 }
 
-func checkFieldValueType(field filter.RequestField) (valueIsList bool, valueList []any, err error) {
-	if reflect.TypeOf(field.Value).Kind() == reflect.Slice {
-		valueList, valueIsList = field.Value.([]any)
-		if !valueIsList {
-			err = fmt.Errorf("list field '%s' must have type []any, got %T", field.Name, field.Value)
-			return false, nil, err
-		}
-	} else {
-		valueIsList = false
-		valueList = nil
+func sanitizeFilterValue(value any) (sanitizedValue any, err error) {
+	if value == nil {
+		return filter.RequestField{}, errors.New("field has nil value")
 	}
-	return valueIsList, valueList, nil
+
+	sanitizedValue = value
+
+	if reflect.TypeOf(value).Kind() == reflect.Slice || reflect.TypeOf(value).Kind() == reflect.Array {
+		slice := reflect.ValueOf(value)
+
+		if slice.Len() == 0 { // disallow empty list values, as the there is no clear way to interpret this kind of filter
+			return filter.RequestField{}, fmt.Errorf("field has empty list of values")
+		}
+		// convert to []any, so that handlers don't need to deal with different slice types
+		var values []any
+		if v, ok := value.([]any); ok {
+			values = v
+		} else {
+			values = make([]any, slice.Len())
+			for i := 0; i < slice.Len(); i++ {
+				values[i] = slice.Index(i).Interface()
+			}
+		}
+		sanitizedValue = values
+	}
+	return sanitizedValue, nil
 }
 
 // buildDateTruncStatement builds a SQL filter statement of the form:
 // [NOT] ((date_trunc('day', field) operator date_trunc('day', ?::timestamp)) OR ...)
 // Example: NOT ((date_trunc('day', field) < date_trunc('day', ?::timestamp)) OR ...)
 func buildDateTruncStatement(field filter.RequestField, operator string) (string, error) {
-	quotedName, err := getQuotedName(field.Name)
-	if err != nil {
-		return "", fmt.Errorf("failed to parse quoted name: %w", err)
-	}
-
 	checkType := func(value any) error {
 		switch value.(type) {
 		case string:
@@ -156,7 +160,7 @@ func buildDateTruncStatement(field filter.RequestField, operator string) (string
 		}
 		count = 1
 	}
-	singleStatement := fmt.Sprintf("date_trunc('day', %s) %s date_trunc('day', ?::timestamp)", quotedName, operator)
+	singleStatement := fmt.Sprintf("date_trunc('day', %s) %s date_trunc('day', ?::timestamp)", field.Name, operator)
 
 	return chainStatementsByOr(false, singleStatement, count), nil
 }
