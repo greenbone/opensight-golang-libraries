@@ -191,6 +191,23 @@ func TestBoolQueryBuilder_AddFilterRequest(t *testing.T) {
 			},
 			wantDocuments: []ostesting.TestType{doc1},
 		},
+		"fail with multiple filters and missing logic operator": {
+			filterRequest: &filter.Request{
+				Fields: []filter.RequestField{
+					{
+						Name:     "integerField",
+						Operator: filter.CompareOperatorIsGreaterThan,
+						Value:    doc0.Integer,
+					},
+					{
+						Name:     "integerField",
+						Operator: filter.CompareOperatorIsLessThan,
+						Value:    doc2.Integer,
+					},
+				},
+			},
+			wantErr: true,
+		},
 		"fail on empty value": {
 			filterRequest: singleFilter(filter.RequestField{
 				Name:     "keywordField",
