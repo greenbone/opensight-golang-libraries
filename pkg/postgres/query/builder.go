@@ -7,6 +7,7 @@ package query
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/query"
@@ -174,10 +175,9 @@ func (qb *Builder) addPaging(paging paging.Request) error {
 	return nil
 }
 
-// Build generates the complete SQL query based on the provided result selector.
+// Build generates the complete postgres SQL query based on the provided result selector.
 // It constructs the query by adding filter, sorting, and paging conditions.
 // It returns the constructed query string, and all the individual filter fields values (args) in a single list
-// If any error occurs during the construction, it returns an empty string.
 func (qb *Builder) Build(resultSelector query.ResultSelector) (query string, args []any, err error) {
 	if resultSelector.Filter != nil {
 		args, err = qb.addFilters(resultSelector.Filter)
@@ -199,5 +199,24 @@ func (qb *Builder) Build(resultSelector query.ResultSelector) (query string, arg
 	}
 
 	query = qb.query.String()
+	query = rebind(query)
 	return query, args, nil
+}
+
+// rebind replaces `?` placeholders with `$1`, `$2`, ... for Postgres compatibility.
+// Taken from https://github.com/jmoiron/sqlx/blob/41dac167fdad5e3fd81d66cafba0951dc6823a30/bind.go#L60 (simplified version)
+func rebind(query string) string {
+	rqb := make([]byte, 0)
+
+	var i, j int
+
+	for i = strings.Index(query, "?"); i != -1; i = strings.Index(query, "?") {
+		rqb = append(rqb, query[:i]...)
+		rqb = append(rqb, '$')
+		j++
+		rqb = strconv.AppendInt(rqb, int64(j), 10)
+		query = query[i+1:]
+	}
+
+	return string(append(rqb, query...))
 }
