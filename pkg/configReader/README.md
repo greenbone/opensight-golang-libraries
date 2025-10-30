@@ -67,7 +67,7 @@ import "github.com/greenbone/opensight-golang-libraries/pkg/configReader"
 
 
 <a name="ReadEnvVarsIntoStruct"></a>
-## func [ReadEnvVarsIntoStruct](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/configReader/configReader.go#L21>)
+## func ReadEnvVarsIntoStruct
 
 ```go
 func ReadEnvVarsIntoStruct(s any) (any, error)

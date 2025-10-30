@@ -18,7 +18,7 @@ Package retryableRequest provides a function to retry an http request up to a co
 
 
 <a name="DeepCopyRequest"></a>
-## func [DeepCopyRequest](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/retryableRequest/retryableRequest.go#L70>)
+## func DeepCopyRequest
 
 ```go
 func DeepCopyRequest(request *http.Request) (copy *http.Request, err error)
@@ -27,7 +27,7 @@ func DeepCopyRequest(request *http.Request) (copy *http.Request, err error)
 DeepCopyRequest returns a deep copy of the request. The context of the original request is placed by [context.Background](<https://pkg.go.dev/context/#Background>). An error indicates a problem with the http request. In that case the passed request should no longer be used.
 
 <a name="ExecuteRequestWithRetry"></a>
-## func [ExecuteRequestWithRetry](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/retryableRequest/retryableRequest.go#L23-L25>)
+## func ExecuteRequestWithRetry
 
 ```go
 func ExecuteRequestWithRetry(ctx context.Context, client *http.Client, request *http.Request, maxRetries int, retryWaitMin, retryWaitMax time.Duration) (*http.Response, error)
@@ -36,7 +36,7 @@ func ExecuteRequestWithRetry(ctx context.Context, client *http.Client, request *
 ExecuteRequestWithRetry executes the given request via the passed http client and retries on failures. An error is only returned if there was a non retryable error or the maximum number of retries was reached. It uses the retry policy of \[retryablehttp.ErrorPropagatedRetryPolicy\] and exponential backoff from \[retryablehttp.DefaultBackoff\].
 
 <a name="IsOk"></a>
-## func [IsOk](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/retryableRequest/retryableRequest.go#L87>)
+## func IsOk
 
 ```go
 func IsOk(statusCode int) bool
