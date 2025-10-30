@@ -54,8 +54,8 @@ func (x ReadableValue[T]) Cmp(other ReadableValue[T]) int {
 	return strings.Compare(x.Label, other.Label)
 }
 
-// NewReadableValue creates a sorted slice of ReadableValues.
-func NewReadableValues[T any](values ...ReadableValue[T]) []ReadableValue[T] {
+// SortedReadableValues creates a sorted slice of ReadableValues.
+func SortedReadableValues[T any](values ...ReadableValue[T]) []ReadableValue[T] {
 	values = slices.Clone(values)
 	slices.SortFunc(values, func(x, y ReadableValue[T]) int { return x.Cmp(y) })
 	return values

@@ -45,39 +45,45 @@ CompareOperator ENUM(
 
 	beginsWith
 	doesNotBeginWith
+
 	contains
 	doesNotContain
 
 	textContains
 
 	isNumberEqualTo
-	isEqualTo
-	isIpEqualTo
-	isStringEqualTo
-	isStringCaseInsensitiveEqualTo
-
-	isNotEqualTo
 	isNumberNotEqualTo
+
+	isEqualTo
+	isNotEqualTo
+
+	isIpEqualTo
 	isIpNotEqualTo
+
+	isStringEqualTo
 	isStringNotEqualTo
+	isStringCaseInsensitiveEqualTo
 
 	isGreaterThan
 	isGreaterThanOrEqualTo
+
 	isLessThan
 	isLessThanOrEqualTo
+
 	beforeDate
 	afterDate
+	betweenDates
 
 	exists
 
 	isEqualToRating
 	isNotEqualToRating
-	isGreaterThanRating
+
 	isLessThanRating
-	isGreaterThanOrEqualToRating
 	isLessThanOrEqualToRating
 
-	betweenDates
+	isGreaterThanRating
+	isGreaterThanOrEqualToRating
 
 )
 */

@@ -26,7 +26,7 @@ func TestEnumCompare(t *testing.T) {
 		},
 		{
 			name:     "ControlType/valid/invalid",
-			run:      func() int { return filter.ControlTypeBool.Cmp(filter.ControlType("aaa")) },
+			run:      func() int { return filter.ControlTypeBool.Cmp("aaa") },
 			expected: -1,
 		},
 		{
@@ -36,7 +36,7 @@ func TestEnumCompare(t *testing.T) {
 		},
 		{
 			name:     "ControlType/invalid/invalid",
-			run:      func() int { return filter.ControlType("bbb").Cmp(filter.ControlType("aaa")) },
+			run:      func() int { return filter.ControlType("bbb").Cmp("aaa") },
 			expected: 1,
 		},
 
@@ -52,7 +52,7 @@ func TestEnumCompare(t *testing.T) {
 		},
 		{
 			name:     "LogicOperator/valid/invalid",
-			run:      func() int { return filter.LogicOperatorOr.Cmp(filter.LogicOperator("aaa")) },
+			run:      func() int { return filter.LogicOperatorOr.Cmp("aaa") },
 			expected: -1,
 		},
 		{
@@ -62,7 +62,7 @@ func TestEnumCompare(t *testing.T) {
 		},
 		{
 			name:     "LogicOperator/invalid/invalid",
-			run:      func() int { return filter.LogicOperator("bbb").Cmp(filter.LogicOperator("aaa")) },
+			run:      func() int { return filter.LogicOperator("bbb").Cmp("aaa") },
 			expected: 1,
 		},
 
@@ -78,7 +78,7 @@ func TestEnumCompare(t *testing.T) {
 		},
 		{
 			name:     "CompareOperator/valid/invalid",
-			run:      func() int { return filter.CompareOperatorBeginsWith.Cmp(filter.CompareOperator("aaa")) },
+			run:      func() int { return filter.CompareOperatorBeginsWith.Cmp("aaa") },
 			expected: -1,
 		},
 		{
@@ -88,7 +88,7 @@ func TestEnumCompare(t *testing.T) {
 		},
 		{
 			name:     "CompareOperator/invalid/invalid",
-			run:      func() int { return filter.CompareOperator("bbb").Cmp(filter.CompareOperator("aaa")) },
+			run:      func() int { return filter.CompareOperator("bbb").Cmp("aaa") },
 			expected: 1,
 		},
 
@@ -104,7 +104,7 @@ func TestEnumCompare(t *testing.T) {
 		},
 		{
 			name:     "AggregateMetric/valid/invalid",
-			run:      func() int { return filter.AggregateMetricSum.Cmp(filter.AggregateMetric("aaa")) },
+			run:      func() int { return filter.AggregateMetricSum.Cmp("aaa") },
 			expected: -1,
 		},
 		{
@@ -114,7 +114,7 @@ func TestEnumCompare(t *testing.T) {
 		},
 		{
 			name:     "AggregateMetric/invalid/invalid",
-			run:      func() int { return filter.AggregateMetric("bbb").Cmp(filter.AggregateMetric("aaa")) },
+			run:      func() int { return filter.AggregateMetric("bbb").Cmp("aaa") },
 			expected: 1,
 		},
 	}
