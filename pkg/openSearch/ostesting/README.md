@@ -48,7 +48,7 @@ const KeepFailedEnv = "TEST_KEEP_FAILED"
 ```
 
 <a name="GetDocuments"></a>
-## func [GetDocuments](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L339>)
+## func GetDocuments
 
 ```go
 func GetDocuments[T any](t *testing.T, tester *Tester, index string) []T
@@ -57,7 +57,7 @@ func GetDocuments[T any](t *testing.T, tester *Tester, index string) []T
 GetDocuments returns all documents added to test index
 
 <a name="GetDocumentsReturningError"></a>
-## func [GetDocumentsReturningError](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L306>)
+## func GetDocumentsReturningError
 
 ```go
 func GetDocumentsReturningError[T any](tester *Tester, index string) ([]T, error)
@@ -66,7 +66,7 @@ func GetDocumentsReturningError[T any](tester *Tester, index string) ([]T, error
 GetDocumentsReturningError returns all documents added to test index and returns error \(instead of failing the tests like [GetDocuments](<#GetDocuments>) or \[GetTestTypeDocuments\]\)
 
 <a name="RunNotParallelOption"></a>
-## func [RunNotParallelOption](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L71>)
+## func RunNotParallelOption
 
 ```go
 func RunNotParallelOption(tst *Tester)
@@ -75,7 +75,7 @@ func RunNotParallelOption(tst *Tester)
 RunNotParallelOption signifies that tests associated with [Tester](<#Tester>) should not be run in parallel \(by default they are\)
 
 <a name="ToAnySlice"></a>
-## func [ToAnySlice](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L413>)
+## func ToAnySlice
 
 ```go
 func ToAnySlice[T any](input []T) []any
@@ -84,7 +84,7 @@ func ToAnySlice[T any](input []T) []any
 ToAnySlice converts a slice of any type to a slice of \[\]any. Useful when passing documents to [Tester.CreateDocuments](<#Tester.CreateDocuments>).
 
 <a name="ClientConfig"></a>
-## type [ClientConfig](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L33-L37>)
+## type ClientConfig
 
 
 
@@ -97,7 +97,7 @@ type ClientConfig struct {
 ```
 
 <a name="TestType"></a>
-## type [TestType](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/test_type.go#L10-L21>)
+## type TestType
 
 TestType can be used as generic document object for testing
 
@@ -117,7 +117,7 @@ type TestType struct {
 ```
 
 <a name="Tester"></a>
-## type [Tester](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L58-L65>)
+## type Tester
 
 Tester manages connecting with testing OpenSearch instance and implements helper methods
 
@@ -128,7 +128,7 @@ type Tester struct {
 ```
 
 <a name="NewTester"></a>
-### func [NewTester](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L93>)
+### func NewTester
 
 ```go
 func NewTester(t *testing.T, opts ...TesterOption) *Tester
@@ -137,7 +137,7 @@ func NewTester(t *testing.T, opts ...TesterOption) *Tester
 NewTester initializes new Tester It runs tests associated with \[t\] as parallel by default, unless runNotParallel option is provided.
 
 <a name="Tester.Config"></a>
-### func \(Tester\) [Config](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L138>)
+### func \(Tester\) Config
 
 ```go
 func (tst Tester) Config() ClientConfig
@@ -146,7 +146,7 @@ func (tst Tester) Config() ClientConfig
 Config returns opensearch config that can be used to initialize client using test OpenSearch instance
 
 <a name="Tester.CreateDocuments"></a>
-### func \(Tester\) [CreateDocuments](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L244>)
+### func \(Tester\) CreateDocuments
 
 ```go
 func (tst Tester) CreateDocuments(t *testing.T, index string, docs []any, ids []string)
@@ -155,7 +155,7 @@ func (tst Tester) CreateDocuments(t *testing.T, index string, docs []any, ids []
 CreateDocuments creates documents \[docs\] on index \[index\] with IDs \[ids\]. If provided \[ids\] is nil the IDs for created documents will be generated.
 
 <a name="Tester.CreateDocumentsReturningError"></a>
-### func \(Tester\) [CreateDocumentsReturningError](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L254>)
+### func \(Tester\) CreateDocumentsReturningError
 
 ```go
 func (tst Tester) CreateDocumentsReturningError(index string, docs []any, ids []string) error
@@ -164,7 +164,7 @@ func (tst Tester) CreateDocumentsReturningError(index string, docs []any, ids []
 CreateDocumentsReturningError creates documents \[docs\] on index \[index\] with IDs \[ids\]. If provided \[ids\] is nil the IDs for created documents will be generated. Instead of using [\\\*testing.T](<https://pkg.go.dev/testing/#T>) to fail on errors \(like CreateDocuments\) it returns error. Can be used when we expect error on creating documents in index and do not want to fail a test on it.
 
 <a name="Tester.DeleteIndex"></a>
-### func \(Tester\) [DeleteIndex](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L346>)
+### func \(Tester\) DeleteIndex
 
 ```go
 func (tst Tester) DeleteIndex(t *testing.T, index string)
@@ -173,7 +173,7 @@ func (tst Tester) DeleteIndex(t *testing.T, index string)
 DeleteIndex deletes indices with given name \(or pattern, eg. "index\-name\*"\)
 
 <a name="Tester.GetTestTypeDocuments"></a>
-### func \(Tester\) [GetTestTypeDocuments](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L300>)
+### func \(Tester\) GetTestTypeDocuments
 
 ```go
 func (tst Tester) GetTestTypeDocuments(t *testing.T, index string) []TestType
@@ -182,7 +182,7 @@ func (tst Tester) GetTestTypeDocuments(t *testing.T, index string) []TestType
 GetTestTypeDocuments returns all documents of type [TestType](<#TestType>) from \[index\]
 
 <a name="Tester.NewIndex"></a>
-### func \(Tester\) [NewIndex](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L146>)
+### func \(Tester\) NewIndex
 
 ```go
 func (tst Tester) NewIndex(t *testing.T, prefix string, mapping *string) string
@@ -191,7 +191,7 @@ func (tst Tester) NewIndex(t *testing.T, prefix string, mapping *string) string
 NewIndex creates new index with unique name generated based on provided \[prefix\]. It returns the generated index name. Note: in most cases the \_IndexAlias functions should be used that create both index and add it to alias as this represents the typical usage of indices \(accessing them through alias\) in the code.
 
 <a name="Tester.NewIndexAlias"></a>
-### func \(Tester\) [NewIndexAlias](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L212>)
+### func \(Tester\) NewIndexAlias
 
 ```go
 func (tst Tester) NewIndexAlias(t *testing.T, prefix string, mapping *string) (index, alias string)
@@ -206,7 +206,7 @@ Internally opensearchapi.Client is called directly rather than opensearch.Client
 Upon successful creation the function returns index and associated alias names, in case of error \[t\] is used to mark test as failed. Note: usually the index should be accessed through alias name. In some cases the method needs to receive the concrete index instead.
 
 <a name="Tester.NewNamedIndexAlias"></a>
-### func \(Tester\) [NewNamedIndexAlias](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L235>)
+### func \(Tester\) NewNamedIndexAlias
 
 ```go
 func (tst Tester) NewNamedIndexAlias(t *testing.T, name string, mapping *string) string
@@ -215,7 +215,7 @@ func (tst Tester) NewNamedIndexAlias(t *testing.T, name string, mapping *string)
 NewNamedIndexAlias works like [Tester.NewIndexAlias](<#Tester.NewIndexAlias>), except the name of the newly created index alias will be exactly as provided with \[name\] instead of being generated based on provided prefix. On successful creation it returns the concrete underlying index name It can be used in testing functionalities that rely on defined index alias name \(eg. IndexVTS\) and for which generated index alias name would not work. It goes with a drawback of having to make sure that other test run in parallel will not use the same index alias and interfere \- while internal indices names are still unique, they would refer to the same alias.
 
 <a name="Tester.NewTestTypeIndex"></a>
-### func \(Tester\) [NewTestTypeIndex](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L193>)
+### func \(Tester\) NewTestTypeIndex
 
 ```go
 func (tst Tester) NewTestTypeIndex(t *testing.T, prefix string) string
@@ -224,7 +224,7 @@ func (tst Tester) NewTestTypeIndex(t *testing.T, prefix string) string
 NewTestTypeIndex creates new index appropriate to use with \[testType\] documents with given \[prefix\] of index name. Internally it calls [Tester.NewIndex](<#Tester.NewIndex>).
 
 <a name="Tester.NewTestTypeIndexAlias"></a>
-### func \(Tester\) [NewTestTypeIndexAlias](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L223>)
+### func \(Tester\) NewTestTypeIndexAlias
 
 ```go
 func (tst Tester) NewTestTypeIndexAlias(t *testing.T, prefix string) (index, alias string)
@@ -233,7 +233,7 @@ func (tst Tester) NewTestTypeIndexAlias(t *testing.T, prefix string) (index, ali
 NewTestTypeIndexAlias creates new index appropriate to use with \[testType\] documents with given index and alias names \[prefix\] and returns new index and alias names. Internally it calls [Tester.NewIndexAlias](<#Tester.NewIndexAlias>).
 
 <a name="Tester.OSClient"></a>
-### func \(Tester\) [OSClient](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L127>)
+### func \(Tester\) OSClient
 
 ```go
 func (tst Tester) OSClient() *opensearchapi.Client
@@ -242,7 +242,7 @@ func (tst Tester) OSClient() *opensearchapi.Client
 OSClient returns \[\*opensearchapi.Client\] associated with test OpenSearch instance
 
 <a name="Tester.RefreshIndex"></a>
-### func \(Tester\) [RefreshIndex](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L294>)
+### func \(Tester\) RefreshIndex
 
 ```go
 func (tst Tester) RefreshIndex(t *testing.T, index string)
@@ -251,7 +251,7 @@ func (tst Tester) RefreshIndex(t *testing.T, index string)
 RefreshIndex waits for index to refresh, so the updated documents can be obtained
 
 <a name="Tester.T"></a>
-### func \(Tester\) [T](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L132>)
+### func \(Tester\) T
 
 ```go
 func (tst Tester) T() *testing.T
@@ -260,7 +260,7 @@ func (tst Tester) T() *testing.T
 T returns \*testing.T associated with tester
 
 <a name="TesterOption"></a>
-## type [TesterOption](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L67>)
+## type TesterOption
 
 
 
@@ -269,7 +269,7 @@ type TesterOption func(tst *Tester)
 ```
 
 <a name="WithAddress"></a>
-### func [WithAddress](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L77>)
+### func WithAddress
 
 ```go
 func WithAddress(address string) TesterOption
@@ -278,7 +278,7 @@ func WithAddress(address string) TesterOption
 WithAddress sets the custom address of testing opensearch instance to which the tester should point to
 
 <a name="WithConfig"></a>
-### func [WithConfig](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/ostesting/tester.go#L84>)
+### func WithConfig
 
 ```go
 func WithConfig(conf ClientConfig) TesterOption

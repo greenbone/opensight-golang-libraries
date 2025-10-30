@@ -73,7 +73,7 @@ var WrapHandler = GinWrapHandler()
 ```
 
 <a name="DeepLinking"></a>
-## func [DeepLinking](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L43>)
+## func DeepLinking
 
 ```go
 func DeepLinking(deepLinking bool) func(*Config)
@@ -82,7 +82,7 @@ func DeepLinking(deepLinking bool) func(*Config)
 
 
 <a name="DocExpansion"></a>
-## func [DocExpansion](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L55>)
+## func DocExpansion
 
 ```go
 func DocExpansion(docExpansion string) func(*Config)
@@ -91,7 +91,7 @@ func DocExpansion(docExpansion string) func(*Config)
 
 
 <a name="DomID"></a>
-## func [DomID](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L61>)
+## func DomID
 
 ```go
 func DomID(domID string) func(*Config)
@@ -100,7 +100,7 @@ func DomID(domID string) func(*Config)
 
 
 <a name="GinWrapHandler"></a>
-## func [GinWrapHandler](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L106>)
+## func GinWrapHandler
 
 ```go
 func GinWrapHandler(options ...func(*Config)) gin.HandlerFunc
@@ -109,7 +109,7 @@ func GinWrapHandler(options ...func(*Config)) gin.HandlerFunc
 
 
 <a name="InstanceName"></a>
-## func [InstanceName](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L67>)
+## func InstanceName
 
 ```go
 func InstanceName(instanceName string) func(*Config)
@@ -118,7 +118,7 @@ func InstanceName(instanceName string) func(*Config)
 
 
 <a name="OAuth"></a>
-## func [OAuth](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L79>)
+## func OAuth
 
 ```go
 func OAuth(config *OAuthConfig) func(*Config)
@@ -127,7 +127,7 @@ func OAuth(config *OAuthConfig) func(*Config)
 
 
 <a name="PersistAuthorization"></a>
-## func [PersistAuthorization](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L73>)
+## func PersistAuthorization
 
 ```go
 func PersistAuthorization(persistAuthorization bool) func(*Config)
@@ -136,7 +136,7 @@ func PersistAuthorization(persistAuthorization bool) func(*Config)
 
 
 <a name="SyntaxHighlight"></a>
-## func [SyntaxHighlight](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L49>)
+## func SyntaxHighlight
 
 ```go
 func SyntaxHighlight(syntaxHighlight bool) func(*Config)
@@ -145,7 +145,7 @@ func SyntaxHighlight(syntaxHighlight bool) func(*Config)
 
 
 <a name="URL"></a>
-## func [URL](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L37>)
+## func URL
 
 ```go
 func URL(url string) func(*Config)
@@ -154,7 +154,7 @@ func URL(url string) func(*Config)
 
 
 <a name="Config"></a>
-## type [Config](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L20-L29>)
+## type Config
 
 Config stores ginSwagger configuration variables.
 
@@ -172,7 +172,7 @@ type Config struct {
 ```
 
 <a name="OAuthConfig"></a>
-## type [OAuthConfig](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L31-L35>)
+## type OAuthConfig
 
 
 

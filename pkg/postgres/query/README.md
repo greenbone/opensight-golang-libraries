@@ -20,7 +20,7 @@ Package query facilitates the translation of a result selector into a PostgresSQ
 
 
 <a name="Builder"></a>
-## type [Builder](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L28-L31>)
+## type Builder
 
 Builder represents a query builder used to construct PostgresSQL conditional query strings with sorting and paging functionalities.
 
@@ -31,7 +31,7 @@ type Builder struct {
 ```
 
 <a name="NewPostgresQueryBuilder"></a>
-### func [NewPostgresQueryBuilder](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L34>)
+### func NewPostgresQueryBuilder
 
 ```go
 func NewPostgresQueryBuilder(querySetting *Settings) *Builder
@@ -40,7 +40,7 @@ func NewPostgresQueryBuilder(querySetting *Settings) *Builder
 NewPostgresQueryBuilder creates a new instance of the query builder with the provided settings.
 
 <a name="Builder.Build"></a>
-### func \(\*Builder\) [Build](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L150>)
+### func \(\*Builder\) Build
 
 ```go
 func (qb *Builder) Build(resultSelector query.ResultSelector) (query string, args []any, err error)
@@ -49,7 +49,7 @@ func (qb *Builder) Build(resultSelector query.ResultSelector) (query string, arg
 Build generates the complete SQL query based on the provided result selector. It constructs the query by adding filter, sorting, and paging conditions. It returns the constructed query string, and all the individual filter fields values \(args\) in a single list If any error occurs during the construction, it returns an empty string.
 
 <a name="Builder.BuildQueryConditions"></a>
-### func \(\*Builder\) [BuildQueryConditions](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L45>)
+### func \(\*Builder\) BuildQueryConditions
 
 ```go
 func (qb *Builder) BuildQueryConditions(request *filter.Request) (args []any, err error)
@@ -58,7 +58,7 @@ func (qb *Builder) BuildQueryConditions(request *filter.Request) (args []any, er
 BuildQueryConditions builds and appends filter conditions to the query builder based on the provided filter request. It constructs conditional clauses using the logic operator specified in the request. It uses the \`?\` query placeholder, so you can pass your parameter separately It returns all individual field values in a single list BuildQueryConditions can be used as a standalone function with Gorm
 
 <a name="Settings"></a>
-## type [Settings](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L20-L24>)
+## type Settings
 
 Settings is a configuration struct used to customize the behavior of the query builder.
 

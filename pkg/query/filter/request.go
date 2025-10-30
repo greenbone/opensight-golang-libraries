@@ -4,6 +4,11 @@
 
 package filter
 
+import (
+	"slices"
+	"strings"
+)
+
 // Request is a struct representing a filter request.
 // Operator is the logic operator used for the request.
 // Fields is a slice of RequestField, representing the fields to be used for the filtering.
@@ -34,6 +39,26 @@ type ReadableValue[T any] struct {
 	Label string `json:"label"`
 	// Value is the value for the backend
 	Value T `json:"value"`
+}
+
+// NewReadableValue is a constructor faction that helps with auto detection of value type while creating ReadableValue.
+func NewReadableValue[T any](label string, value T) ReadableValue[T] {
+	return ReadableValue[T]{Label: label, Value: value}
+}
+
+// Cmp allows comparing two ReadableValues. It first compares values (if they are comparable in any way) and then it compares labels.
+func (x ReadableValue[T]) Cmp(other ReadableValue[T]) int {
+	if cmp := cmpAny(x.Value, other.Value); cmp != 0 {
+		return cmp
+	}
+	return strings.Compare(x.Label, other.Label)
+}
+
+// SortedReadableValues creates a sorted slice of ReadableValues.
+func SortedReadableValues[T any](values ...ReadableValue[T]) []ReadableValue[T] {
+	values = slices.Clone(values)
+	slices.SortFunc(values, func(x, y ReadableValue[T]) int { return x.Cmp(y) })
+	return values
 }
 
 // RequestOptionType configures the type of control for a field in a request option.
