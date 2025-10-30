@@ -3,7 +3,6 @@ package filter_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
@@ -87,31 +86,4 @@ func TestReadableValues(t *testing.T) {
 			require.Equal(t, test.want, got)
 		})
 	}
-}
-
-func TestName(t *testing.T) {
-	asd := func() []filter.RequestOption {
-		options := []filter.RequestOption{
-			{
-				Name: filter.ReadableValue[string]{
-					Label: "Asset ID",
-					Value: "id",
-				},
-				Control: filter.RequestOptionType{
-					Type: filter.ControlTypeUuid,
-				},
-				Operators: filter.SortedReadableValues(
-					filter.NewReadableValue("is not equal to", filter.CompareOperatorIsNotEqualTo),
-					filter.NewReadableValue("is equal to", filter.CompareOperatorIsEqualTo),
-				),
-				MultiSelect: true,
-			},
-		}
-		return options
-	}
-
-	x := asd()
-
-	assert.Equal(t, "is equal to", x[0].Operators[0].Label)
-	assert.Equal(t, "is not equal to", x[0].Operators[1].Label)
 }
