@@ -90,6 +90,14 @@ func (x *AggregateMetric) UnmarshalText(text []byte) error {
 	return nil
 }
 
+// AppendText appends the textual representation of itself to the end of b
+// (allocating a larger slice if necessary) and returns the updated slice.
+//
+// Implementations must not retain b, nor mutate any bytes within b[:len(b)].
+func (x *AggregateMetric) AppendText(b []byte) ([]byte, error) {
+	return append(b, x.String()...), nil
+}
+
 var errAggregateMetricNilPtr = errors.New("value pointer is nil") // one per type for package clashes
 
 // Scan implements the Scanner interface.
@@ -143,22 +151,22 @@ const (
 	CompareOperatorTextContains CompareOperator = "textContains"
 	// CompareOperatorIsNumberEqualTo is a CompareOperator of type isNumberEqualTo.
 	CompareOperatorIsNumberEqualTo CompareOperator = "isNumberEqualTo"
-	// CompareOperatorIsEqualTo is a CompareOperator of type isEqualTo.
-	CompareOperatorIsEqualTo CompareOperator = "isEqualTo"
-	// CompareOperatorIsIpEqualTo is a CompareOperator of type isIpEqualTo.
-	CompareOperatorIsIpEqualTo CompareOperator = "isIpEqualTo"
-	// CompareOperatorIsStringEqualTo is a CompareOperator of type isStringEqualTo.
-	CompareOperatorIsStringEqualTo CompareOperator = "isStringEqualTo"
-	// CompareOperatorIsStringCaseInsensitiveEqualTo is a CompareOperator of type isStringCaseInsensitiveEqualTo.
-	CompareOperatorIsStringCaseInsensitiveEqualTo CompareOperator = "isStringCaseInsensitiveEqualTo"
-	// CompareOperatorIsNotEqualTo is a CompareOperator of type isNotEqualTo.
-	CompareOperatorIsNotEqualTo CompareOperator = "isNotEqualTo"
 	// CompareOperatorIsNumberNotEqualTo is a CompareOperator of type isNumberNotEqualTo.
 	CompareOperatorIsNumberNotEqualTo CompareOperator = "isNumberNotEqualTo"
+	// CompareOperatorIsEqualTo is a CompareOperator of type isEqualTo.
+	CompareOperatorIsEqualTo CompareOperator = "isEqualTo"
+	// CompareOperatorIsNotEqualTo is a CompareOperator of type isNotEqualTo.
+	CompareOperatorIsNotEqualTo CompareOperator = "isNotEqualTo"
+	// CompareOperatorIsIpEqualTo is a CompareOperator of type isIpEqualTo.
+	CompareOperatorIsIpEqualTo CompareOperator = "isIpEqualTo"
 	// CompareOperatorIsIpNotEqualTo is a CompareOperator of type isIpNotEqualTo.
 	CompareOperatorIsIpNotEqualTo CompareOperator = "isIpNotEqualTo"
+	// CompareOperatorIsStringEqualTo is a CompareOperator of type isStringEqualTo.
+	CompareOperatorIsStringEqualTo CompareOperator = "isStringEqualTo"
 	// CompareOperatorIsStringNotEqualTo is a CompareOperator of type isStringNotEqualTo.
 	CompareOperatorIsStringNotEqualTo CompareOperator = "isStringNotEqualTo"
+	// CompareOperatorIsStringCaseInsensitiveEqualTo is a CompareOperator of type isStringCaseInsensitiveEqualTo.
+	CompareOperatorIsStringCaseInsensitiveEqualTo CompareOperator = "isStringCaseInsensitiveEqualTo"
 	// CompareOperatorIsGreaterThan is a CompareOperator of type isGreaterThan.
 	CompareOperatorIsGreaterThan CompareOperator = "isGreaterThan"
 	// CompareOperatorIsGreaterThanOrEqualTo is a CompareOperator of type isGreaterThanOrEqualTo.
@@ -171,22 +179,22 @@ const (
 	CompareOperatorBeforeDate CompareOperator = "beforeDate"
 	// CompareOperatorAfterDate is a CompareOperator of type afterDate.
 	CompareOperatorAfterDate CompareOperator = "afterDate"
+	// CompareOperatorBetweenDates is a CompareOperator of type betweenDates.
+	CompareOperatorBetweenDates CompareOperator = "betweenDates"
 	// CompareOperatorExists is a CompareOperator of type exists.
 	CompareOperatorExists CompareOperator = "exists"
 	// CompareOperatorIsEqualToRating is a CompareOperator of type isEqualToRating.
 	CompareOperatorIsEqualToRating CompareOperator = "isEqualToRating"
 	// CompareOperatorIsNotEqualToRating is a CompareOperator of type isNotEqualToRating.
 	CompareOperatorIsNotEqualToRating CompareOperator = "isNotEqualToRating"
-	// CompareOperatorIsGreaterThanRating is a CompareOperator of type isGreaterThanRating.
-	CompareOperatorIsGreaterThanRating CompareOperator = "isGreaterThanRating"
 	// CompareOperatorIsLessThanRating is a CompareOperator of type isLessThanRating.
 	CompareOperatorIsLessThanRating CompareOperator = "isLessThanRating"
-	// CompareOperatorIsGreaterThanOrEqualToRating is a CompareOperator of type isGreaterThanOrEqualToRating.
-	CompareOperatorIsGreaterThanOrEqualToRating CompareOperator = "isGreaterThanOrEqualToRating"
 	// CompareOperatorIsLessThanOrEqualToRating is a CompareOperator of type isLessThanOrEqualToRating.
 	CompareOperatorIsLessThanOrEqualToRating CompareOperator = "isLessThanOrEqualToRating"
-	// CompareOperatorBetweenDates is a CompareOperator of type betweenDates.
-	CompareOperatorBetweenDates CompareOperator = "betweenDates"
+	// CompareOperatorIsGreaterThanRating is a CompareOperator of type isGreaterThanRating.
+	CompareOperatorIsGreaterThanRating CompareOperator = "isGreaterThanRating"
+	// CompareOperatorIsGreaterThanOrEqualToRating is a CompareOperator of type isGreaterThanOrEqualToRating.
+	CompareOperatorIsGreaterThanOrEqualToRating CompareOperator = "isGreaterThanOrEqualToRating"
 )
 
 var ErrInvalidCompareOperator = fmt.Errorf("not a valid CompareOperator, try [%s]", strings.Join(_CompareOperatorNames, ", "))
@@ -198,28 +206,28 @@ var _CompareOperatorNames = []string{
 	string(CompareOperatorDoesNotContain),
 	string(CompareOperatorTextContains),
 	string(CompareOperatorIsNumberEqualTo),
-	string(CompareOperatorIsEqualTo),
-	string(CompareOperatorIsIpEqualTo),
-	string(CompareOperatorIsStringEqualTo),
-	string(CompareOperatorIsStringCaseInsensitiveEqualTo),
-	string(CompareOperatorIsNotEqualTo),
 	string(CompareOperatorIsNumberNotEqualTo),
+	string(CompareOperatorIsEqualTo),
+	string(CompareOperatorIsNotEqualTo),
+	string(CompareOperatorIsIpEqualTo),
 	string(CompareOperatorIsIpNotEqualTo),
+	string(CompareOperatorIsStringEqualTo),
 	string(CompareOperatorIsStringNotEqualTo),
+	string(CompareOperatorIsStringCaseInsensitiveEqualTo),
 	string(CompareOperatorIsGreaterThan),
 	string(CompareOperatorIsGreaterThanOrEqualTo),
 	string(CompareOperatorIsLessThan),
 	string(CompareOperatorIsLessThanOrEqualTo),
 	string(CompareOperatorBeforeDate),
 	string(CompareOperatorAfterDate),
+	string(CompareOperatorBetweenDates),
 	string(CompareOperatorExists),
 	string(CompareOperatorIsEqualToRating),
 	string(CompareOperatorIsNotEqualToRating),
-	string(CompareOperatorIsGreaterThanRating),
 	string(CompareOperatorIsLessThanRating),
-	string(CompareOperatorIsGreaterThanOrEqualToRating),
 	string(CompareOperatorIsLessThanOrEqualToRating),
-	string(CompareOperatorBetweenDates),
+	string(CompareOperatorIsGreaterThanRating),
+	string(CompareOperatorIsGreaterThanOrEqualToRating),
 }
 
 // CompareOperatorNames returns a list of possible string values of CompareOperator.
@@ -248,28 +256,28 @@ var _CompareOperatorValue = map[string]CompareOperator{
 	"doesNotContain":                 CompareOperatorDoesNotContain,
 	"textContains":                   CompareOperatorTextContains,
 	"isNumberEqualTo":                CompareOperatorIsNumberEqualTo,
-	"isEqualTo":                      CompareOperatorIsEqualTo,
-	"isIpEqualTo":                    CompareOperatorIsIpEqualTo,
-	"isStringEqualTo":                CompareOperatorIsStringEqualTo,
-	"isStringCaseInsensitiveEqualTo": CompareOperatorIsStringCaseInsensitiveEqualTo,
-	"isNotEqualTo":                   CompareOperatorIsNotEqualTo,
 	"isNumberNotEqualTo":             CompareOperatorIsNumberNotEqualTo,
+	"isEqualTo":                      CompareOperatorIsEqualTo,
+	"isNotEqualTo":                   CompareOperatorIsNotEqualTo,
+	"isIpEqualTo":                    CompareOperatorIsIpEqualTo,
 	"isIpNotEqualTo":                 CompareOperatorIsIpNotEqualTo,
+	"isStringEqualTo":                CompareOperatorIsStringEqualTo,
 	"isStringNotEqualTo":             CompareOperatorIsStringNotEqualTo,
+	"isStringCaseInsensitiveEqualTo": CompareOperatorIsStringCaseInsensitiveEqualTo,
 	"isGreaterThan":                  CompareOperatorIsGreaterThan,
 	"isGreaterThanOrEqualTo":         CompareOperatorIsGreaterThanOrEqualTo,
 	"isLessThan":                     CompareOperatorIsLessThan,
 	"isLessThanOrEqualTo":            CompareOperatorIsLessThanOrEqualTo,
 	"beforeDate":                     CompareOperatorBeforeDate,
 	"afterDate":                      CompareOperatorAfterDate,
+	"betweenDates":                   CompareOperatorBetweenDates,
 	"exists":                         CompareOperatorExists,
 	"isEqualToRating":                CompareOperatorIsEqualToRating,
 	"isNotEqualToRating":             CompareOperatorIsNotEqualToRating,
-	"isGreaterThanRating":            CompareOperatorIsGreaterThanRating,
 	"isLessThanRating":               CompareOperatorIsLessThanRating,
-	"isGreaterThanOrEqualToRating":   CompareOperatorIsGreaterThanOrEqualToRating,
 	"isLessThanOrEqualToRating":      CompareOperatorIsLessThanOrEqualToRating,
-	"betweenDates":                   CompareOperatorBetweenDates,
+	"isGreaterThanRating":            CompareOperatorIsGreaterThanRating,
+	"isGreaterThanOrEqualToRating":   CompareOperatorIsGreaterThanOrEqualToRating,
 }
 
 // ParseCompareOperator attempts to convert a string to a CompareOperator.
@@ -293,6 +301,14 @@ func (x *CompareOperator) UnmarshalText(text []byte) error {
 	}
 	*x = tmp
 	return nil
+}
+
+// AppendText appends the textual representation of itself to the end of b
+// (allocating a larger slice if necessary) and returns the updated slice.
+//
+// Implementations must not retain b, nor mutate any bytes within b[:len(b)].
+func (x *CompareOperator) AppendText(b []byte) ([]byte, error) {
+	return append(b, x.String()...), nil
 }
 
 var errCompareOperatorNilPtr = errors.New("value pointer is nil") // one per type for package clashes
@@ -420,6 +436,14 @@ func (x *ControlType) UnmarshalText(text []byte) error {
 	return nil
 }
 
+// AppendText appends the textual representation of itself to the end of b
+// (allocating a larger slice if necessary) and returns the updated slice.
+//
+// Implementations must not retain b, nor mutate any bytes within b[:len(b)].
+func (x *ControlType) AppendText(b []byte) ([]byte, error) {
+	return append(b, x.String()...), nil
+}
+
 var errControlTypeNilPtr = errors.New("value pointer is nil") // one per type for package clashes
 
 // Scan implements the Scanner interface.
@@ -519,6 +543,14 @@ func (x *LogicOperator) UnmarshalText(text []byte) error {
 	}
 	*x = tmp
 	return nil
+}
+
+// AppendText appends the textual representation of itself to the end of b
+// (allocating a larger slice if necessary) and returns the updated slice.
+//
+// Implementations must not retain b, nor mutate any bytes within b[:len(b)].
+func (x *LogicOperator) AppendText(b []byte) ([]byte, error) {
+	return append(b, x.String()...), nil
 }
 
 var errLogicOperatorNilPtr = errors.New("value pointer is nil") // one per type for package clashes
