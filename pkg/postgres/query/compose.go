@@ -31,50 +31,31 @@ func composeQuery(
 
 	switch field.Operator {
 	case filter.CompareOperatorIsEqualTo:
-		conditionTemplate, err = simpleOperatorCondition(
-			field, valueIsList, " %s = ?", " %s IN (%s)",
-		)
+		conditionTemplate, err = buildComparisonStatementSimple(field, false, "=")
 	case filter.CompareOperatorIsNotEqualTo:
-		conditionTemplate, err = simpleOperatorCondition(
-			field, valueIsList, " %s != ?", " %s NOT IN (%s)",
-		)
+		conditionTemplate, err = buildComparisonStatementSimple(field, true, "=")
 	case filter.CompareOperatorIsLessThan:
-		conditionTemplate, err = simpleOperatorCondition(
-			field, valueIsList, " %s < ?", " %s < GREATEST(%s)",
-		)
+		conditionTemplate, err = buildComparisonStatementSimple(field, false, "<")
 	case filter.CompareOperatorIsLessThanOrEqualTo:
-		conditionTemplate, err = simpleOperatorCondition(
-			field, valueIsList, " %s <= ?", " %s <= GREATEST(%s)",
-		)
+		conditionTemplate, err = buildComparisonStatementSimple(field, false, "<=")
 	case filter.CompareOperatorIsGreaterThan:
-		conditionTemplate, err = simpleOperatorCondition(
-			field, valueIsList, " %s > ?", " %s > LEAST(%s)",
-		)
+		conditionTemplate, err = buildComparisonStatementSimple(field, false, ">")
 	case filter.CompareOperatorIsGreaterThanOrEqualTo:
-		conditionTemplate, err = simpleOperatorCondition(
-			field, valueIsList, " %s >= ?", " %s >= LEAST(%s)",
-		)
+		conditionTemplate, err = buildComparisonStatementSimple(field, false, ">=")
 	case filter.CompareOperatorContains:
-		conditionTemplate, err = likeOperatorCondition(
-			field, valueIsList, false, false,
-		)
+		conditionTemplate, err = buildStringComparisonStatement(field, false, "ILIKE", `'%' || ? || '%'`)
+	case filter.CompareOperatorDoesNotContain:
+		conditionTemplate, err = buildStringComparisonStatement(field, true, "ILIKE", `'%' || ? || '%'`)
 	case filter.CompareOperatorBeginsWith:
-		conditionTemplate, err = likeOperatorCondition(
-			field, valueIsList, false, true,
-		)
+		conditionTemplate, err = buildStringComparisonStatement(field, false, "ILIKE", `? || '%'`)
+	case filter.CompareOperatorDoesNotBeginWith:
+		conditionTemplate, err = buildStringComparisonStatement(field, true, "ILIKE", `? || '%'`)
 	case filter.CompareOperatorIsStringCaseInsensitiveEqualTo:
-		conditionTemplate, err = simpleOperatorCondition(
-			field, valueIsList, " %s ILIKE ?", " %s ILIKE ANY(ARRAY[%s])")
+		conditionTemplate, err = buildStringComparisonStatement(field, false, "ILIKE", "?")
 	case filter.CompareOperatorBeforeDate:
-		conditionTemplate, err = simpleSingleStringValueOperatorCondition(
-			field, valueIsList,
-			" date_trunc('day'::text, %s) < date_trunc('day'::text, ?::timestamp)",
-		)
+		conditionTemplate, err = buildDateTruncStatement(field, "<")
 	case filter.CompareOperatorAfterDate:
-		conditionTemplate, err = simpleSingleStringValueOperatorCondition(
-			field, valueIsList,
-			" date_trunc('day'::text, %s) > date_trunc('day'::text, ?::timestamp)",
-		)
+		conditionTemplate, err = buildDateTruncStatement(field, ">")
 	default:
 		err = fmt.Errorf("field '%s' with unknown operator '%s'", field.Name, field.Operator)
 	}
