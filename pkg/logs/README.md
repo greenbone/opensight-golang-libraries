@@ -40,7 +40,7 @@ const (
 ```
 
 <a name="Ctx"></a>
-## func [Ctx](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/logs/logs.go#L61>)
+## func Ctx
 
 ```go
 func Ctx(ctx context.Context) *zerolog.Logger
@@ -49,7 +49,7 @@ func Ctx(ctx context.Context) *zerolog.Logger
 Ctx retrieves the zerolog logger from the given context. If the context does not have a logger attached, the global logger is returned instead.
 
 <a name="SetupLogger"></a>
-## func [SetupLogger](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/logs/logs.go#L49>)
+## func SetupLogger
 
 ```go
 func SetupLogger(logLevel string) error
@@ -77,7 +77,7 @@ if err != nil {
 ```
 
 <a name="WithCorrelationID"></a>
-## func [WithCorrelationID](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/logs/logs.go#L105>)
+## func WithCorrelationID
 
 ```go
 func WithCorrelationID(ctx context.Context, correlationID string) context.Context
@@ -86,7 +86,7 @@ func WithCorrelationID(ctx context.Context, correlationID string) context.Contex
 WithCorrelationID adds a correlation ID to the logger in the context and returns the updated context.
 
 <a name="WithCtxField"></a>
-## func [WithCtxField](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/logs/logs.go#L87>)
+## func WithCtxField
 
 ```go
 func WithCtxField(ctx context.Context, key, value string) context.Context
@@ -113,7 +113,7 @@ ctx = WithCtxField(ctx, "request_id", "abc123")
 ```
 
 <a name="WithJob"></a>
-## func [WithJob](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/logs/logs.go#L100>)
+## func WithJob
 
 ```go
 func WithJob(ctx context.Context, jobName string) context.Context
@@ -122,7 +122,7 @@ func WithJob(ctx context.Context, jobName string) context.Context
 WithJob adds a job name field to the logger in the context and returns the updated context.
 
 <a name="WithNewCorrelationID"></a>
-## func [WithNewCorrelationID](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/logs/logs.go#L111>)
+## func WithNewCorrelationID
 
 ```go
 func WithNewCorrelationID(ctx context.Context) context.Context

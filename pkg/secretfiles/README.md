@@ -16,7 +16,7 @@ Package secretfiles eases the parsing of secret files into a string. This is a c
 
 
 <a name="ReadSecret"></a>
-## func [ReadSecret](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/secretfiles/secret_files.go#L21>)
+## func ReadSecret
 
 ```go
 func ReadSecret(envVar string, target *string) error

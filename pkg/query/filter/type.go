@@ -22,6 +22,10 @@ ControlType ENUM(
 */
 type ControlType string
 
+func (x ControlType) Cmp(other ControlType) int {
+	return cmpStringBackedEnum(_ControlTypeNames, string(x), string(other))
+}
+
 /*
 LogicOperator ENUM(
 
@@ -32,48 +36,62 @@ LogicOperator ENUM(
 */
 type LogicOperator string
 
+func (x LogicOperator) Cmp(other LogicOperator) int {
+	return cmpStringBackedEnum(_LogicOperatorNames, string(x), string(other))
+}
+
 /*
 CompareOperator ENUM(
 
-				beginsWith
-				doesNotBeginWith
-				contains
-				doesNotContain
+	beginsWith
+	doesNotBeginWith
 
-				textContains
+	contains
+	doesNotContain
 
-				isNumberEqualTo
-				isEqualTo
-				isIpEqualTo
-				isStringEqualTo
-				isStringCaseInsensitiveEqualTo
+	textContains
 
-				isNotEqualTo
-				isNumberNotEqualTo
-				isIpNotEqualTo
-				isStringNotEqualTo
+	isNumberEqualTo
+	isNumberNotEqualTo
 
-				isGreaterThan
-				isGreaterThanOrEqualTo
-				isLessThan
-				isLessThanOrEqualTo
-				beforeDate
-				afterDate
+	isEqualTo
+	isNotEqualTo
 
-				exists
+	isIpEqualTo
+	isIpNotEqualTo
 
-				isEqualToRating
-	            isNotEqualToRating
-			    isGreaterThanRating
-		        isLessThanRating
-				isGreaterThanOrEqualToRating
-		        isLessThanOrEqualToRating
+	isStringEqualTo
+	isStringNotEqualTo
+	isStringCaseInsensitiveEqualTo
 
-				betweenDates
+	isGreaterThan
+	isGreaterThanOrEqualTo
+
+	isLessThan
+	isLessThanOrEqualTo
+
+	beforeDate
+	afterDate
+	betweenDates
+
+	exists
+
+	isEqualToRating
+	isNotEqualToRating
+
+	isLessThanRating
+	isLessThanOrEqualToRating
+
+	isGreaterThanRating
+	isGreaterThanOrEqualToRating
 
 )
 */
 type CompareOperator string
+
+func (x CompareOperator) Cmp(other CompareOperator) int {
+	return cmpStringBackedEnum(_CompareOperatorNames, string(x), string(other))
+}
 
 /*
 AggregateMetric ENUM(
@@ -88,3 +106,7 @@ AggregateMetric ENUM(
 )
 */
 type AggregateMetric string
+
+func (x AggregateMetric) Cmp(other AggregateMetric) int {
+	return cmpStringBackedEnum(_AggregateMetricNames, string(x), string(other))
+}

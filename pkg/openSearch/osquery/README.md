@@ -68,7 +68,7 @@ package osquery provides a query builder for OpenSearch.
 
 
 <a name="HandleCompareOperatorBeginsWith"></a>
-## func [HandleCompareOperatorBeginsWith](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L66>)
+## func HandleCompareOperatorBeginsWith
 
 ```go
 func HandleCompareOperatorBeginsWith(fieldName string, fieldValue any) (esquery.Mappable, error)
@@ -77,7 +77,7 @@ func HandleCompareOperatorBeginsWith(fieldName string, fieldValue any) (esquery.
 HandleCompareOperatorBeginsWith handles begins with
 
 <a name="HandleCompareOperatorBetweenDates"></a>
-## func [HandleCompareOperatorBetweenDates](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L169>)
+## func HandleCompareOperatorBetweenDates
 
 ```go
 func HandleCompareOperatorBetweenDates(fieldName string, fieldValue any) (esquery.Mappable, error)
@@ -88,7 +88,7 @@ HandleCompareOperatorBetweenDates constructs an OpenSearch range query for a giv
 The generated range query is inclusive of both the lower and upper bounds. If a document’s timestamp is exactly equal to the start or end date, it will still match the query.
 
 <a name="HandleCompareOperatorContains"></a>
-## func [HandleCompareOperatorContains](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L27>)
+## func HandleCompareOperatorContains
 
 ```go
 func HandleCompareOperatorContains(fieldName string, fieldValue any) (esquery.Mappable, error)
@@ -97,7 +97,7 @@ func HandleCompareOperatorContains(fieldName string, fieldValue any) (esquery.Ma
 HandleCompareOperatorContains handles contains. In the index mapping the given field must be a string of type \`keyword\`.
 
 <a name="HandleCompareOperatorExists"></a>
-## func [HandleCompareOperatorExists](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L157>)
+## func HandleCompareOperatorExists
 
 ```go
 func HandleCompareOperatorExists(fieldName string, _ any) (esquery.Mappable, error)
@@ -106,7 +106,7 @@ func HandleCompareOperatorExists(fieldName string, _ any) (esquery.Mappable, err
 
 
 <a name="HandleCompareOperatorIsEqualTo"></a>
-## func [HandleCompareOperatorIsEqualTo](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L16>)
+## func HandleCompareOperatorIsEqualTo
 
 ```go
 func HandleCompareOperatorIsEqualTo(fieldName string, fieldValue any) (esquery.Mappable, error)
@@ -115,7 +115,7 @@ func HandleCompareOperatorIsEqualTo(fieldName string, fieldValue any) (esquery.M
 HandleCompareOperatorIsEqualTo handles is equal to
 
 <a name="HandleCompareOperatorIsGreaterThan"></a>
-## func [HandleCompareOperatorIsGreaterThan](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L124>)
+## func HandleCompareOperatorIsGreaterThan
 
 ```go
 func HandleCompareOperatorIsGreaterThan(fieldName string, fieldValue any) (esquery.Mappable, error)
@@ -124,7 +124,7 @@ func HandleCompareOperatorIsGreaterThan(fieldName string, fieldValue any) (esque
 HandleCompareOperatorIsGreaterThan handles is greater than
 
 <a name="HandleCompareOperatorIsGreaterThanOrEqualTo"></a>
-## func [HandleCompareOperatorIsGreaterThanOrEqualTo](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L107>)
+## func HandleCompareOperatorIsGreaterThanOrEqualTo
 
 ```go
 func HandleCompareOperatorIsGreaterThanOrEqualTo(fieldName string, fieldValue any) (esquery.Mappable, error)
@@ -133,7 +133,7 @@ func HandleCompareOperatorIsGreaterThanOrEqualTo(fieldName string, fieldValue an
 HandleCompareOperatorIsGreaterThanOrEqualTo handles is greater than or equal to
 
 <a name="HandleCompareOperatorIsLessThan"></a>
-## func [HandleCompareOperatorIsLessThan](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L141>)
+## func HandleCompareOperatorIsLessThan
 
 ```go
 func HandleCompareOperatorIsLessThan(fieldName string, fieldValue any) (esquery.Mappable, error)
@@ -142,7 +142,7 @@ func HandleCompareOperatorIsLessThan(fieldName string, fieldValue any) (esquery.
 HandleCompareOperatorIsLessThan handles is less than
 
 <a name="HandleCompareOperatorIsLessThanOrEqualTo"></a>
-## func [HandleCompareOperatorIsLessThanOrEqualTo](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L90>)
+## func HandleCompareOperatorIsLessThanOrEqualTo
 
 ```go
 func HandleCompareOperatorIsLessThanOrEqualTo(fieldName string, fieldValue any) (esquery.Mappable, error)
@@ -151,7 +151,7 @@ func HandleCompareOperatorIsLessThanOrEqualTo(fieldName string, fieldValue any) 
 HandleCompareOperatorIsLessThanOrEqualTo handles is less than or equal to
 
 <a name="HandleCompareOperatorTextContains"></a>
-## func [HandleCompareOperatorTextContains](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L52>)
+## func HandleCompareOperatorTextContains
 
 ```go
 func HandleCompareOperatorTextContains(fieldName string, fieldValue any) (esquery.Mappable, error)
@@ -160,7 +160,7 @@ func HandleCompareOperatorTextContains(fieldName string, fieldValue any) (esquer
 HandleCompareOperatorTextContains performs a full text search on the given field. In the index mapping it must be a string of type \`text\`.
 
 <a name="BoolQueryBuilder"></a>
-## type [BoolQueryBuilder](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/boolQueryBuilder.go#L17-L23>)
+## type BoolQueryBuilder
 
 BoolQueryBuilder is a builder for an OpenSearch bool query. Use NewBoolQueryBuilder or NewBoolQueryBuilderWith for proper initialization.
 
@@ -173,7 +173,7 @@ type BoolQueryBuilder struct {
 ```
 
 <a name="NewBoolQueryBuilder"></a>
-### func [NewBoolQueryBuilder](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/boolQueryBuilder.go#L48>)
+### func NewBoolQueryBuilder
 
 ```go
 func NewBoolQueryBuilder(querySettings *QuerySettings) *BoolQueryBuilder
@@ -184,7 +184,7 @@ NewBoolQueryBuilder creates a new BoolQueryBuilder and returns it. It uses the d
 querySettings is used to configure the query builder.
 
 <a name="NewBoolQueryBuilderWith"></a>
-### func [NewBoolQueryBuilderWith](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/boolQueryBuilder.go#L56>)
+### func NewBoolQueryBuilderWith
 
 ```go
 func NewBoolQueryBuilderWith(query *esquery.BoolQuery, querySettings *QuerySettings) *BoolQueryBuilder
@@ -195,7 +195,7 @@ NewBoolQueryBuilderWith creates a new BoolQueryBuilder and returns it. It uses t
 query is the initial bool query to use. querySettings is used to configure the query builder.
 
 <a name="BoolQueryBuilder.AddFilterRequest"></a>
-### func \(\*BoolQueryBuilder\) [AddFilterRequest](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/boolQueryBuilder.go#L135>)
+### func \(\*BoolQueryBuilder\) AddFilterRequest
 
 ```go
 func (q *BoolQueryBuilder) AddFilterRequest(request *filter.Request) error
@@ -204,7 +204,7 @@ func (q *BoolQueryBuilder) AddFilterRequest(request *filter.Request) error
 AddFilterRequest adds a filter request to this query. The filter request is translated into a bool query.
 
 <a name="BoolQueryBuilder.AddTermFilter"></a>
-### func \(\*BoolQueryBuilder\) [AddTermFilter](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/boolQueryBuilder.go#L84>)
+### func \(\*BoolQueryBuilder\) AddTermFilter
 
 ```go
 func (q *BoolQueryBuilder) AddTermFilter(fieldName string, value any) error
@@ -215,7 +215,7 @@ AddTermFilter adds a term filter to this query.
 value is the value to filter for.
 
 <a name="BoolQueryBuilder.AddTermsFilter"></a>
-### func \(\*BoolQueryBuilder\) [AddTermsFilter](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/boolQueryBuilder.go#L67>)
+### func \(\*BoolQueryBuilder\) AddTermsFilter
 
 ```go
 func (q *BoolQueryBuilder) AddTermsFilter(fieldName string, values ...any) error
@@ -226,7 +226,7 @@ AddTermsFilter adds a terms filter to this query.
 values is the list of values to filter for.
 
 <a name="BoolQueryBuilder.Build"></a>
-### func \(\*BoolQueryBuilder\) [Build](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/boolQueryBuilder.go#L244>)
+### func \(\*BoolQueryBuilder\) Build
 
 ```go
 func (q *BoolQueryBuilder) Build() *esquery.BoolQuery
@@ -235,7 +235,7 @@ func (q *BoolQueryBuilder) Build() *esquery.BoolQuery
 Build returns the built query.
 
 <a name="CompareOperator"></a>
-## type [CompareOperator](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/boolQueryBuilder.go#L38-L43>)
+## type CompareOperator
 
 CompareOperator defines a mapping between a filter.CompareOperator and a function to generate an appropriate query condition in form of a CompareOperatorHandler.
 
@@ -249,7 +249,7 @@ type CompareOperator struct {
 ```
 
 <a name="CompareOperatorHandler"></a>
-## type [CompareOperatorHandler](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/boolQueryBuilder.go#L28>)
+## type CompareOperatorHandler
 
 CompareOperatorHandler is a function that generates an appropriate query condition for the given field.
 
@@ -258,7 +258,7 @@ type CompareOperatorHandler func(fieldName string, fieldValue any) (esquery.Mapp
 ```
 
 <a name="QuerySettings"></a>
-## type [QuerySettings](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/boolQueryBuilder.go#L32-L34>)
+## type QuerySettings
 
 QuerySettings is used to configure the query builder.
 
