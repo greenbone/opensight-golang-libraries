@@ -52,7 +52,18 @@ func (qb *Builder) addFilters(request *filter.Request) (args []any, err error) {
 	if request == nil || len(request.Fields) == 0 {
 		return nil, nil
 	}
-	logicOperator := strings.ToUpper(string(request.Operator))
+	if request.Operator == "" && len(request.Fields) == 1 { // for single filter `Operator` is not relevant
+		request.Operator = filter.LogicOperatorAnd
+	}
+	var logicOperator string
+	switch request.Operator {
+	case filter.LogicOperatorAnd:
+		logicOperator = "AND"
+	case filter.LogicOperatorOr:
+		logicOperator = "OR"
+	default:
+		return nil, fmt.Errorf("invalid filter logic operator: %s", request.Operator)
+	}
 
 	qb.query.WriteString("WHERE")
 
@@ -120,12 +131,22 @@ func (qb *Builder) addSorting(sort *sorting.Request) error {
 	sortFragment := " ORDER BY"
 
 	if sort != nil {
+		var sortDirection string
+		switch sort.SortDirection {
+		case sorting.DirectionAscending:
+			sortDirection = "ASC"
+		case sorting.DirectionDescending:
+			sortDirection = "DESC"
+		default:
+			return fmt.Errorf("invalid sort direction: %s", sort.SortDirection)
+		}
+
 		dbColumnName, ok := qb.querySettings.FilterFieldMapping[sort.SortColumn]
 		if !ok {
 			return filter.NewInvalidFilterFieldError(
 				"missing filter field mapping for '%s'", sort.SortColumn)
 		}
-		sortFragment += fmt.Sprintf(" %s %s,", dbColumnName, sort.SortDirection)
+		sortFragment += fmt.Sprintf(" %s %s,", dbColumnName, sortDirection)
 	}
 	// add tie breaker to ensure consistent sorting
 	sortFragment += fmt.Sprintf(" %s ASC", qb.querySettings.SortingTieBreakerColumn)
