@@ -6,75 +6,60 @@ package query
 
 import (
 	"fmt"
+	"maps"
+	"slices"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
 )
 
-// composeQuery takes a field mapping, a filter request field, a flag indicating whether the value is a list,
-// and a list of values. It returns a condition template, a list of condition parameters, and an error.
+// composeQuery takes a filter request field and translates it into a SQL query condition
+// which can be used in a WHERE clause.
 func composeQuery(
 	fieldMapping map[string]string, // Mapping of field names to database column names
 	field filter.RequestField, // The filter request field containing the field name and operator
-	valueIsList bool, // Indicates if the value is a list
 ) (
 	conditionTemplate string, // Template for the SQL condition
 	err error, // Error encountered during execution
 ) {
 	// translate filter field to database column name if field mapping exists
 	dbColumnName, ok := fieldMapping[field.Name]
-	if ok {
-		field.Name = dbColumnName
-	} else {
+	if !ok {
 		return "", filter.NewInvalidFilterFieldError(
-			"mapping for filter field '%s' is currently not implemented", field.Name)
+			"invalid filter field '%s', available fields: ", slices.Collect(maps.Keys(fieldMapping)))
 	}
+	quotedName, err := getQuotedName(dbColumnName)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse quoted name of field %s: %w", field.Name, err)
+	}
+	field.Name = quotedName
 
 	switch field.Operator {
 	case filter.CompareOperatorIsEqualTo:
-		conditionTemplate, err = simpleOperatorCondition(
-			field, valueIsList, " %s = ?", " %s IN (%s)",
-		)
+		conditionTemplate, err = buildComparisonStatementSimple(field, false, "=")
 	case filter.CompareOperatorIsNotEqualTo:
-		conditionTemplate, err = simpleOperatorCondition(
-			field, valueIsList, " %s != ?", " %s NOT IN (%s)",
-		)
+		conditionTemplate, err = buildComparisonStatementSimple(field, true, "=")
 	case filter.CompareOperatorIsLessThan:
-		conditionTemplate, err = simpleOperatorCondition(
-			field, valueIsList, " %s < ?", " %s < GREATEST(%s)",
-		)
+		conditionTemplate, err = buildComparisonStatementSimple(field, false, "<")
 	case filter.CompareOperatorIsLessThanOrEqualTo:
-		conditionTemplate, err = simpleOperatorCondition(
-			field, valueIsList, " %s <= ?", " %s <= GREATEST(%s)",
-		)
+		conditionTemplate, err = buildComparisonStatementSimple(field, false, "<=")
 	case filter.CompareOperatorIsGreaterThan:
-		conditionTemplate, err = simpleOperatorCondition(
-			field, valueIsList, " %s > ?", " %s > LEAST(%s)",
-		)
+		conditionTemplate, err = buildComparisonStatementSimple(field, false, ">")
 	case filter.CompareOperatorIsGreaterThanOrEqualTo:
-		conditionTemplate, err = simpleOperatorCondition(
-			field, valueIsList, " %s >= ?", " %s >= LEAST(%s)",
-		)
+		conditionTemplate, err = buildComparisonStatementSimple(field, false, ">=")
 	case filter.CompareOperatorContains:
-		conditionTemplate, err = likeOperatorCondition(
-			field, valueIsList, false, false,
-		)
+		conditionTemplate, err = buildStringComparisonStatement(field, false, "ILIKE", `'%' || ? || '%'`)
+	case filter.CompareOperatorDoesNotContain:
+		conditionTemplate, err = buildStringComparisonStatement(field, true, "ILIKE", `'%' || ? || '%'`)
 	case filter.CompareOperatorBeginsWith:
-		conditionTemplate, err = likeOperatorCondition(
-			field, valueIsList, false, true,
-		)
+		conditionTemplate, err = buildStringComparisonStatement(field, false, "ILIKE", `? || '%'`)
+	case filter.CompareOperatorDoesNotBeginWith:
+		conditionTemplate, err = buildStringComparisonStatement(field, true, "ILIKE", `? || '%'`)
 	case filter.CompareOperatorIsStringCaseInsensitiveEqualTo:
-		conditionTemplate, err = simpleOperatorCondition(
-			field, valueIsList, " %s ILIKE ?", " %s ILIKE ANY(ARRAY[%s])")
+		conditionTemplate, err = buildStringComparisonStatement(field, false, "ILIKE", "?")
 	case filter.CompareOperatorBeforeDate:
-		conditionTemplate, err = simpleSingleStringValueOperatorCondition(
-			field, valueIsList,
-			" date_trunc('day'::text, %s) < date_trunc('day'::text, ?::timestamp)",
-		)
+		conditionTemplate, err = buildDateTruncStatement(field, "<")
 	case filter.CompareOperatorAfterDate:
-		conditionTemplate, err = simpleSingleStringValueOperatorCondition(
-			field, valueIsList,
-			" date_trunc('day'::text, %s) > date_trunc('day'::text, ?::timestamp)",
-		)
+		conditionTemplate, err = buildDateTruncStatement(field, ">")
 	default:
 		err = fmt.Errorf("field '%s' with unknown operator '%s'", field.Name, field.Operator)
 	}

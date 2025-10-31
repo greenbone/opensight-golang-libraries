@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/query/filter"
 	"github.com/lib/pq"
@@ -33,141 +34,133 @@ func getQuotedName(fieldName string) (string, error) {
 	return pq.QuoteIdentifier(fieldName), nil
 }
 
-func simpleOperatorCondition(
-	field filter.RequestField, valueIsList bool, singleValueTemplate string, listValueTemplate string,
-) (conditionTemplate string, err error) {
-	quotedName, err := getQuotedName(field.Name)
-	if err != nil {
-		return "", fmt.Errorf("failed to parse quoted name: %w", err)
-	}
-
-	if valueIsList {
-		valueList, ok := field.Value.([]any)
-		if !ok {
-			err = errors.New("couldn't not get field list values")
-			return
-		}
-		placeholders := make([]string, len(valueList))
-		for i := range valueList {
-			placeholders[i] = "?"
-		}
-		conditionTemplate = fmt.Sprintf(listValueTemplate, quotedName, strings.Join(placeholders, ", "))
-	} else {
-		conditionTemplate = fmt.Sprintf(singleValueTemplate, quotedName)
-	}
-
-	return conditionTemplate, nil
+// buildComparisonStatementSimple builds a SQL filter statement of the form:
+// [NOT] ((field operator ?) OR (field operator ?) OR ...)
+// Example: NOT ((field = ?) OR (field = ?)) for an argument with multiple values
+func buildComparisonStatementSimple(field filter.RequestField, negate bool, operator string) (string, error) {
+	return buildComparisonStatement(field, negate, operator, "?")
 }
 
-func checkFieldValueType(field filter.RequestField) (valueIsList bool, valueList []any, err error) {
-	if reflect.TypeOf(field.Value).Kind() == reflect.Slice {
-		valueList, valueIsList = field.Value.([]any)
-		if !valueIsList {
-			err = fmt.Errorf("list field '%s' must have type []any, got %T", field.Name, field.Value)
-			return false, nil, err
-		}
-	} else {
-		valueIsList = false
-		valueList = nil
-	}
-	return valueIsList, valueList, nil
-}
-
-// likeOperatorCondition generates a SQL 'LIKE' condition template based on the given field parameters.
-// - negate: a boolean indicating if the condition should be negated (e.g., NOT LIKE).
-// - beginsWith: a boolean indicating if the condition should check for "begins with" and use beginsWithAsLikePattern().
-// if beginsWith is false, the condition should check for "contains" and use containsAsLikePattern()
-func likeOperatorCondition(
-	field filter.RequestField, valueIsList bool, negate bool, beginsWith bool,
-) (conditionTemplate string, err error) {
-	quotedName, err := getQuotedName(field.Name)
-	if err != nil {
-		return "", fmt.Errorf("could not get quoted name: %w", err)
-	}
-
-	if valueIsList {
-		valueList, ok := field.Value.([]any)
+// buildStringComparisonStatement is same as buildComparisonStatementSimple, but with additional
+// validation that the input value(s) are of type string
+func buildStringComparisonStatement(field filter.RequestField, negate bool, operator string, parameterStatement string) (string, error) {
+	// validate that input only contains string(s)
+	if valueList, ok := field.Value.([]any); ok {
 		if !ok {
-			err = errors.New("could not get field list values")
-			return
+			return "", fmt.Errorf("value is of type %T, expected []any", field.Value)
 		}
 		for _, element := range valueList {
 			if _, ok := element.(string); !ok {
-				err = fmt.Errorf(
-					"operator '%s' requires string values, got %T",
-					field.Operator, element,
-				)
-				return "", err
+				return "", fmt.Errorf("operator '%s' requires string values, got %T", field.Operator, element)
 			}
 		}
-
-		conditionTemplate = multiLikeOrTemplate(quotedName, len(valueList), negate, beginsWith)
 	} else {
-		if _, ok := field.Value.(string); ok {
-			conditionTemplate = singleLikeTemplate(quotedName, negate, beginsWith)
-		} else {
-			err = fmt.Errorf("operator '%s' requires a string value", field.Operator)
-			return "", err
+		if _, ok := field.Value.(string); !ok {
+			return "", fmt.Errorf("operator '%s' requires a string value", field.Operator)
 		}
 	}
 
-	return conditionTemplate, nil
+	return buildComparisonStatement(field, negate, operator, parameterStatement)
 }
 
-func singleLikeTemplate(quotedField string, negate bool, beginsWith bool) string {
-	if negate {
-		return quotedField + " NOT ILIKE " + handleMultiLikeType(beginsWith)
+// buildComparisonStatement builds a SQL filter statement of the form:
+// [NOT] ((field operator parameterStatement) OR (field operator parameterStatement))
+// [parameterStatement] is a statement involving the `?` parameter placeholder. In the simplest case just `?`.
+// Example: NOT ((field ILIKE ? || '%' ))
+func buildComparisonStatement(field filter.RequestField, negate bool, operator string, parameterStatement string) (string, error) {
+	singleStatement := fmt.Sprintf("%s %s %s", field.Name, operator, parameterStatement)
+
+	var count int
+	if valueList, ok := field.Value.([]any); ok {
+		count = len(valueList)
 	} else {
-		return quotedField + " ILIKE " + handleMultiLikeType(beginsWith)
+		count = 1
 	}
+
+	return chainStatementsByOr(negate, singleStatement, count), nil
 }
 
-func multiLikeOrTemplate(quotedField string, elementCount int, negate bool, beginsWith bool) string {
+func chainStatementsByOr(negate bool, singleStatement string, count int) string {
 	builder := strings.Builder{}
+
 	if negate {
-		builder.WriteString("NOT ")
+		builder.WriteString(" NOT ")
 	}
-	builder.WriteString(" (")
-	for i := 0; i < elementCount; i++ {
+	builder.WriteRune('(')
+	for i := range count {
 		if i > 0 {
-			builder.WriteString(") OR (")
+			builder.WriteString(" OR ")
 		}
-		builder.WriteString(quotedField + " ILIKE " + handleMultiLikeType(beginsWith))
+		builder.WriteRune('(')
+		builder.WriteString(singleStatement)
+		builder.WriteRune(')')
 	}
 	builder.WriteRune(')')
+
 	return builder.String()
 }
 
-func handleMultiLikeType(beginsWith bool) string {
-	if beginsWith {
-		return beginsWithAsLikePattern()
+func sanitizeFilterValue(value any) (sanitizedValue any, err error) {
+	if value == nil {
+		return filter.RequestField{}, errors.New("field has nil value")
 	}
-	return containsAsLikePattern()
-}
 
-func containsAsLikePattern() string {
-	return `'%' || ? || '%'`
-}
+	sanitizedValue = value
 
-func beginsWithAsLikePattern() string {
-	return `? || '%'`
-}
+	if reflect.TypeOf(value).Kind() == reflect.Slice || reflect.TypeOf(value).Kind() == reflect.Array {
+		slice := reflect.ValueOf(value)
 
-func simpleSingleStringValueOperatorCondition(
-	field filter.RequestField, valueIsList bool, singleValueTemplate string,
-) (conditionTemplate string, err error) {
-	if valueIsList {
-		err = fmt.Errorf("operator '%s' does not support multi-select", field.Operator)
-		return "", err
-	} else if _, ok := field.Value.(string); ok {
-		quotedName, err := getQuotedName(field.Name)
-		if err != nil {
-			return "", fmt.Errorf("could not get quoted name: %w", err)
+		if slice.Len() == 0 { // disallow empty list values, as the there is no clear way to interpret this kind of filter
+			return filter.RequestField{}, fmt.Errorf("field has empty list of values")
 		}
-		conditionTemplate = fmt.Sprintf(singleValueTemplate, quotedName)
-	} else {
-		err = fmt.Errorf("operator '%s' requires a string value", field.Operator)
-		return "", err
+		// convert to []any, so that handlers don't need to deal with different slice types
+		var values []any
+		if v, ok := value.([]any); ok {
+			values = v
+		} else {
+			values = make([]any, slice.Len())
+			for i := 0; i < slice.Len(); i++ {
+				values[i] = slice.Index(i).Interface()
+			}
+		}
+		sanitizedValue = values
 	}
-	return conditionTemplate, nil
+	return sanitizedValue, nil
+}
+
+// buildDateTruncStatement builds a SQL filter statement of the form:
+// [NOT] ((date_trunc('day', field) operator date_trunc('day', ?::timestamp)) OR ...)
+// Example: NOT ((date_trunc('day', field) < date_trunc('day', ?::timestamp)) OR ...)
+func buildDateTruncStatement(field filter.RequestField, operator string) (string, error) {
+	checkType := func(value any) error {
+		switch value.(type) {
+		case string:
+			return nil
+		case time.Time:
+			return nil
+		default:
+			return fmt.Errorf("operator '%s' requires a string or time.Time value, got: %T", field.Operator, field.Value)
+		}
+	}
+
+	// validate that input only contains string(s) or time.Time(s)
+	var count int
+	if valueList, ok := field.Value.([]any); ok {
+		for _, element := range valueList {
+			err := checkType(element)
+			if err != nil {
+				return "", err
+			}
+		}
+		count = len(valueList)
+	} else {
+		err := checkType(field.Value)
+		if err != nil {
+			return "", err
+		}
+		count = 1
+	}
+	singleStatement := fmt.Sprintf("date_trunc('day', %s) %s date_trunc('day', ?::timestamp)", field.Name, operator)
+
+	return chainStatementsByOr(false, singleStatement, count), nil
 }
