@@ -126,7 +126,7 @@ func extractFieldValues(input any, compareOperator filter.CompareOperator) (resp
 // addSorting appends sorting conditions to the query builder based on the provided sorting request.
 // It constructs the ORDER BY clause using the specified sort column and direction.
 func (qb *Builder) addSorting(sort *sorting.Request) error {
-	sortFragment := " ORDER BY"
+	sortStatement := " ORDER BY"
 
 	if sort != nil {
 		var sortDirection string
@@ -144,12 +144,12 @@ func (qb *Builder) addSorting(sort *sorting.Request) error {
 			return filter.NewInvalidFilterFieldError(
 				"missing filter field mapping for '%s'", sort.SortColumn)
 		}
-		sortFragment += fmt.Sprintf(" %s %s,", dbColumnName, sortDirection)
+		sortStatement += fmt.Sprintf(" %s %s,", dbColumnName, sortDirection)
 	}
 	// add tie breaker to ensure consistent sorting
-	sortFragment += fmt.Sprintf(" %s ASC", qb.querySettings.SortingTieBreakerColumn)
+	sortStatement += fmt.Sprintf(" %s ASC", qb.querySettings.SortingTieBreakerColumn)
 
-	qb.query.WriteString(sortFragment)
+	qb.query.WriteString(sortStatement)
 	return nil
 }
 

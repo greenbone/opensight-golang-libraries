@@ -25,11 +25,11 @@ import (
 
 const unfilteredListTestypesQuery = `SELECT * FROM test_table`
 
-//go:embed migrations
+//go:embed test_migrations
 var migrationsFS embed.FS
 
 // directory within [migrationsFS] where migration files are located
-const migrationDir = "migrations"
+const migrationDir = "test_migrations"
 
 type TestDoc struct {
 	ID       int       `db:"id"`
@@ -801,15 +801,35 @@ func Test_PostgresQueryBuilder_Build(t *testing.T) {
 }
 
 func Test_NewPostgresQueryBuilder(t *testing.T) {
-	t.Run("failure with missing mandatory setting", func(t *testing.T) {
-		_, err := NewPostgresQueryBuilder(Settings{})
-		assert.Error(t, err)
-	})
-	t.Run("sucess", func(t *testing.T) {
-		builder, err := NewPostgresQueryBuilder(Settings{
-			SortingTieBreakerColumn: "id",
+	tests := []struct {
+		name     string
+		settings Settings
+		wantErr  bool
+	}{
+		{
+			name: "success",
+			settings: Settings{
+				SortingTieBreakerColumn: "id",
+			},
+			wantErr: false,
+		},
+		{
+			name:     "failure with missing mandatory setting",
+			settings: Settings{},
+			wantErr:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			builder, err := NewPostgresQueryBuilder(tt.settings)
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.Nil(t, builder)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, builder)
+			}
 		})
-		assert.NoError(t, err)
-		assert.NotNil(t, builder)
-	})
+	}
 }
