@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-package osquery
+package query
 
 import (
 	"os"
@@ -13,8 +13,8 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	if os.Getenv(testconfig.RunAllGoEnv) != "" || os.Getenv(testconfig.RunOpenSearchEnv) != "" {
+	if os.Getenv(testconfig.RunAllGoEnv) != "" || os.Getenv(testconfig.RunPostgresEnv) != "" {
 		os.Exit(m.Run())
 	}
-	log.Debug().Msgf("OpenSearch tests skipped, set %s=1 env to run them", testconfig.RunOpenSearchEnv)
+	log.Debug().Msgf("Postgres tests skipped, set %s=1 env to run them", testconfig.RunPostgresEnv)
 }
