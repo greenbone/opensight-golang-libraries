@@ -80,8 +80,8 @@ func TestExecutor(t *testing.T) {
 	}
 }
 
-func jobTestFunc(t *testing.T, mu *sync.Mutex, running *bool, count *int) func() error {
-	return func() error {
+func jobTestFunc(t *testing.T, mu *sync.Mutex, running *bool, count *int) func(Request) error {
+	return func(_ Request) error {
 		mu.Lock()
 		if *running {
 			t.Errorf("Job is already running!")

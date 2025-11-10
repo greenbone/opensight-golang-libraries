@@ -19,7 +19,7 @@ type Request struct {
 // JobQueue is a thread-safe queue of requests to execute a predefined function.
 type JobQueue struct {
 	reqChan  chan Request
-	execFunc func() error
+	execFunc func(request Request) error
 	mu       sync.Mutex
 	context  context.Context
 }
@@ -27,7 +27,7 @@ type JobQueue struct {
 // NewJobQueue creates a new job queue
 // execFunc is the function to be executed for each request that is processed
 // context is the context of the caller
-func NewJobQueue(execFunc func() error, context context.Context) *JobQueue {
+func NewJobQueue(execFunc func(request Request) error, context context.Context) *JobQueue {
 	q := JobQueue{
 		reqChan:  make(chan Request, 100),
 		execFunc: execFunc,
@@ -84,7 +84,7 @@ func (q *JobQueue) execute(req Request) {
 		Str("request_id", req.ID).
 		Msgf("executing queue request id: %s", req.ID)
 	// Call the function
-	err := q.execFunc()
+	err := q.execFunc(req)
 	if err != nil {
 		log.Error().Err(err).
 			Str("request_id", req.ID).

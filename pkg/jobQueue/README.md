@@ -26,7 +26,7 @@ import (
 
 func main() {
 	// Define the function that will be executed for each request
-	execFunc := func() error {
+    execFunc := func(req jobQueue.Request) error {
 		time.Sleep(50 * time.Millisecond)
 		return nil
 	}
