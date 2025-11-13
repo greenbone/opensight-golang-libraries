@@ -291,7 +291,7 @@ func defaultCompareOperators() []CompareOperator {
 		},
 		{
 			Operator: filter.CompareOperatorMustNotExists,
-			Handler:  HandleCompareOperatorMustNotExists, MustCondition: true,
+			Handler:  HandleCompareOperatorExists, MustCondition: false,
 		},
 	}
 }
