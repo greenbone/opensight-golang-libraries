@@ -158,6 +158,10 @@ func HandleCompareOperatorExists(fieldName string, _ any) (esquery.Mappable, err
 	return esquery.Exists(fieldName), nil
 }
 
+func HandleCompareOperatorMustNotExists(fieldName string, _ any) (esquery.Mappable, error) {
+	return esquery.Bool().MustNot(esquery.Exists(fieldName)), nil
+}
+
 // HandleCompareOperatorBetweenDates constructs an OpenSearch range query for a given date field.
 // It accepts a field name and a field value, which must be a slice of exactly 2 elements, representing the start and end of range. Accepted slice types:
 // - []time.Time,
