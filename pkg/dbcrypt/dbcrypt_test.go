@@ -13,6 +13,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+
+	"github.com/greenbone/opensight-golang-libraries/pkg/dbcrypt/config"
 )
 
 type MyTable struct {
@@ -110,4 +112,35 @@ func TestApplianceEncryption(t *testing.T) {
 	resultData := &MyTable{}
 	myDB.First(&resultData, tblData.ID)
 	assert.EqualValues(t, "thePasswordWhichCanBeEncrypted", resultData.PwdField)
+}
+
+func TestNew(t *testing.T) {
+	t.Setenv("TASK_REPORT_CRYPTO_V1_PASSWORD", "from-env-password")
+	t.Setenv("TASK_REPORT_CRYPTO_V1_SALT", "from-env-salt-012345678901234567")
+
+	configCustom := config.CryptoConfig{
+		ReportEncryptionV1Password: "custom-password",
+		ReportEncryptionV1Salt:     "custom-salt-01234567890123456789",
+	}
+	dataClear := MyTable{
+		Field1:   "OtherField",
+		PwdField: "SecretPassword",
+	}
+	cryptDefault := DBCrypt[MyTable]{}
+	cryptCustom := New[MyTable](configCustom)
+
+	dataEncrypted := dataClear
+	err := cryptCustom.EncryptStruct(&dataEncrypted)
+	require.NoError(t, err)
+	require.NotEqual(t, dataClear, dataEncrypted, "password was not encrypted")
+
+	dataDefaultDecrypted := dataEncrypted
+	err = cryptDefault.DecryptStruct(&dataDefaultDecrypted)
+	require.Error(t, err)
+	assert.Equal(t, dataEncrypted, dataDefaultDecrypted)
+
+	dataCustomDecrypted := dataEncrypted
+	err = cryptCustom.DecryptStruct(&dataCustomDecrypted)
+	require.NoError(t, err)
+	assert.Equal(t, dataClear, dataCustomDecrypted)
 }

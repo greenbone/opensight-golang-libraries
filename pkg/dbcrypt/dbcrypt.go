@@ -12,10 +12,11 @@ import (
 	"fmt"
 	"io"
 	"reflect"
-
-	"github.com/greenbone/opensight-golang-libraries/pkg/dbcrypt/config"
+	"sync/atomic"
 
 	"github.com/rs/zerolog/log"
+
+	"github.com/greenbone/opensight-golang-libraries/pkg/dbcrypt/config"
 )
 
 const (
@@ -24,18 +25,28 @@ const (
 )
 
 type DBCrypt[T any] struct {
-	config config.CryptoConfig
+	config atomic.Pointer[config.CryptoConfig]
+}
+
+// New creates a new instance of DBCrypt that will perform cryptographic operations based on the provided CryptoConfig.
+func New[T any](config config.CryptoConfig) *DBCrypt[T] {
+	d := &DBCrypt[T]{}
+	d.config.Store(&config)
+	return d
 }
 
 func (d *DBCrypt[T]) loadKey() []byte {
-	if d.config == (config.CryptoConfig{}) {
+	configPtr := d.config.Load()
+	if configPtr == nil {
 		conf, err := config.Read()
 		if err != nil {
 			log.Fatal().Err(err).Msg("crypto config is invalid")
 		}
-		d.config = conf
+		d.config.CompareAndSwap(nil, &conf)
+		configPtr = d.config.Load()
 	}
-	key := []byte(d.config.ReportEncryptionV1Password + d.config.ReportEncryptionV1Salt)[:32] // Truncate key to 32 bytes
+	// TODO: Use proper KDF instead of truncating the password (to maintain backward compatibility use encrypted values prefixes to determine the method)
+	key := []byte(configPtr.ReportEncryptionV1Password + configPtr.ReportEncryptionV1Salt)[:32] // Truncate key to 32 bytes
 	return key
 }
 
