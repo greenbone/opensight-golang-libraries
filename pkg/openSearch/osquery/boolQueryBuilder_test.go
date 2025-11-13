@@ -608,6 +608,15 @@ func TestBoolQueryBuilder_AddFilterRequest(t *testing.T) {
 		wantDocuments: []ostesting.TestType{doc0, doc1, doc2},
 	})
 
+	// MustNotExists operator
+	addTest("operator must not Exists", testCase{
+		filterRequest: singleFilter(filter.RequestField{
+			Name:     "keywordOmitEmptyField",
+			Operator: filter.CompareOperatorDoesNotExist,
+		}),
+		wantDocuments: []ostesting.TestType{doc0},
+	})
+
 	// BetweenDates operator
 	addTest("operator BetweenDates (date time string)", testCase{
 		filterRequest: singleFilter(filter.RequestField{
