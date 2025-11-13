@@ -612,7 +612,7 @@ func TestBoolQueryBuilder_AddFilterRequest(t *testing.T) {
 	addTest("operator must not Exists", testCase{
 		filterRequest: singleFilter(filter.RequestField{
 			Name:     "keywordOmitEmptyField",
-			Operator: filter.CompareOperatorMustNotExists,
+			Operator: filter.CompareOperatorDoesNotExist,
 		}),
 		wantDocuments: []ostesting.TestType{doc0},
 	})

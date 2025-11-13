@@ -75,7 +75,7 @@ CompareOperator ENUM(
 	betweenDates
 
 	exists
-	mustNotExists
+	doesNotExist
 
 	isEqualToRating
 	isNotEqualToRating

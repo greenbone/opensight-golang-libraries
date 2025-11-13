@@ -183,8 +183,8 @@ const (
 	CompareOperatorBetweenDates CompareOperator = "betweenDates"
 	// CompareOperatorExists is a CompareOperator of type exists.
 	CompareOperatorExists CompareOperator = "exists"
-	// CompareOperatorMustNotExists is a CompareOperator of type mustNotExists.
-	CompareOperatorMustNotExists CompareOperator = "mustNotExists"
+	// CompareOperatorDoesNotExist is a CompareOperator of type doesNotExist.
+	CompareOperatorDoesNotExist CompareOperator = "doesNotExist"
 	// CompareOperatorIsEqualToRating is a CompareOperator of type isEqualToRating.
 	CompareOperatorIsEqualToRating CompareOperator = "isEqualToRating"
 	// CompareOperatorIsNotEqualToRating is a CompareOperator of type isNotEqualToRating.
@@ -224,7 +224,7 @@ var _CompareOperatorNames = []string{
 	string(CompareOperatorAfterDate),
 	string(CompareOperatorBetweenDates),
 	string(CompareOperatorExists),
-	string(CompareOperatorMustNotExists),
+	string(CompareOperatorDoesNotExist),
 	string(CompareOperatorIsEqualToRating),
 	string(CompareOperatorIsNotEqualToRating),
 	string(CompareOperatorIsLessThanRating),
@@ -275,7 +275,7 @@ var _CompareOperatorValue = map[string]CompareOperator{
 	"afterDate":                      CompareOperatorAfterDate,
 	"betweenDates":                   CompareOperatorBetweenDates,
 	"exists":                         CompareOperatorExists,
-	"mustNotExists":                  CompareOperatorMustNotExists,
+	"doesNotExist":                   CompareOperatorDoesNotExist,
 	"isEqualToRating":                CompareOperatorIsEqualToRating,
 	"isNotEqualToRating":             CompareOperatorIsNotEqualToRating,
 	"isLessThanRating":               CompareOperatorIsLessThanRating,
