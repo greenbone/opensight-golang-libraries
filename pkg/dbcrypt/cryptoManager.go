@@ -43,7 +43,7 @@ func NewCryptoManager(conf Config) (*CryptoManager, error) {
 	}
 
 	c := &CryptoManager{
-		prefixSeparator:  ":",
+		prefixSeparator:  ":", // this can never change, otherwise existing data will break
 		encryptionCipher: cipher,
 		cipherManager:    manager,
 	}

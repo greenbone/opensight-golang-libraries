@@ -17,6 +17,7 @@ type CipherManager struct {
 func NewCipherManager(conf Config) (*CipherManager, error) {
 	manager := CipherManager{
 		ciphers: []Cipher{
+			// /!\ this list can only be extended, otherwise decryption will break for existing data
 			{
 				Version: "v1",
 				Prefix:  "ENC",
