@@ -56,7 +56,8 @@ func TestGormCreateReadRaw(t *testing.T) {
 
 	gotData := Model{}
 	require.NoError(t, db.Raw(`SELECT * FROM models LIMIT 1`).Scan(&gotData).Error)
-	require.NotEqual(t, givenData, gotData)
+	require.Equal(t, givenData.ID, gotData.ID)
+	require.NotEqual(t, givenData.Secret, gotData.Secret)
 }
 
 func TestGormCreateUpdateRead(t *testing.T) {
