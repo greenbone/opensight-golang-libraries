@@ -12,11 +12,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type Crypter interface {
-	Encrypt(plaintext []byte) ([]byte, error)
-	Decrypt(ciphertext []byte) ([]byte, error)
-}
-
 // Register registers encryption and decryption callbacks for the provided database, to perform automatically
 // cryptographic operations on all models that contain a field tagged with 'encrypt:"true"'.
 func Register(db *gorm.DB, c *CryptoManager) error {

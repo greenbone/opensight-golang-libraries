@@ -10,6 +10,11 @@ import (
 	"fmt"
 )
 
+type Crypter interface {
+	Encrypt(plaintext []byte) ([]byte, error)
+	Decrypt(ciphertext []byte) ([]byte, error)
+}
+
 type CryptoManager struct {
 	cipherManager    *CipherManager
 	encryptionCipher *Cipher

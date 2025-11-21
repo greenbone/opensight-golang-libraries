@@ -90,7 +90,7 @@ func TestGormCreateUpdateRead(t *testing.T) {
 	require.Equal(t, updatedData, gotData)
 }
 
-func TestGormMixDBCryptInstances1(t *testing.T) {
+func TestGormInvalidValueForEncrypt(t *testing.T) {
 	type Model struct {
 		ID     uint   `gorm:"primarykey"`
 		Secret string `encrypt:"TRUE"`
@@ -107,7 +107,7 @@ func TestGormMixDBCryptInstances1(t *testing.T) {
 	require.ErrorContains(t, db.Create(&givenData).Error, `field "Secret": invalid value for 'encrypt' field tag "TRUE"`)
 }
 
-func TestGormMixDBCryptInstances12(t *testing.T) {
+func TestGormInvalidTypeForField(t *testing.T) {
 	type Model struct {
 		ID     uint `gorm:"primarykey"`
 		Secret int  `encrypt:"true"`
