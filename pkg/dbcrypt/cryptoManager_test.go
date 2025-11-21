@@ -2,26 +2,24 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-package dbcrypt_test
+package dbcrypt
 
 import (
 	"testing"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
-
-	"github.com/greenbone/opensight-golang-libraries/pkg/dbcrypt"
 )
 
 func TestCipherEncryptAndDecrypt(t *testing.T) {
 	tests := []struct {
 		name   string
-		config dbcrypt.Config
+		config Config
 		given  string
 	}{
 		{
 			name: "latest/random",
-			config: dbcrypt.Config{
+			config: Config{
 				Version:      "",
 				Password:     "encryption-password",
 				PasswordSalt: "encryption-password-salt-0123456",
@@ -30,7 +28,7 @@ func TestCipherEncryptAndDecrypt(t *testing.T) {
 		},
 		{
 			name: "v2/random",
-			config: dbcrypt.Config{
+			config: Config{
 				Version:      "v2",
 				Password:     "encryption-password",
 				PasswordSalt: "encryption-password-salt-0123456",
@@ -39,7 +37,7 @@ func TestCipherEncryptAndDecrypt(t *testing.T) {
 		},
 		{
 			name: "v2/empty",
-			config: dbcrypt.Config{
+			config: Config{
 				Version:      "v2",
 				Password:     "encryption-password",
 				PasswordSalt: "encryption-password-salt-0123456",
@@ -48,7 +46,7 @@ func TestCipherEncryptAndDecrypt(t *testing.T) {
 		},
 		{
 			name: "v2/prefix",
-			config: dbcrypt.Config{
+			config: Config{
 				Version:      "v2",
 				Password:     "encryption-password",
 				PasswordSalt: "encryption-password-salt-0123456",
@@ -57,7 +55,7 @@ func TestCipherEncryptAndDecrypt(t *testing.T) {
 		},
 		{
 			name: "v1/random",
-			config: dbcrypt.Config{
+			config: Config{
 				Version:      "v1",
 				Password:     "encryption-password",
 				PasswordSalt: "encryption-password-salt-0123456",
@@ -66,7 +64,7 @@ func TestCipherEncryptAndDecrypt(t *testing.T) {
 		},
 		{
 			name: "v1/empty",
-			config: dbcrypt.Config{
+			config: Config{
 				Version:      "v1",
 				Password:     "encryption-password",
 				PasswordSalt: "encryption-password-salt-0123456",
@@ -75,7 +73,7 @@ func TestCipherEncryptAndDecrypt(t *testing.T) {
 		},
 		{
 			name: "v1/prefix",
-			config: dbcrypt.Config{
+			config: Config{
 				Version:      "v1",
 				Password:     "encryption-password",
 				PasswordSalt: "encryption-password-salt-0123456",
@@ -86,7 +84,9 @@ func TestCipherEncryptAndDecrypt(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			c, err := dbcrypt.NewDBCipher(test.config)
+			t.Parallel()
+
+			c, err := NewCryptoManager(test.config)
 			require.NoError(t, err)
 
 			ciphertext, err := c.Encrypt([]byte(test.given))
@@ -103,21 +103,21 @@ func TestCipherEncryptAndDecrypt(t *testing.T) {
 func TestCipherCreationFailure(t *testing.T) {
 	tests := []struct {
 		name               string
-		config             dbcrypt.Config
+		config             Config
 		errorShouldContain string
 	}{
 		{
 			name: "unknown-version",
-			config: dbcrypt.Config{
+			config: Config{
 				Version:      "unknown",
 				Password:     "encryption-password",
 				PasswordSalt: "encryption-password-salt-0123456",
 			},
-			errorShouldContain: "invalid db cipher version",
+			errorShouldContain: "could not get cipher by version: version 'unknown' not found",
 		},
 		{
 			name: "empty-password",
-			config: dbcrypt.Config{
+			config: Config{
 				Version:      "",
 				Password:     "",
 				PasswordSalt: "encryption-password-salt-0123456",
@@ -126,7 +126,7 @@ func TestCipherCreationFailure(t *testing.T) {
 		},
 		{
 			name: "empty-salt",
-			config: dbcrypt.Config{
+			config: Config{
 				Version:      "",
 				Password:     "encryption-password",
 				PasswordSalt: "",
@@ -135,7 +135,7 @@ func TestCipherCreationFailure(t *testing.T) {
 		},
 		{
 			name: "salt-too-short",
-			config: dbcrypt.Config{
+			config: Config{
 				Version:      "",
 				Password:     "encryption-password",
 				PasswordSalt: "short-salt",
@@ -146,7 +146,7 @@ func TestCipherCreationFailure(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			_, err := dbcrypt.NewDBCipher(test.config)
+			_, err := NewCryptoManager(test.config)
 			require.Error(t, err)
 			require.Contains(t, err.Error(), test.errorShouldContain)
 		})
@@ -156,13 +156,13 @@ func TestCipherCreationFailure(t *testing.T) {
 func TestHistoricalDataDecryption(t *testing.T) {
 	tests := []struct {
 		name      string
-		config    dbcrypt.Config
+		config    Config
 		encrypted string
 		decrypted string
 	}{
 		{
 			name: "v1/simple",
-			config: dbcrypt.Config{
+			config: Config{
 				Version:      "v1",
 				Password:     "encryption-password",
 				PasswordSalt: "encryption-password-salt-0123456",
@@ -172,7 +172,7 @@ func TestHistoricalDataDecryption(t *testing.T) {
 		},
 		{
 			name: "v1/salt-truncation", // "v1" historically uses insecure password-salt truncation, this test checks preservation of this behavior
-			config: dbcrypt.Config{
+			config: Config{
 				Version:      "v1",
 				Password:     "encryption-password",
 				PasswordSalt: "encryption-password-salt-0123456789-0123456789",
@@ -182,7 +182,7 @@ func TestHistoricalDataDecryption(t *testing.T) {
 		},
 		{
 			name: "v1/password-truncation", // "v1" historically uses insecure password-salt truncation, this test checks preservation of this behavior
-			config: dbcrypt.Config{
+			config: Config{
 				Version:      "v1",
 				Password:     "encryption-password-0123456789-0123456789",
 				PasswordSalt: "0123456789-0123456789-0123456789",
@@ -192,7 +192,7 @@ func TestHistoricalDataDecryption(t *testing.T) {
 		},
 		{
 			name: "v2/simple",
-			config: dbcrypt.Config{
+			config: Config{
 				Version:      "v2",
 				Password:     "encryption-password",
 				PasswordSalt: "encryption-password-salt-0123456",
@@ -204,7 +204,9 @@ func TestHistoricalDataDecryption(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			c, err := dbcrypt.NewDBCipher(test.config)
+			t.Parallel()
+
+			c, err := NewCryptoManager(test.config)
 			require.NoError(t, err)
 
 			got, err := c.Decrypt([]byte(test.encrypted))
