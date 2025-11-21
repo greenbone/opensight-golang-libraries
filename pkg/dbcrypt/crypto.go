@@ -12,41 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// EncryptString encrypts the given string using the provided DBCryptV2.
-func EncryptString(c *DBCryptV2, plaintext string) (string, error) {
-	fmt.Println("--debug before encryption", plaintext) // TODO: Remove me
-	ciphertext, err := c.Encrypt([]byte(plaintext))
-	if err != nil {
-		return "", err
-	}
-	fmt.Println("--debug after encryption", string(ciphertext)) // TODO: Remove me
-	return string(ciphertext), nil
-}
-
-// DecryptString decrypts the given string using the provided DBCryptV2.
-func DecryptString(c *DBCryptV2, ciphertextWithPrefix string) (string, error) {
-	fmt.Println("--debug before decryption", ciphertextWithPrefix) // TODO: Remove me
-	plaintext, err := c.Decrypt([]byte(ciphertextWithPrefix))
-	if err != nil {
-		return "", err
-	}
-	fmt.Println("--debug after decryption", string(plaintext)) // TODO: Remove me
-	return string(plaintext), nil
-}
-
-func asPointerToStruct(x any) reflect.Value {
-	v := reflect.ValueOf(x)
-	if v.Kind() != reflect.Pointer {
-		return reflect.Value{}
-	}
-	el := v.Elem()
-	if el.Kind() != reflect.Struct {
-		return reflect.Value{}
-	}
-	return v
-}
-
-func shouldStructFieldBeEncrypted(sf reflect.StructField) (bool, error) {
+func parseEncryptStructFieldTag(sf reflect.StructField) (bool, error) {
 	encryptTag, has := sf.Tag.Lookup("encrypt")
 	if !has || encryptTag == "false" {
 		return false, nil
@@ -63,40 +29,7 @@ func shouldStructFieldBeEncrypted(sf reflect.StructField) (bool, error) {
 	return true, nil
 }
 
-func validateHistoricalTags(sf reflect.StructField) error {
-	if _, has := sf.Tag.Lookup("encrypt"); has {
-		return errors.New("support 'encrypt' struct filed tag has been removed with new DBCrypt package, use dbcrypt.EncryptedString type instead")
-	}
-	return nil
-}
-
-// EncryptStruct encrypts all fields withing the given struct that are tagged with 'encrypt:"true"' using the provided DBCryptV2.
-func EncryptStruct(c *DBCryptV2, plaintext any) error {
-	v := asPointerToStruct(plaintext)
-	if !v.IsValid() {
-		return errors.New("invalid value provided to struct encryption (expected a pointer to struct)")
-	}
-	v = v.Elem()
-	typ := v.Type()
-	for i := 0; i < typ.NumField(); i++ {
-		f, fTyp := v.Field(i), typ.Field(i)
-		doEnc, err := shouldStructFieldBeEncrypted(fTyp)
-		if err != nil {
-			return fmt.Errorf("field %q: %w", fTyp.Name, err)
-		}
-		if !doEnc {
-			continue
-		}
-		ciphertext, err := EncryptString(c, f.String())
-		if err != nil {
-			return fmt.Errorf("field %q: %w", fTyp.Name, err)
-		}
-		f.SetString(ciphertext)
-	}
-	return nil
-}
-
-func EncryptAny(c *DBCryptV2, plaintext any) error {
+func encryptModel(c *DBCipher, plaintext any) error {
 	value := reflect.ValueOf(plaintext)
 	if value.Kind() == reflect.Pointer && value.Type().Elem().Kind() == reflect.Struct {
 		return encryptRecursive(c, value)
@@ -107,7 +40,7 @@ func EncryptAny(c *DBCryptV2, plaintext any) error {
 	return errors.New("invalid value provided for encryption")
 }
 
-func encryptRecursive(c *DBCryptV2, plaintext reflect.Value) error {
+func encryptRecursive(c *DBCipher, plaintext reflect.Value) error {
 	if es, ok := plaintext.Interface().(EncryptedString); ok {
 		if err := es.Encrypt(c); err != nil {
 			return err
@@ -128,7 +61,7 @@ func encryptRecursive(c *DBCryptV2, plaintext reflect.Value) error {
 			if !fTyp.IsExported() {
 				continue
 			}
-			if err := validateHistoricalTags(fTyp); err != nil {
+			if err := encryptFieldBasedOnTag(c, fTyp, plaintext.Field(i)); err != nil {
 				return fmt.Errorf("field %q: %w", fTyp.Name, err)
 			}
 			if err := encryptRecursive(c, plaintext.Field(i)); err != nil {
@@ -146,7 +79,23 @@ func encryptRecursive(c *DBCryptV2, plaintext reflect.Value) error {
 	return nil
 }
 
-func DecryptAny(c *DBCryptV2, ciphertext any) error {
+func encryptFieldBasedOnTag(c *DBCipher, sf reflect.StructField, val reflect.Value) error {
+	tagValue, err := parseEncryptStructFieldTag(sf)
+	if err != nil {
+		return err
+	}
+	if !tagValue {
+		return nil
+	}
+	ciphertext, err := c.Encrypt([]byte(val.String()))
+	if err != nil {
+		return err
+	}
+	val.SetString(string(ciphertext))
+	return nil
+}
+
+func decryptModel(c *DBCipher, ciphertext any) error {
 	value := reflect.ValueOf(ciphertext)
 	if value.Kind() == reflect.Pointer && value.Type().Elem().Kind() == reflect.Struct {
 		return decryptRecursive(c, value)
@@ -157,7 +106,7 @@ func DecryptAny(c *DBCryptV2, ciphertext any) error {
 	return errors.New("invalid value provided for decryption")
 }
 
-func decryptRecursive(c *DBCryptV2, ciphertext reflect.Value) error {
+func decryptRecursive(c *DBCipher, ciphertext reflect.Value) error {
 	if es, ok := ciphertext.Interface().(EncryptedString); ok {
 		if err := es.decrypt(c); err != nil {
 			return err
@@ -178,7 +127,7 @@ func decryptRecursive(c *DBCryptV2, ciphertext reflect.Value) error {
 			if !fTyp.IsExported() {
 				continue
 			}
-			if err := validateHistoricalTags(fTyp); err != nil {
+			if err := decryptFieldBasedOnTag(c, fTyp, ciphertext.Field(i)); err != nil {
 				return fmt.Errorf("field %q: %w", fTyp.Name, err)
 			}
 			if err := decryptRecursive(c, ciphertext.Field(i)); err != nil {
@@ -196,47 +145,29 @@ func decryptRecursive(c *DBCryptV2, ciphertext reflect.Value) error {
 	return nil
 }
 
-// DecryptStruct decrypts all fields withing the given struct that are tagged with 'encrypt:"true"' using the provided DBCryptV2.
-func DecryptStruct(c *DBCryptV2, ciphertext any) error {
-	v := asPointerToStruct(ciphertext)
-	if !v.IsValid() {
-		return errors.New("invalid value provided to struct decryption (expected a pointer to struct)")
+func decryptFieldBasedOnTag(c *DBCipher, sf reflect.StructField, val reflect.Value) error {
+	tagValue, err := parseEncryptStructFieldTag(sf)
+	if err != nil {
+		return err
 	}
-	v = v.Elem()
-	typ := v.Type()
-	for i := 0; i < typ.NumField(); i++ {
-		f, fTyp := v.Field(i), typ.Field(i)
-		doEnc, err := shouldStructFieldBeEncrypted(fTyp)
-		if err != nil {
-			return fmt.Errorf("field %q: %w", fTyp.Name, err)
-		}
-		if !doEnc {
-			continue
-		}
-		plaintext, err := DecryptString(c, f.String())
-		if err != nil {
-			return fmt.Errorf("field %q: %w", fTyp.Name, err)
-		}
-		f.SetString(plaintext)
+	if !tagValue {
+		return nil
 	}
+	plaintext, err := c.Decrypt([]byte(val.String()))
+	if err != nil {
+		return err
+	}
+	val.SetString(string(plaintext))
 	return nil
 }
 
-func encryptDBModel(c *DBCryptV2, plaintext any) error {
-	return EncryptAny(c, plaintext)
-}
-
-func decryptDBModel(c *DBCryptV2, ciphertext any) error {
-	return DecryptAny(c, ciphertext)
-}
-
-// Register registers encryption and decryption callbacks for the provided data base, to perform automatically cryptographic operations on all models using EncryptStruct and DecryptStruct functions.
-func Register(db *gorm.DB, c *DBCryptV2) error {
+// Register registers encryption and decryption callbacks for the provided data base, to perform automatically cryptographic operations on all models that contain a value of type EncryptedString or a file tagged with 'encrypt:"true"'.
+func Register(db *gorm.DB, c *DBCipher) error {
 	encryptCb := func(db *gorm.DB) {
-		db.AddError(encryptDBModel(c, db.Statement.Dest))
+		db.AddError(encryptModel(c, db.Statement.Dest)) //nolint:errcheck // error value returned by AddError can be safely ignored, as it is the same error as db.Error.
 	}
 	decryptCb := func(db *gorm.DB) {
-		db.AddError(decryptDBModel(c, db.Statement.Dest))
+		db.AddError(decryptModel(c, db.Statement.Dest)) //nolint:errcheck // error value returned by AddError can be safely ignored, as it is the same error as db.Error.
 	}
 
 	if err := db.Callback().
@@ -267,41 +198,6 @@ func Register(db *gorm.DB, c *DBCryptV2) error {
 		Query().
 		After("gorm:query").
 		Register("crypto:after_query", decryptCb); err != nil {
-		return err
-	}
-	return nil
-}
-
-// Deregister removes any encryption and decryption callbacks for the provided data base.
-func Deregister(db *gorm.DB) error {
-	if err := db.Callback().
-		Create().
-		Before("gorm:create").
-		Remove("crypto:before_create"); err != nil {
-		return err
-	}
-	if err := db.Callback().
-		Create().
-		After("gorm:create").
-		Remove("crypto:after_create"); err != nil {
-		return err
-	}
-	if err := db.Callback().
-		Update().
-		Before("gorm:update").
-		Remove("crypto:before_update"); err != nil {
-		return err
-	}
-	if err := db.Callback().
-		Update().
-		After("gorm:update").
-		Remove("crypto:after_update"); err != nil {
-		return err
-	}
-	if err := db.Callback().
-		Query().
-		After("gorm:query").
-		Remove("crypto:after_query"); err != nil {
 		return err
 	}
 	return nil

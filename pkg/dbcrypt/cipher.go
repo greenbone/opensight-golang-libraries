@@ -16,53 +16,10 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
-type Config struct {
-	// Default version. Useful for testing older historical implementations or disabling encryption. Leave empty to use the most recent version.
-	//
-	// - use <empty> for v2
-	// - use "ENCV2" for v2
-	// - use "ENC" for v1
-	// - use "PLAIN" to disable encryption
-	Version string
-
-	// Contains the password used deriving encryption key
-	Password string
-
-	// Contains the salt for increasing password entropy
-	PasswordSalt string
-}
-
-var dbCiphers = []func(Config) (dbCipher, error){
-	newDbCipherPlain,
-	newDbCipherV1,
-	newDbCipherV2,
-}
-
-const defaultCipherPrefix = "ENCV2"
-
 type dbCipher interface {
 	Prefix() string
 	Encrypt(plaintext []byte) ([]byte, error)
 	Decrypt(ciphertext []byte) ([]byte, error)
-}
-
-type dbCipherPlain struct {
-}
-
-func newDbCipherPlain(Config) (dbCipher, error) {
-	return dbCipherPlain{}, nil
-}
-
-func (c dbCipherPlain) Prefix() string {
-	return "PLAIN"
-}
-
-func (c dbCipherPlain) Encrypt(plaintext []byte) ([]byte, error) {
-	return plaintext, nil
-}
-
-func (c dbCipherPlain) Decrypt(ciphertext []byte) ([]byte, error) {
-	return ciphertext, nil
 }
 
 type dbCipherV1 struct {
@@ -137,7 +94,7 @@ type dbCipherV2 struct {
 }
 
 func newDbCipherV2(conf Config) (dbCipher, error) {
-	// v2" uses proper KDF (argon2id) to get the key
+	// "v2" uses proper KDF (argon2id) to get the key
 	key := argon2.IDKey([]byte(conf.Password), []byte(conf.PasswordSalt), 1, 64*1024, 4, 32)
 	return dbCipherV2{key: key}, nil
 }
