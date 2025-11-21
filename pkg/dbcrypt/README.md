@@ -19,7 +19,7 @@ import (
 
 type Person struct {
 	gorm.Model
-	PasswordField *dbcrypt.EncryptedString `encrypt:"true"`
+	PasswordField string `encrypt:"true"`
 }
 
 func main() {
@@ -50,15 +50,6 @@ func main() {
 ```
 
 In this example, a Person struct is created and `PasswordField` is automatically encrypted before storing in the database using the DBCipher. Then, when the data is retrieved from the database `PasswordField` is automatically decrypted.
-
-Alternatively while creating the model you can use a tags instead of dedicated types:
-
-```go
-type Person struct {
-	gorm.Model
-	PasswordField string `encrypt:"true"`
-}
-```
 
 # License
 

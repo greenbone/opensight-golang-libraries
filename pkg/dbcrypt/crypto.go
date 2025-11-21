@@ -41,13 +41,6 @@ func encryptModel(c *DBCipher, plaintext any) error {
 }
 
 func encryptRecursive(c *DBCipher, plaintext reflect.Value) error {
-	if es, ok := plaintext.Interface().(EncryptedString); ok {
-		if err := es.Encrypt(c); err != nil {
-			return err
-		}
-		plaintext.Set(reflect.ValueOf(es))
-		return nil
-	}
 	if plaintext.Kind() == reflect.Pointer || plaintext.Kind() == reflect.Interface {
 		if plaintext.IsNil() {
 			return nil
@@ -107,13 +100,6 @@ func decryptModel(c *DBCipher, ciphertext any) error {
 }
 
 func decryptRecursive(c *DBCipher, ciphertext reflect.Value) error {
-	if es, ok := ciphertext.Interface().(EncryptedString); ok {
-		if err := es.decrypt(c); err != nil {
-			return err
-		}
-		ciphertext.Set(reflect.ValueOf(es))
-		return nil
-	}
 	if ciphertext.Kind() == reflect.Pointer || ciphertext.Kind() == reflect.Interface {
 		if ciphertext.IsNil() {
 			return nil
@@ -161,7 +147,7 @@ func decryptFieldBasedOnTag(c *DBCipher, sf reflect.StructField, val reflect.Val
 	return nil
 }
 
-// Register registers encryption and decryption callbacks for the provided data base, to perform automatically cryptographic operations on all models that contain a value of type EncryptedString or a file tagged with 'encrypt:"true"'.
+// Register registers encryption and decryption callbacks for the provided data base, to perform automatically cryptographic operations on all models that contain a field tagged with 'encrypt:"true"'.
 func Register(db *gorm.DB, c *DBCipher) error {
 	encryptCb := func(db *gorm.DB) {
 		db.AddError(encryptModel(c, db.Statement.Dest)) //nolint:errcheck // error value returned by AddError can be safely ignored, as it is the same error as db.Error.

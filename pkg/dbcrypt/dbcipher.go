@@ -16,7 +16,7 @@ const prefixSeparator = ":"
 type Config struct {
 	// Default version of the cryptographic algorithm. Useful for testing older historical implementations. Leave empty to use the most recent version.
 	//
-	// - use <empty> for v2 version of the cryptographic algorithm
+	// - use "" for latest version of the cryptographic algorithm
 	// - use "v2" for v2 version of the cryptographic algorithm
 	// - use "v1" for v1 version of the cryptographic algorithm
 	Version string
@@ -28,6 +28,23 @@ type Config struct {
 	PasswordSalt string
 }
 
+// Validate validates the provided config.
+func (conf Config) Validate() error {
+	if conf.Version != "" && conf.Version != "v1" && conf.Version != "v2" {
+		return fmt.Errorf("invalid db cipher version %q", conf.Version)
+	}
+	if conf.Password == "" {
+		return errors.New("db password is empty")
+	}
+	if conf.PasswordSalt == "" {
+		return errors.New("db password salt is empty")
+	}
+	if len(conf.PasswordSalt) < 32 {
+		return errors.New("db password salt is too short")
+	}
+	return nil
+}
+
 // DBCipher is cipher designed to perform validated encryption and decryption on database values.
 type DBCipher struct {
 	encryptionCipher  dbCipher
@@ -36,14 +53,8 @@ type DBCipher struct {
 
 // NewDBCipher creates a new instance of DBCipher based on the provided Config.
 func NewDBCipher(conf Config) (*DBCipher, error) {
-	if conf.Password == "" {
-		return nil, errors.New("db password is empty")
-	}
-	if conf.PasswordSalt == "" {
-		return nil, errors.New("db password salt is empty")
-	}
-	if len(conf.PasswordSalt) < 32 {
-		return nil, errors.New("db password salt is too short")
+	if err := conf.Validate(); err != nil {
+		return nil, err
 	}
 	c := &DBCipher{}
 	if err := c.registerCiphers(conf); err != nil {
@@ -53,26 +64,26 @@ func NewDBCipher(conf Config) (*DBCipher, error) {
 }
 
 func (c *DBCipher) registerCiphers(conf Config) error {
-	v2, err := newDbCipherV2(conf)
+	v1, err := newDbCipherV1(conf)
 	if err != nil {
 		return err
 	}
-	v1, err := newDbCipherV1(conf)
+	v2, err := newDbCipherV2(conf)
 	if err != nil {
 		return err
 	}
 
 	c.decryptionCiphers = map[string]dbCipher{
-		v2.Prefix(): v2,
 		v1.Prefix(): v1,
+		v2.Prefix(): v2,
 	}
 	switch conf.Version {
-	case "", "v2":
-		c.encryptionCipher = v2
 	case "v1":
 		c.encryptionCipher = v1
+	case "v2", "":
+		c.encryptionCipher = v2
 	default:
-		return fmt.Errorf("invalid db cipher version %q", conf.Version)
+		panic("invalid db cipher version") // valid config should never reach this code
 	}
 	return nil
 }
@@ -83,7 +94,11 @@ func (c *DBCipher) Encrypt(plaintext []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return append([]byte(c.encryptionCipher.Prefix()+prefixSeparator), ciphertext...), nil
+	ciphertextWithPrefix := bytes.NewBuffer(nil)
+	ciphertextWithPrefix.WriteString(c.encryptionCipher.Prefix())
+	ciphertextWithPrefix.WriteString(prefixSeparator)
+	ciphertextWithPrefix.Write(ciphertext)
+	return ciphertextWithPrefix.Bytes(), nil
 }
 
 // Decrypt decrypts the provided bytes with DBCipher.
