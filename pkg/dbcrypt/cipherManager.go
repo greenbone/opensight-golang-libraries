@@ -21,12 +21,12 @@ func NewCipherManager(conf Config) (*CipherManager, error) {
 			{
 				Version: "v1",
 				Prefix:  "ENC",
-				Crypter: NewCipherAES(conf.Password, conf.PasswordSalt),
+				Crypter: NewCipherAesHex(conf.Password, conf.PasswordSalt),
 			},
 			{
 				Version: "v2",
 				Prefix:  "ENCV2",
-				Crypter: NewCipherArgon2id(conf.Password, conf.PasswordSalt),
+				Crypter: NewCipherArgon2idBase64(conf.Password, conf.PasswordSalt),
 			},
 		},
 		defaultVersion: "v2",

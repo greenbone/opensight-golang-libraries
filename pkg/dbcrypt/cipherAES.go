@@ -13,16 +13,16 @@ import (
 	"io"
 )
 
-type CipherAES struct {
+type cipherAES struct {
 	key []byte
 }
 
-func NewCipherAES(password, salt string) *CipherAES {
+func newCipherAES(password, salt string) *cipherAES {
 	key := []byte(password + salt)[:32]
-	return &CipherAES{key: key}
+	return &cipherAES{key: key}
 }
 
-func (c CipherAES) Encrypt(plaintext []byte) ([]byte, error) {
+func (c cipherAES) Encrypt(plaintext []byte) ([]byte, error) {
 	block, err := aes.NewCipher(c.key)
 	if err != nil {
 		return nil, err
@@ -41,20 +41,10 @@ func (c CipherAES) Encrypt(plaintext []byte) ([]byte, error) {
 	ciphertext := gcm.Seal(nil, iv, plaintext, nil)
 	ciphertextWithIv := append(iv, ciphertext...)
 
-	encoded := hex.AppendEncode(nil, ciphertextWithIv)
-	return encoded, nil
+	return ciphertextWithIv, nil
 }
 
-func (c CipherAES) Decrypt(encoded []byte) ([]byte, error) {
-	ciphertextWithIv, err := hex.AppendDecode(nil, encoded)
-	if err != nil {
-		return nil, fmt.Errorf("error decoding ciphertext: %w", err)
-	}
-
-	if len(ciphertextWithIv) < aes.BlockSize+1 {
-		return nil, fmt.Errorf("ciphertext too short")
-	}
-
+func (c cipherAES) Decrypt(ciphertextWithIv []byte) ([]byte, error) {
 	block, err := aes.NewCipher(c.key)
 	if err != nil {
 		return nil, fmt.Errorf("error creating AES cipher: %w", err)
@@ -69,6 +59,40 @@ func (c CipherAES) Decrypt(encoded []byte) ([]byte, error) {
 	ciphertext := ciphertextWithIv[gcm.NonceSize():]
 
 	plaintext, err := gcm.Open(nil, iv, ciphertext, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error decrypting ciphertext: %w", err)
+	}
+
+	return plaintext, nil
+}
+
+type CipherAesHex struct {
+	raw *cipherAES
+}
+
+func NewCipherAesHex(password, salt string) *CipherAesHex {
+	return &CipherAesHex{
+		raw: newCipherAES(password, salt),
+	}
+}
+
+func (c CipherAesHex) Encrypt(plaintext []byte) ([]byte, error) {
+	ciphertextWithIv, err := c.raw.Encrypt(plaintext)
+	if err != nil {
+		return nil, err
+	}
+
+	encoded := hex.AppendEncode(nil, ciphertextWithIv)
+	return encoded, nil
+}
+
+func (c CipherAesHex) Decrypt(encoded []byte) ([]byte, error) {
+	ciphertextWithIv, err := hex.AppendDecode(nil, encoded)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding ciphertext: %w", err)
+	}
+
+	plaintext, err := c.raw.Decrypt(ciphertextWithIv)
 	if err != nil {
 		return nil, fmt.Errorf("error decrypting ciphertext: %w", err)
 	}

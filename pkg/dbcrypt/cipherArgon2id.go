@@ -13,16 +13,16 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
-type CipherArgon2id struct {
+type cipherArgon2id struct {
 	key []byte
 }
 
-func NewCipherArgon2id(password, salt string) *CipherArgon2id {
+func newCipherArgon2id(password, salt string) *cipherArgon2id {
 	key := argon2.IDKey([]byte(password), []byte(salt), 1, 64*1024, 4, 32)
-	return &CipherArgon2id{key: key}
+	return &cipherArgon2id{key: key}
 }
 
-func (c CipherArgon2id) Encrypt(plaintext []byte) ([]byte, error) {
+func (c cipherArgon2id) Encrypt(plaintext []byte) ([]byte, error) {
 	block, err := aes.NewCipher(c.key)
 	if err != nil {
 		return nil, err
@@ -33,22 +33,10 @@ func (c CipherArgon2id) Encrypt(plaintext []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	ciphertext := gcm.Seal(nil, nil, plaintext, nil)
-
-	encoded := base64.StdEncoding.AppendEncode(nil, ciphertext)
-	return encoded, nil
+	return gcm.Seal(nil, nil, plaintext, nil), nil
 }
 
-func (c CipherArgon2id) Decrypt(encoded []byte) ([]byte, error) {
-	ciphertext, err := base64.StdEncoding.AppendDecode(nil, encoded)
-	if err != nil {
-		return nil, fmt.Errorf("error decoding ciphertext: %w", err)
-	}
-
-	if len(ciphertext) < aes.BlockSize+1 {
-		return nil, fmt.Errorf("ciphertext too short")
-	}
-
+func (c cipherArgon2id) Decrypt(ciphertext []byte) ([]byte, error) {
 	block, err := aes.NewCipher(c.key)
 	if err != nil {
 		return nil, fmt.Errorf("error creating AES cipher: %w", err)
@@ -65,4 +53,32 @@ func (c CipherArgon2id) Decrypt(encoded []byte) ([]byte, error) {
 	}
 
 	return plaintext, nil
+}
+
+type CipherArgon2idbase64 struct {
+	raw *cipherArgon2id
+}
+
+func NewCipherArgon2idBase64(password, salt string) *CipherArgon2idbase64 {
+	return &CipherArgon2idbase64{
+		raw: newCipherArgon2id(password, salt),
+	}
+}
+
+func (c CipherArgon2idbase64) Encrypt(plaintext []byte) ([]byte, error) {
+	rawCiphertext, err := c.raw.Encrypt(plaintext)
+	if err != nil {
+		return nil, err
+	}
+
+	return base64.StdEncoding.AppendEncode(nil, rawCiphertext), nil
+}
+
+func (c CipherArgon2idbase64) Decrypt(encoded []byte) ([]byte, error) {
+	rawCiphertext, err := base64.StdEncoding.AppendDecode(nil, encoded)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding ciphertext: %w", err)
+	}
+
+	return c.raw.Decrypt(rawCiphertext)
 }
