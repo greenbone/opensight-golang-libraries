@@ -17,8 +17,15 @@ type cipherAES struct {
 	key []byte
 }
 
+func truncate(value string, length int) string {
+	if len(value) <= length {
+		return value
+	}
+	return value[:length]
+}
+
 func newCipherAES(password, salt string) *cipherAES {
-	key := []byte(password + salt)[:32]
+	key := []byte(truncate(password+salt, 32))
 	return &cipherAES{key: key}
 }
 
