@@ -198,7 +198,7 @@ func TestHistoricalDataDecryption(t *testing.T) {
 				Password:     "encryption-password",
 				PasswordSalt: "encryption-password-salt-0123456",
 			},
-			encrypted: "ENCV2:xDuCgHSIWYBuyONI1w9rFAXas7Z7ReaTZfYfy2VH0A1DrQ==",
+			encrypted: "ENCV2:gr6MB6TefIXMvKwc0DRkBuApxHiu9tvAqO+FHnEeRgMuqQ==",
 			decrypted: "FooBar",
 		},
 	}

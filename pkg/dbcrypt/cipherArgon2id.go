@@ -18,7 +18,7 @@ type cipherArgon2id struct {
 }
 
 func newCipherArgon2id(password, salt string) *cipherArgon2id {
-	key := argon2.IDKey([]byte(password), []byte(salt), 1, 64*1024, 4, 32)
+	key := argon2.IDKey([]byte(password), []byte(salt), 4, 16*1024, 4, 32)
 	return &cipherArgon2id{key: key}
 }
 
