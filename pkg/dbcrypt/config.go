@@ -4,7 +4,7 @@ import (
 	"errors"
 )
 
-// Config encapsulates configuration for CryptoManager.
+// Config encapsulates configuration for CryptoService.
 type Config struct {
 	// Default version of the cryptographic algorithm. Useful for testing older historical implementations. Leave empty
 	// to use the most recent version.
@@ -12,7 +12,7 @@ type Config struct {
 	// Supported values:
 	//   "" : Use the latest available algorithm version (recommended).
 	//
-	// See CipherManager for all versions
+	// See CipherRegistry for all versions
 	Version string
 
 	// Contains the password used deriving the encryption key

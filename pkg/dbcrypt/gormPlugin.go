@@ -14,7 +14,7 @@ import (
 
 // Register registers encryption and decryption callbacks for the provided database, to perform automatically
 // cryptographic operations on all models that contain a field tagged with 'encrypt:"true"'.
-func Register(db *gorm.DB, c *CryptoManager) error {
+func Register(db *gorm.DB, c *CryptoService) error {
 	encryptCb := func(db *gorm.DB) {
 		_ = db.AddError(encryptModel(c, db.Statement.Dest))
 	}
@@ -75,7 +75,7 @@ func parseEncryptStructFieldTag(sf reflect.StructField) (bool, error) {
 	return true, nil
 }
 
-func encryptModel(c *CryptoManager, plaintext any) error {
+func encryptModel(c *CryptoService, plaintext any) error {
 	value := reflect.ValueOf(plaintext)
 	if value.Kind() == reflect.Pointer && value.Type().Elem().Kind() == reflect.Struct {
 		return encryptRecursive(c, value)
@@ -86,7 +86,7 @@ func encryptModel(c *CryptoManager, plaintext any) error {
 	return errors.New("invalid value provided for encryption")
 }
 
-func encryptRecursive(c *CryptoManager, plaintext reflect.Value) error {
+func encryptRecursive(c *CryptoService, plaintext reflect.Value) error {
 	switch plaintext.Kind() {
 	case reflect.Pointer, reflect.Interface:
 		if plaintext.IsNil() {
@@ -120,7 +120,7 @@ func encryptRecursive(c *CryptoManager, plaintext reflect.Value) error {
 	return nil
 }
 
-func encryptFieldBasedOnTag(c *CryptoManager, sf reflect.StructField, val reflect.Value) error {
+func encryptFieldBasedOnTag(c *CryptoService, sf reflect.StructField, val reflect.Value) error {
 	tagValue, err := parseEncryptStructFieldTag(sf)
 	if err != nil {
 		return err
@@ -138,7 +138,7 @@ func encryptFieldBasedOnTag(c *CryptoManager, sf reflect.StructField, val reflec
 	return nil
 }
 
-func decryptModel(c *CryptoManager, ciphertext any) error {
+func decryptModel(c *CryptoService, ciphertext any) error {
 	value := reflect.ValueOf(ciphertext)
 	if value.Kind() == reflect.Pointer && value.Type().Elem().Kind() == reflect.Struct {
 		return decryptRecursive(c, value)
@@ -149,7 +149,7 @@ func decryptModel(c *CryptoManager, ciphertext any) error {
 	return errors.New("invalid value provided for decryption")
 }
 
-func decryptRecursive(c *CryptoManager, ciphertext reflect.Value) error {
+func decryptRecursive(c *CryptoService, ciphertext reflect.Value) error {
 	switch ciphertext.Kind() {
 	case reflect.Pointer, reflect.Interface:
 		if ciphertext.IsNil() {
@@ -183,7 +183,7 @@ func decryptRecursive(c *CryptoManager, ciphertext reflect.Value) error {
 	return nil
 }
 
-func decryptFieldBasedOnTag(c *CryptoManager, sf reflect.StructField, val reflect.Value) error {
+func decryptFieldBasedOnTag(c *CryptoService, sf reflect.StructField, val reflect.Value) error {
 	tagValue, err := parseEncryptStructFieldTag(sf)
 	if err != nil {
 		return err

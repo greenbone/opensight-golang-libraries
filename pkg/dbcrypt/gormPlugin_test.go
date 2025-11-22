@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-package dbcrypt
+package dbcrypt_test
 
 import (
 	"testing"
 
+	"github.com/greenbone/opensight-golang-libraries/pkg/dbcrypt"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -27,12 +28,12 @@ func TestGormCreateRead(t *testing.T) {
 		Secret string `encrypt:"true"`
 	}
 	db := newTestDb[Model](t)
-	crypt, err := NewCryptoManager(Config{
+	crypt, err := dbcrypt.NewCryptoService(dbcrypt.Config{
 		Password:     "encryption-password",
 		PasswordSalt: "encryption-password-salt-0123456",
 	})
 	require.NoError(t, err)
-	require.NoError(t, Register(db, crypt))
+	require.NoError(t, dbcrypt.Register(db, crypt))
 
 	givenData := Model{
 		Secret: "aaa",
@@ -50,12 +51,12 @@ func TestGormCreateReadRaw(t *testing.T) {
 		Secret string `encrypt:"true"`
 	}
 	db := newTestDb[Model](t)
-	crypt, err := NewCryptoManager(Config{
+	crypt, err := dbcrypt.NewCryptoService(dbcrypt.Config{
 		Password:     "encryption-password",
 		PasswordSalt: "encryption-password-salt-0123456",
 	})
 	require.NoError(t, err)
-	require.NoError(t, Register(db, crypt))
+	require.NoError(t, dbcrypt.Register(db, crypt))
 
 	givenData := Model{Secret: "aaa"}
 	require.NoError(t, db.Create(&givenData).Error)
@@ -72,12 +73,12 @@ func TestGormCreateUpdateRead(t *testing.T) {
 		Secret string `encrypt:"true"`
 	}
 	db := newTestDb[Model](t)
-	crypt, err := NewCryptoManager(Config{
+	crypt, err := dbcrypt.NewCryptoService(dbcrypt.Config{
 		Password:     "encryption-password",
 		PasswordSalt: "encryption-password-salt-0123456",
 	})
 	require.NoError(t, err)
-	require.NoError(t, Register(db, crypt))
+	require.NoError(t, dbcrypt.Register(db, crypt))
 
 	givenData := Model{Secret: "aaa"}
 	require.NoError(t, db.Create(&givenData).Error)
@@ -96,15 +97,16 @@ func TestGormInvalidValueForEncrypt(t *testing.T) {
 		Secret string `encrypt:"TRUE"`
 	}
 	db := newTestDb[Model](t)
-	cryptFirst, err := NewCryptoManager(Config{
+	cryptFirst, err := dbcrypt.NewCryptoService(dbcrypt.Config{
 		Password:     "encryption-password",
 		PasswordSalt: "encryption-password-salt-0123456",
 	})
 	require.NoError(t, err)
-	require.NoError(t, Register(db, cryptFirst))
+	require.NoError(t, dbcrypt.Register(db, cryptFirst))
 
 	givenData := Model{Secret: "aaa"}
-	require.ErrorContains(t, db.Create(&givenData).Error, `field "Secret": invalid value for 'encrypt' field tag "TRUE"`)
+	require.ErrorContains(t, db.Create(&givenData).Error,
+		`field "Secret": invalid value for 'encrypt' field tag "TRUE"`)
 }
 
 func TestGormInvalidTypeForField(t *testing.T) {
@@ -113,17 +115,18 @@ func TestGormInvalidTypeForField(t *testing.T) {
 		Secret int  `encrypt:"true"`
 	}
 	db := newTestDb[Model](t)
-	cryptFirst, err := NewCryptoManager(Config{
+	cryptFirst, err := dbcrypt.NewCryptoService(dbcrypt.Config{
 		Password:     "encryption-password",
 		PasswordSalt: "encryption-password-salt-0123456",
 	})
 	require.NoError(t, err)
-	require.NoError(t, Register(db, cryptFirst))
+	require.NoError(t, dbcrypt.Register(db, cryptFirst))
 
 	givenData := Model{
 		Secret: 8,
 	}
-	require.ErrorContains(t, db.Create(&givenData).Error, `invalid type of field marked for encryption`)
+	require.ErrorContains(t, db.Create(&givenData).Error,
+		`invalid type of field marked for encryption`)
 }
 
 func TestGormMixDBCryptInstances(t *testing.T) {
@@ -132,21 +135,22 @@ func TestGormMixDBCryptInstances(t *testing.T) {
 		Secret string `encrypt:"true"`
 	}
 	db := newTestDb[Model](t)
-	cryptFirst, err := NewCryptoManager(Config{
+	cryptFirst, err := dbcrypt.NewCryptoService(dbcrypt.Config{
 		Password:     "encryption-password",
 		PasswordSalt: "encryption-password-salt-0123456",
 	})
 	require.NoError(t, err)
-	cryptSecond, err := NewCryptoManager(Config{
+	cryptSecond, err := dbcrypt.NewCryptoService(dbcrypt.Config{
 		Password:     "other-encryption-password",
-		PasswordSalt: "encryption-password-salt-0123456"},
+		PasswordSalt: "encryption-password-salt-0123456",
+	},
 	)
 	require.NoError(t, err)
-	require.NoError(t, Register(db, cryptFirst))
+	require.NoError(t, dbcrypt.Register(db, cryptFirst))
 
 	givenData := Model{Secret: "aaa"}
 	require.NoError(t, db.Create(&givenData).Error)
 
-	require.NoError(t, Register(db, cryptSecond))
+	require.NoError(t, dbcrypt.Register(db, cryptSecond))
 	require.Error(t, db.First(&Model{}).Error)
 }

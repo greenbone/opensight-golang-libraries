@@ -10,49 +10,44 @@ import (
 	"fmt"
 )
 
-type Crypter interface {
-	Encrypt(plaintext []byte) ([]byte, error)
-	Decrypt(ciphertext []byte) ([]byte, error)
-}
-
-type CryptoManager struct {
-	cipherManager    *CipherManager
-	encryptionCipher *Cipher
+type CryptoService struct {
+	cipherRegistry   *CipherRegistry
+	encryptionCipher *CipherSpec
 	prefixSeparator  string
 }
 
-// NewCryptoManager creates a new instance of CryptoManager based on the provided Config.
-func NewCryptoManager(conf Config) (*CryptoManager, error) {
+// NewCryptoService creates a new instance of CryptoService based on the provided Config.
+func NewCryptoService(conf Config) (*CryptoService, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err
 	}
 
-	manager, err := NewCipherManager(conf)
+	registry, err := NewCipherRegistry(conf)
 	if err != nil {
-		return nil, fmt.Errorf("error creating crypto manager: %w", err)
+		return nil, fmt.Errorf("error creating crypto registry: %w", err)
 	}
 
 	version := conf.Version
 	if version == "" {
-		version = manager.GetDefaultVersion()
+		version = registry.DefaultVersion
 	}
 
-	cipher, err := manager.GetByVersion(version)
+	cipher, err := registry.GetByVersion(version)
 	if err != nil {
 		return nil, fmt.Errorf("could not get cipher by version: %w", err)
 	}
 
-	c := &CryptoManager{
+	c := &CryptoService{
 		prefixSeparator:  ":", // this can never change, otherwise existing data will break
 		encryptionCipher: cipher,
-		cipherManager:    manager,
+		cipherRegistry:   registry,
 	}
 
 	return c, nil
 }
 
 // Encrypt encrypts the provided bytes and adds a prefix for the used implementation
-func (c *CryptoManager) Encrypt(plaintext []byte) ([]byte, error) {
+func (c *CryptoService) Encrypt(plaintext []byte) ([]byte, error) {
 	ciphertext, err := c.encryptionCipher.Encrypt(plaintext)
 	if err != nil {
 		return nil, err
@@ -66,13 +61,13 @@ func (c *CryptoManager) Encrypt(plaintext []byte) ([]byte, error) {
 }
 
 // Decrypt decrypts the provided bytes that are prefix with the implementation
-func (c *CryptoManager) Decrypt(ciphertextWithPrefix []byte) ([]byte, error) {
+func (c *CryptoService) Decrypt(ciphertextWithPrefix []byte) ([]byte, error) {
 	prefix, ciphertext, hasSeparator := bytes.Cut(ciphertextWithPrefix, []byte(c.prefixSeparator))
 	if !hasSeparator {
 		return nil, errors.New("invalid encrypted value format")
 	}
 
-	cipher, err := c.cipherManager.GetByPrefix(string(prefix))
+	cipher, err := c.cipherRegistry.GetByPrefix(string(prefix))
 	if err != nil {
 		return nil, fmt.Errorf("unknown encrypted value format: %w", err)
 	}

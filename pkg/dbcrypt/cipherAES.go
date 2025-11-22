@@ -67,23 +67,22 @@ func (c cipherAES) Decrypt(ciphertextWithIv []byte) ([]byte, error) {
 }
 
 type CipherAesHex struct {
-	raw *cipherAES
+	encrypter *cipherAES
 }
 
 func NewCipherAesHex(password, salt string) *CipherAesHex {
 	return &CipherAesHex{
-		raw: newCipherAES(password, salt),
+		encrypter: newCipherAES(password, salt),
 	}
 }
 
 func (c CipherAesHex) Encrypt(plaintext []byte) ([]byte, error) {
-	ciphertextWithIv, err := c.raw.Encrypt(plaintext)
+	ciphertextWithIv, err := c.encrypter.Encrypt(plaintext)
 	if err != nil {
 		return nil, err
 	}
 
-	encoded := hex.AppendEncode(nil, ciphertextWithIv)
-	return encoded, nil
+	return hex.AppendEncode(nil, ciphertextWithIv), nil
 }
 
 func (c CipherAesHex) Decrypt(encoded []byte) ([]byte, error) {
@@ -92,10 +91,5 @@ func (c CipherAesHex) Decrypt(encoded []byte) ([]byte, error) {
 		return nil, fmt.Errorf("error decoding ciphertext: %w", err)
 	}
 
-	plaintext, err := c.raw.Decrypt(ciphertextWithIv)
-	if err != nil {
-		return nil, fmt.Errorf("error decrypting ciphertext: %w", err)
-	}
-
-	return plaintext, nil
+	return c.encrypter.Decrypt(ciphertextWithIv)
 }

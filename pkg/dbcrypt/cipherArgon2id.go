@@ -55,18 +55,18 @@ func (c cipherArgon2id) Decrypt(ciphertext []byte) ([]byte, error) {
 	return plaintext, nil
 }
 
-type CipherArgon2idbase64 struct {
-	raw *cipherArgon2id
+type CipherArgon2idBase64 struct {
+	encrypter *cipherArgon2id
 }
 
-func NewCipherArgon2idBase64(password, salt string) *CipherArgon2idbase64 {
-	return &CipherArgon2idbase64{
-		raw: newCipherArgon2id(password, salt),
+func NewCipherArgon2idBase64(password, salt string) *CipherArgon2idBase64 {
+	return &CipherArgon2idBase64{
+		encrypter: newCipherArgon2id(password, salt),
 	}
 }
 
-func (c CipherArgon2idbase64) Encrypt(plaintext []byte) ([]byte, error) {
-	rawCiphertext, err := c.raw.Encrypt(plaintext)
+func (c CipherArgon2idBase64) Encrypt(plaintext []byte) ([]byte, error) {
+	rawCiphertext, err := c.encrypter.Encrypt(plaintext)
 	if err != nil {
 		return nil, err
 	}
@@ -74,11 +74,11 @@ func (c CipherArgon2idbase64) Encrypt(plaintext []byte) ([]byte, error) {
 	return base64.StdEncoding.AppendEncode(nil, rawCiphertext), nil
 }
 
-func (c CipherArgon2idbase64) Decrypt(encoded []byte) ([]byte, error) {
+func (c CipherArgon2idBase64) Decrypt(encoded []byte) ([]byte, error) {
 	rawCiphertext, err := base64.StdEncoding.AppendDecode(nil, encoded)
 	if err != nil {
 		return nil, fmt.Errorf("error decoding ciphertext: %w", err)
 	}
 
-	return c.raw.Decrypt(rawCiphertext)
+	return c.encrypter.Decrypt(rawCiphertext)
 }
