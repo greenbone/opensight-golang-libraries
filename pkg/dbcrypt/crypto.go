@@ -34,6 +34,9 @@ func encryptModel(c *DBCipher, plaintext any) error {
 	if value.Kind() == reflect.Pointer && value.Type().Elem().Kind() == reflect.Struct {
 		return encryptRecursive(c, value)
 	}
+	if value.Kind() == reflect.Slice {
+		return encryptRecursive(c, value)
+	}
 	if value.Kind() == reflect.Map {
 		return encryptRecursive(c, value)
 	}
@@ -59,6 +62,13 @@ func encryptRecursive(c *DBCipher, plaintext reflect.Value) error {
 			}
 			if err := encryptRecursive(c, plaintext.Field(i)); err != nil {
 				return fmt.Errorf("field %q: %w", fTyp.Name, err)
+			}
+		}
+	}
+	if plaintext.Kind() == reflect.Slice {
+		for i, v := range plaintext.Seq2() {
+			if err := encryptRecursive(c, v); err != nil {
+				return fmt.Errorf("list item #%d: %w", i.Int(), err)
 			}
 		}
 	}
@@ -93,6 +103,9 @@ func decryptModel(c *DBCipher, ciphertext any) error {
 	if value.Kind() == reflect.Pointer && value.Type().Elem().Kind() == reflect.Struct {
 		return decryptRecursive(c, value)
 	}
+	if value.Kind() == reflect.Slice {
+		return decryptRecursive(c, value)
+	}
 	if value.Kind() == reflect.Map {
 		return decryptRecursive(c, value)
 	}
@@ -118,6 +131,13 @@ func decryptRecursive(c *DBCipher, ciphertext reflect.Value) error {
 			}
 			if err := decryptRecursive(c, ciphertext.Field(i)); err != nil {
 				return fmt.Errorf("field %q: %w", fTyp.Name, err)
+			}
+		}
+	}
+	if ciphertext.Kind() == reflect.Slice {
+		for i, v := range ciphertext.Seq2() {
+			if err := decryptRecursive(c, v); err != nil {
+				return fmt.Errorf("list item #%d: %w", i.Int(), err)
 			}
 		}
 	}
