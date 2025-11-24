@@ -11,7 +11,7 @@ jobs:
     name: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/go-setup
       - run: make test-codecov
       - name: Upload unit test coverage to Codecov
@@ -26,7 +26,7 @@ jobs:
     name: Execute Opensearch tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/go-setup
       - name: Execute OpenSearch tests
         run: make test-opensearch
@@ -42,7 +42,7 @@ jobs:
     name: Execute postgres tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/go-setup
       - name: Execute Postgres tests
         run: make test-postgres
