@@ -50,7 +50,7 @@ func encryptModel(c *DBCipher, plaintext any) error {
 	case reflect.Struct, reflect.Slice, reflect.Map:
 		return encryptRecursive(c, value)
 	default:
-		return errors.New("invalid value provided for encryption")
+		return fmt.Errorf("invalid %s value provided for encryption", value.Kind().String())
 	}
 }
 
@@ -113,7 +113,7 @@ func decryptModel(c *DBCipher, ciphertext any) error {
 	case reflect.Struct, reflect.Slice, reflect.Map:
 		return decryptRecursive(c, value)
 	default:
-		return errors.New("invalid value provided for decryption")
+		return fmt.Errorf("invalid %s value provided for decryption", value.Kind().String())
 	}
 }
 
