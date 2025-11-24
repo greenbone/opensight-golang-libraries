@@ -29,28 +29,39 @@ func parseEncryptStructFieldTag(sf reflect.StructField) (bool, error) {
 	return true, nil
 }
 
+func modelValue(model any) reflect.Value {
+	value := reflect.ValueOf(model)
+	for {
+		switch value.Kind() {
+		case reflect.Pointer, reflect.Interface:
+			if value.IsNil() {
+				return value
+			}
+			value = value.Elem()
+		default:
+			return value
+		}
+	}
+}
+
 func encryptModel(c *DBCipher, plaintext any) error {
-	value := reflect.ValueOf(plaintext)
-	if value.Kind() == reflect.Pointer && value.Type().Elem().Kind() == reflect.Struct {
+	value := modelValue(plaintext)
+	switch value.Kind() {
+	case reflect.Struct, reflect.Slice, reflect.Map:
 		return encryptRecursive(c, value)
+	default:
+		return errors.New("invalid value provided for encryption")
 	}
-	if value.Kind() == reflect.Slice {
-		return encryptRecursive(c, value)
-	}
-	if value.Kind() == reflect.Map {
-		return encryptRecursive(c, value)
-	}
-	return errors.New("invalid value provided for encryption")
 }
 
 func encryptRecursive(c *DBCipher, plaintext reflect.Value) error {
-	if plaintext.Kind() == reflect.Pointer || plaintext.Kind() == reflect.Interface {
+	switch plaintext.Kind() {
+	case reflect.Pointer, reflect.Interface:
 		if plaintext.IsNil() {
 			return nil
 		}
 		return encryptRecursive(c, plaintext.Elem())
-	}
-	if plaintext.Kind() == reflect.Struct {
+	case reflect.Struct:
 		typ := plaintext.Type()
 		for i := 0; i < typ.NumField(); i++ {
 			fTyp := typ.Field(i)
@@ -64,15 +75,13 @@ func encryptRecursive(c *DBCipher, plaintext reflect.Value) error {
 				return fmt.Errorf("field %q: %w", fTyp.Name, err)
 			}
 		}
-	}
-	if plaintext.Kind() == reflect.Slice {
+	case reflect.Slice:
 		for i, v := range plaintext.Seq2() {
 			if err := encryptRecursive(c, v); err != nil {
 				return fmt.Errorf("list item #%d: %w", i.Int(), err)
 			}
 		}
-	}
-	if plaintext.Kind() == reflect.Map {
+	case reflect.Map:
 		for k, v := range plaintext.Seq2() {
 			if err := encryptRecursive(c, v); err != nil {
 				return fmt.Errorf("map key %q: %w", k.String(), err)
@@ -99,27 +108,23 @@ func encryptFieldBasedOnTag(c *DBCipher, sf reflect.StructField, val reflect.Val
 }
 
 func decryptModel(c *DBCipher, ciphertext any) error {
-	value := reflect.ValueOf(ciphertext)
-	if value.Kind() == reflect.Pointer && value.Type().Elem().Kind() == reflect.Struct {
+	value := modelValue(ciphertext)
+	switch value.Kind() {
+	case reflect.Struct, reflect.Slice, reflect.Map:
 		return decryptRecursive(c, value)
+	default:
+		return errors.New("invalid value provided for decryption")
 	}
-	if value.Kind() == reflect.Slice {
-		return decryptRecursive(c, value)
-	}
-	if value.Kind() == reflect.Map {
-		return decryptRecursive(c, value)
-	}
-	return errors.New("invalid value provided for decryption")
 }
 
 func decryptRecursive(c *DBCipher, ciphertext reflect.Value) error {
-	if ciphertext.Kind() == reflect.Pointer || ciphertext.Kind() == reflect.Interface {
+	switch ciphertext.Kind() {
+	case reflect.Pointer, reflect.Interface:
 		if ciphertext.IsNil() {
 			return nil
 		}
 		return decryptRecursive(c, ciphertext.Elem())
-	}
-	if ciphertext.Kind() == reflect.Struct {
+	case reflect.Struct:
 		typ := ciphertext.Type()
 		for i := 0; i < typ.NumField(); i++ {
 			fTyp := typ.Field(i)
@@ -133,15 +138,13 @@ func decryptRecursive(c *DBCipher, ciphertext reflect.Value) error {
 				return fmt.Errorf("field %q: %w", fTyp.Name, err)
 			}
 		}
-	}
-	if ciphertext.Kind() == reflect.Slice {
+	case reflect.Slice:
 		for i, v := range ciphertext.Seq2() {
 			if err := decryptRecursive(c, v); err != nil {
 				return fmt.Errorf("list item #%d: %w", i.Int(), err)
 			}
 		}
-	}
-	if ciphertext.Kind() == reflect.Map {
+	case reflect.Map:
 		for k, v := range ciphertext.Seq2() {
 			if err := decryptRecursive(c, v); err != nil {
 				return fmt.Errorf("map key %q: %w", k.String(), err)
@@ -170,10 +173,10 @@ func decryptFieldBasedOnTag(c *DBCipher, sf reflect.StructField, val reflect.Val
 // Register registers encryption and decryption callbacks for the provided data base, to perform automatically cryptographic operations on all models that contain a field tagged with 'encrypt:"true"'.
 func Register(db *gorm.DB, c *DBCipher) error {
 	encryptCb := func(db *gorm.DB) {
-		db.AddError(encryptModel(c, db.Statement.Dest)) //nolint:errcheck // error value returned by AddError can be safely ignored, as it is the same error as db.Error.
+		db.AddError(encryptModel(c, &db.Statement.Dest)) //nolint:errcheck // error value returned by AddError can be safely ignored, as it is the same error as db.Error.
 	}
 	decryptCb := func(db *gorm.DB) {
-		db.AddError(decryptModel(c, db.Statement.Dest)) //nolint:errcheck // error value returned by AddError can be safely ignored, as it is the same error as db.Error.
+		db.AddError(decryptModel(c, &db.Statement.Dest)) //nolint:errcheck // error value returned by AddError can be safely ignored, as it is the same error as db.Error.
 	}
 
 	if err := db.Callback().

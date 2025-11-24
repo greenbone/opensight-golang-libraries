@@ -29,7 +29,10 @@ func TestGormCreateRead(t *testing.T) {
 		Secret string `encrypt:"true"`
 	}
 	db := newTestDb[Model](t)
-	crypt, err := dbcrypt.NewDBCipher(dbcrypt.Config{Password: "encryption-password", PasswordSalt: "encryption-password-salt-0123456"})
+	crypt, err := dbcrypt.NewDBCipher(dbcrypt.Config{
+		Password:     "encryption-password",
+		PasswordSalt: "encryption-password-salt-0123456",
+	})
 	require.NoError(t, err)
 	require.NoError(t, dbcrypt.Register(db, crypt))
 
@@ -47,7 +50,10 @@ func TestGormCreateReadRaw(t *testing.T) {
 		Secret string `encrypt:"true"`
 	}
 	db := newTestDb[Model](t)
-	crypt, err := dbcrypt.NewDBCipher(dbcrypt.Config{Password: "encryption-password", PasswordSalt: "encryption-password-salt-0123456"})
+	crypt, err := dbcrypt.NewDBCipher(dbcrypt.Config{
+		Password:     "encryption-password",
+		PasswordSalt: "encryption-password-salt-0123456",
+	})
 	require.NoError(t, err)
 	require.NoError(t, dbcrypt.Register(db, crypt))
 
@@ -66,7 +72,10 @@ func TestGormCreateUpdateRead(t *testing.T) {
 		Secret string `encrypt:"true"`
 	}
 	db := newTestDb[Model](t)
-	crypt, err := dbcrypt.NewDBCipher(dbcrypt.Config{Password: "encryption-password", PasswordSalt: "encryption-password-salt-0123456"})
+	crypt, err := dbcrypt.NewDBCipher(dbcrypt.Config{
+		Password:     "encryption-password",
+		PasswordSalt: "encryption-password-salt-0123456",
+	})
 	require.NoError(t, err)
 	require.NoError(t, dbcrypt.Register(db, crypt))
 
@@ -87,9 +96,15 @@ func TestGormMixDBCryptInstances(t *testing.T) {
 		Secret string `encrypt:"true"`
 	}
 	db := newTestDb[Model](t)
-	cryptFirst, err := dbcrypt.NewDBCipher(dbcrypt.Config{Password: "encryption-password", PasswordSalt: "encryption-password-salt-0123456"})
+	cryptFirst, err := dbcrypt.NewDBCipher(dbcrypt.Config{
+		Password:     "encryption-password",
+		PasswordSalt: "encryption-password-salt-0123456",
+	})
 	require.NoError(t, err)
-	cryptSecond, err := dbcrypt.NewDBCipher(dbcrypt.Config{Password: "other-encryption-password", PasswordSalt: "encryption-password-salt-0123456"})
+	cryptSecond, err := dbcrypt.NewDBCipher(dbcrypt.Config{
+		Password:     "other-encryption-password",
+		PasswordSalt: "encryption-password-salt-0123456",
+	})
 	require.NoError(t, err)
 	require.NoError(t, dbcrypt.Register(db, cryptFirst))
 
