@@ -103,6 +103,9 @@ func (c *DBCipher) Encrypt(plaintext []byte) ([]byte, error) {
 
 // Decrypt decrypts the provided bytes with DBCipher.
 func (c *DBCipher) Decrypt(ciphertextWithPrefix []byte) ([]byte, error) {
+	if len(ciphertextWithPrefix) == 0 {
+		return nil, nil
+	}
 	prefix, ciphertext, hasSeparator := bytes.Cut(ciphertextWithPrefix, []byte(prefixSeparator))
 	if !hasSeparator {
 		return nil, errors.New("invalid encrypted value format")
