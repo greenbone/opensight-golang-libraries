@@ -173,10 +173,10 @@ func decryptFieldBasedOnTag(c *DBCipher, sf reflect.StructField, val reflect.Val
 // Register registers encryption and decryption callbacks for the provided data base, to perform automatically cryptographic operations on all models that contain a field tagged with 'encrypt:"true"'.
 func Register(db *gorm.DB, c *DBCipher) error {
 	encryptCb := func(db *gorm.DB) {
-		db.AddError(encryptModel(c, &db.Statement.Dest)) //nolint:errcheck // error value returned by AddError can be safely ignored, as it is the same error as db.Error.
+		_ = db.AddError(encryptModel(c, &db.Statement.Dest))
 	}
 	decryptCb := func(db *gorm.DB) {
-		db.AddError(decryptModel(c, &db.Statement.Dest)) //nolint:errcheck // error value returned by AddError can be safely ignored, as it is the same error as db.Error.
+		_ = db.AddError(decryptModel(c, &db.Statement.Dest))
 	}
 
 	if err := db.Callback().

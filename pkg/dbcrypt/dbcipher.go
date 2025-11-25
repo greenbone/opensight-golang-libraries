@@ -16,12 +16,15 @@ const prefixSeparator = ":"
 type Config struct {
 	// Default version of the cryptographic algorithm. Useful for testing older historical implementations. Leave empty to use the most recent version.
 	//
-	// - use "" for latest version of the cryptographic algorithm
-	// - use "v2" for v2 version of the cryptographic algorithm
-	// - use "v1" for v1 version of the cryptographic algorithm
+	// Supported values:
+	// - "": use latest version of the cryptographic algorithm (recommended).
+	// - "v2": use v2 version of the cryptographic algorithm.
+	// - "v1": use v1 version of the cryptographic algorithm.
+	//
+	// See cipher_spec.go for all versions
 	Version string
 
-	// Contains the password used deriving encryption key
+	// Contains the password used to derive encryption key
 	Password string
 
 	// Contains the salt for increasing password entropy
@@ -30,9 +33,6 @@ type Config struct {
 
 // Validate validates the provided config.
 func (conf Config) Validate() error {
-	if conf.Version != "" && conf.Version != "v1" && conf.Version != "v2" {
-		return fmt.Errorf("invalid db cipher version %q", conf.Version)
-	}
 	if conf.Password == "" {
 		return errors.New("db password is empty")
 	}
@@ -47,8 +47,8 @@ func (conf Config) Validate() error {
 
 // DBCipher is cipher designed to perform validated encryption and decryption on database values.
 type DBCipher struct {
-	encryptionCipher  dbCipher
-	decryptionCiphers map[string]dbCipher
+	encryptionCipherSpec *cipherSpec
+	ciphersSpec          *ciphersSpec
 }
 
 // NewDBCipher creates a new instance of DBCipher based on the provided Config.
@@ -56,46 +56,36 @@ func NewDBCipher(conf Config) (*DBCipher, error) {
 	if err := conf.Validate(); err != nil {
 		return nil, err
 	}
-	c := &DBCipher{}
-	if err := c.registerCiphers(conf); err != nil {
-		return nil, err
+	spec, err := newCiphersSpec(conf)
+	if err != nil {
+		return nil, fmt.Errorf("error creating crypto ciphers spec: %w", err)
+	}
+
+	encryptionVersion := conf.Version
+	if encryptionVersion == "" {
+		encryptionVersion = spec.DefaultVersion
+	}
+
+	encryptionCipherSpec, err := spec.GetByVersion(encryptionVersion)
+	if err != nil {
+		return nil, fmt.Errorf("could not get encryption cipher by version: %w", err)
+	}
+
+	c := &DBCipher{
+		encryptionCipherSpec: encryptionCipherSpec,
+		ciphersSpec:          spec,
 	}
 	return c, nil
 }
 
-func (c *DBCipher) registerCiphers(conf Config) error {
-	v1, err := newDbCipherV1(conf)
-	if err != nil {
-		return err
-	}
-	v2, err := newDbCipherV2(conf)
-	if err != nil {
-		return err
-	}
-
-	c.decryptionCiphers = map[string]dbCipher{
-		v1.Prefix(): v1,
-		v2.Prefix(): v2,
-	}
-	switch conf.Version {
-	case "v1":
-		c.encryptionCipher = v1
-	case "v2", "":
-		c.encryptionCipher = v2
-	default:
-		panic("invalid db cipher version") // valid config should never reach this code
-	}
-	return nil
-}
-
 // Encrypt encrypts the provided bytes with DBCipher.
 func (c *DBCipher) Encrypt(plaintext []byte) ([]byte, error) {
-	ciphertext, err := c.encryptionCipher.Encrypt(plaintext)
+	ciphertext, err := c.encryptionCipherSpec.Cipher.Encrypt(plaintext)
 	if err != nil {
 		return nil, err
 	}
 	ciphertextWithPrefix := bytes.NewBuffer(nil)
-	ciphertextWithPrefix.WriteString(c.encryptionCipher.Prefix())
+	ciphertextWithPrefix.WriteString(c.encryptionCipherSpec.Prefix)
 	ciphertextWithPrefix.WriteString(prefixSeparator)
 	ciphertextWithPrefix.Write(ciphertext)
 	return ciphertextWithPrefix.Bytes(), nil
@@ -110,11 +100,11 @@ func (c *DBCipher) Decrypt(ciphertextWithPrefix []byte) ([]byte, error) {
 	if !hasSeparator {
 		return nil, errors.New("invalid encrypted value format")
 	}
-	cipher := c.decryptionCiphers[string(prefix)]
-	if cipher == nil {
-		return nil, errors.New("unknown encrypted value format")
+	decryptionCipherSpec, err := c.ciphersSpec.GetByPrefix(string(prefix))
+	if err != nil {
+		return nil, fmt.Errorf("unknown encrypted value format: %w", err)
 	}
-	plaintext, err := cipher.Decrypt(ciphertext)
+	plaintext, err := decryptionCipherSpec.Cipher.Decrypt(ciphertext)
 	if err != nil {
 		return nil, err
 	}

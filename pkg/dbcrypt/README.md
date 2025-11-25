@@ -37,7 +37,7 @@ func main() {
 	}
 	dbcrypt.Register(db, cipher)
 
-	personWrite := &Person{PasswordField: dbcrypt.NewEncryptedString("secret")}
+	personWrite := &Person{PasswordField: "secret"}
 	if err := db.Create(personWrite).Error; err != nil {
 		log.Fatalf("Error %v", err)
 	}
