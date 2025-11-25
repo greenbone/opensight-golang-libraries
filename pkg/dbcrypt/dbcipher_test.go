@@ -113,7 +113,7 @@ func TestCipherCreationFailure(t *testing.T) {
 				Password:     "encryption-password",
 				PasswordSalt: "encryption-password-salt-0123456",
 			},
-			errorShouldContain: "invalid db cipher version",
+			errorShouldContain: "cipher version \"unknown\" not found",
 		},
 		{
 			name: "empty-password",
