@@ -35,7 +35,6 @@ func newDbCipherGcmAesWithoutKdf(password, passwordSalt string) dbCipher {
 }
 
 func newDbCipherGcmAesWithArgon2idKdf(password, passwordSalt string) dbCipher {
-	// "v2" uses proper KDF (argon2id) to get the key.
 	key := argon2.IDKey([]byte(password), []byte(passwordSalt), 1, 64*1024, 4, 32)
 	return newDbCipherGcmAes(key)
 }
