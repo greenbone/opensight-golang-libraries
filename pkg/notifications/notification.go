@@ -12,9 +12,9 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
+	"github.com/greenbone/opensight-golang-libraries/pkg/auth"
 	"github.com/greenbone/opensight-golang-libraries/pkg/retryableRequest"
 )
 
@@ -26,11 +26,11 @@ const (
 // Client can be used to send notifications
 type Client struct {
 	httpClient                 *http.Client
+	authClient                 *auth.KeycloakClient
 	notificationServiceAddress string
 	maxRetries                 int
 	retryWaitMin               time.Duration
 	retryWaitMax               time.Duration
-	authentication             KeycloakAuthentication
 }
 
 // Config configures the notification service client
@@ -41,26 +41,18 @@ type Config struct {
 	RetryWaitMax time.Duration
 }
 
-// KeycloakAuthentication holds the credentials and configuration details
-// required for Keycloak authentication in the notification service.
-type KeycloakAuthentication struct {
-	ClientID      string
-	Username      string
-	Password      string
-	AuthURL       string
-	KeycloakRealm string
-}
-
 // NewClient returns a new [Client] with the notification service address (host:port) set.
 // As httpClient you can use e.g. [http.DefaultClient].
-func NewClient(httpClient *http.Client, config Config, authentication KeycloakAuthentication) *Client {
+func NewClient(httpClient *http.Client, config Config, authCfg auth.KeycloakConfig) *Client {
+	authClient := auth.NewKeycloakClient(httpClient, authCfg)
+
 	return &Client{
 		httpClient:                 httpClient,
+		authClient:                 authClient,
 		notificationServiceAddress: config.Address,
 		maxRetries:                 config.MaxRetries,
 		retryWaitMin:               config.RetryWaitMin,
 		retryWaitMax:               config.RetryWaitMax,
-		authentication:             authentication,
 	}
 }
 
@@ -68,7 +60,7 @@ func NewClient(httpClient *http.Client, config Config, authentication KeycloakAu
 // It is retried up to the configured number of retries with an exponential backoff,
 // So it can take some time until the functions returns.
 func (c *Client) CreateNotification(ctx context.Context, notification Notification) error {
-	token, err := c.GetAuthenticationToken(ctx)
+	token, err := c.authClient.GetToken(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get authentication token: %w", err)
 	}
@@ -101,41 +93,4 @@ func (c *Client) CreateNotification(ctx context.Context, notification Notificati
 	}
 
 	return err
-}
-
-// GetAuthenticationToken retrieves an authentication token using client credentials.
-// It constructs a form-encoded request, sends it with retry logic, and parses the response.
-func (c *Client) GetAuthenticationToken(ctx context.Context) (string, error) {
-	data := url.Values{}
-	data.Set("client_id", c.authentication.ClientID)
-	data.Set("password", c.authentication.Password)
-	data.Set("username", c.authentication.Username)
-	data.Set("grant_type", "password")
-
-	authenticationURL := fmt.Sprintf("%s/realms/%s/protocol/openid-connect/token",
-		c.authentication.AuthURL, c.authentication.KeycloakRealm)
-
-	req, err := http.NewRequest(http.MethodPost, authenticationURL, strings.NewReader(data.Encode()))
-	if err != nil {
-		return "", fmt.Errorf("failed to create authentication request: %w", err)
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	resp, err := retryableRequest.ExecuteRequestWithRetry(ctx, c.httpClient, req,
-		c.maxRetries, c.retryWaitMin, c.retryWaitMax)
-	if err != nil {
-		return "", fmt.Errorf("failed to execute authentication request with retry: %w", err)
-	}
-	defer resp.Body.Close()
-
-	// parse JSON response to extract the access token
-	// only access token is needed from the response
-	var authResponse struct {
-		AccessToken string `json:"access_token"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&authResponse); err != nil {
-		return "", fmt.Errorf("failed to parse authentication response: %w", err)
-	}
-
-	return authResponse.AccessToken, nil
 }
