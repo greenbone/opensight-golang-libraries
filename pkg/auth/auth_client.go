@@ -63,9 +63,8 @@ func (c *KeycloakClient) GetToken(ctx context.Context) (string, error) {
 		defer c.tokenMutex.RUnlock()
 		if time.Now().Before(c.tokenInfo.ExpiresAt.Add(-tokenRefreshMargin)) {
 			return c.tokenInfo.AccessToken, true
-		} else {
-			return "", false
 		}
+		return "", false
 	}
 
 	token, ok := getCachedToken()
@@ -82,6 +81,22 @@ func (c *KeycloakClient) GetToken(ctx context.Context) (string, error) {
 		return c.tokenInfo.AccessToken, nil
 	}
 
+	authResponse, err := c.requestToken(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed to request token: %w", err)
+	}
+
+	c.tokenInfo = tokenInfo{
+		AccessToken: authResponse.AccessToken,
+		ExpiresAt:   time.Now().Add(time.Duration(authResponse.ExpiresIn) * time.Second),
+	}
+
+	return authResponse.AccessToken, nil
+}
+
+func (c *KeycloakClient) requestToken(ctx context.Context) (authResponse, error) {
+	var empty authResponse
+
 	data := url.Values{}
 	data.Set("client_id", c.cfg.ClientID)
 	data.Set("password", c.cfg.Password)
@@ -91,35 +106,30 @@ func (c *KeycloakClient) GetToken(ctx context.Context) (string, error) {
 	authenticationURL := fmt.Sprintf("%s/realms/%s/protocol/openid-connect/token",
 		c.cfg.AuthURL, c.cfg.KeycloakRealm)
 
-	req, err := http.NewRequest(http.MethodPost, authenticationURL, strings.NewReader(data.Encode()))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, authenticationURL, strings.NewReader(data.Encode()))
 	if err != nil {
-		return "", fmt.Errorf("failed to create authentication request: %w", err)
+		return empty, fmt.Errorf("failed to create authentication request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("failed to execute authentication request with retry: %w", err)
+		return empty, fmt.Errorf("failed to execute authentication request with retry: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		respBody, err := io.ReadAll(resp.Body)
 		if err != nil {
 			respBody = []byte("failed to read response body: " + err.Error())
 		}
-		return "", fmt.Errorf("authentication request failed with status: %s: %s", resp.Status, string(respBody))
+		return empty, fmt.Errorf("authentication request failed with status: %s: %s", resp.Status, string(respBody))
 	}
 
 	var authResponse authResponse
 	if err := json.NewDecoder(resp.Body).Decode(&authResponse); err != nil {
-		return "", fmt.Errorf("failed to parse authentication response: %w", err)
+		return empty, fmt.Errorf("failed to parse authentication response: %w", err)
 	}
 
-	c.tokenInfo = tokenInfo{
-		AccessToken: authResponse.AccessToken,
-		ExpiresAt:   time.Now().Add(time.Duration(authResponse.ExpiresIn) * time.Second),
-	}
-
-	return authResponse.AccessToken, nil
+	return authResponse, nil
 }

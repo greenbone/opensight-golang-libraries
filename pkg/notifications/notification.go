@@ -89,7 +89,7 @@ func (c *Client) CreateNotification(ctx context.Context, notification Notificati
 		c.maxRetries, c.retryWaitMin, c.retryWaitMax)
 	if err == nil {
 		// note: the successful response returns the notification object, but we don't care about its values and omit parsing the body here
-		response.Body.Close()
+		_ = response.Body.Close()
 	}
 
 	return err
