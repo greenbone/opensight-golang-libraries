@@ -130,7 +130,7 @@ func TestClient_CreateNotification(t *testing.T) {
 			err := client.CreateNotification(context.Background(), tt.notification)
 
 			if !tt.serverErrors.authenticationFail {
-				assert.Greater(t, serverCallCount.Load(), 0, "notification server was not called")
+				assert.Greater(t, serverCallCount.Load(), int32(0), "notification server was not called")
 			}
 
 			if tt.wantErr {

@@ -52,7 +52,7 @@ func TestKeycloakClient_GetToken(t *testing.T) {
 				// the other fields are also required in real scenario, but omit here for brevity
 			})
 			gotToken, err := client.GetToken(context.Background())
-			assert.Greater(t, serverCallCount.Load(), 0, "server was not called")
+			assert.Greater(t, serverCallCount.Load(), int32(0), "server was not called")
 
 			if tt.wantErr {
 				require.Error(t, err)
