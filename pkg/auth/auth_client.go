@@ -130,7 +130,7 @@ func (c *KeycloakClient) requestToken(ctx context.Context) (*authResponse, error
 	if resp.StatusCode != http.StatusOK {
 		respBody, err := io.ReadAll(resp.Body)
 		if err != nil {
-			respBody = []byte("failed to read response body: " + err.Error())
+			return nil, fmt.Errorf("authentication request failed with status: %s: %w body: %s", resp.Status, err, string(respBody))
 		}
 		return nil, fmt.Errorf("authentication request failed with status: %s: %s", resp.Status, string(respBody))
 	}
