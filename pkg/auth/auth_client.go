@@ -23,7 +23,7 @@ type Clock interface {
 
 type realClock struct{}
 
-func (_ realClock) Now() time.Time { return time.Now() }
+func (realClock) Now() time.Time { return time.Now() }
 
 const tokenRefreshMargin = 10 * time.Second
 
