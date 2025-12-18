@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/greenbone/opensight-golang-libraries/pkg/auth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -118,7 +119,7 @@ func TestClient_CreateNotification(t *testing.T) {
 				RetryWaitMax: time.Second,
 			}
 
-			authentication := KeycloakAuthentication{
+			authentication := auth.KeycloakConfig{
 				ClientID: "client_id",
 				Username: "username",
 				Password: "password",
@@ -129,7 +130,7 @@ func TestClient_CreateNotification(t *testing.T) {
 			err := client.CreateNotification(context.Background(), tt.notification)
 
 			if !tt.serverErrors.authenticationFail {
-				require.True(t, serverCallCount.Load() > 0, "server was not called")
+				assert.Greater(t, serverCallCount.Load(), int32(0), "notification server was not called")
 			}
 
 			if tt.wantErr {
@@ -147,7 +148,8 @@ func setupMockAuthServer(t *testing.T, failAuth bool) *httptest.Server {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		err := json.NewEncoder(w).Encode(map[string]string{"access_token": "mock-token"})
+		w.Write([]byte(`{"access_token": "mock-token", "expires_in": 3600}`))
+		err := json.NewEncoder(w).Encode(map[string]any{})
 		require.NoError(t, err)
 	}))
 }

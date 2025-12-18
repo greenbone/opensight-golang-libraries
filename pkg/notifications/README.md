@@ -13,17 +13,15 @@ Package Notifications provides a client to communicate with the OpenSight Notifi
 ## Index
 
 - [type Client](<#Client>)
-  - [func NewClient\(httpClient \*http.Client, config Config, authentication KeycloakAuthentication\) \*Client](<#NewClient>)
+  - [func NewClient\(httpClient \*http.Client, config Config, authCfg auth.KeycloakConfig\) \*Client](<#NewClient>)
   - [func \(c \*Client\) CreateNotification\(ctx context.Context, notification Notification\) error](<#Client.CreateNotification>)
-  - [func \(c \*Client\) GetAuthenticationToken\(ctx context.Context\) \(string, error\)](<#Client.GetAuthenticationToken>)
 - [type Config](<#Config>)
-- [type KeycloakAuthentication](<#KeycloakAuthentication>)
 - [type Level](<#Level>)
 - [type Notification](<#Notification>)
 
 
 <a name="Client"></a>
-## type Client
+## type [Client](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L27-L34>)
 
 Client can be used to send notifications
 
@@ -34,16 +32,16 @@ type Client struct {
 ```
 
 <a name="NewClient"></a>
-### func NewClient
+### func [NewClient](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L46>)
 
 ```go
-func NewClient(httpClient *http.Client, config Config, authentication KeycloakAuthentication) *Client
+func NewClient(httpClient *http.Client, config Config, authCfg auth.KeycloakConfig) *Client
 ```
 
 NewClient returns a new [Client](<#Client>) with the notification service address \(host:port\) set. As httpClient you can use e.g. \[http.DefaultClient\].
 
 <a name="Client.CreateNotification"></a>
-### func \(\*Client\) CreateNotification
+### func \(\*Client\) [CreateNotification](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L62>)
 
 ```go
 func (c *Client) CreateNotification(ctx context.Context, notification Notification) error
@@ -51,17 +49,8 @@ func (c *Client) CreateNotification(ctx context.Context, notification Notificati
 
 CreateNotification sends a notification to the notification service. It is retried up to the configured number of retries with an exponential backoff, So it can take some time until the functions returns.
 
-<a name="Client.GetAuthenticationToken"></a>
-### func \(\*Client\) GetAuthenticationToken
-
-```go
-func (c *Client) GetAuthenticationToken(ctx context.Context) (string, error)
-```
-
-GetAuthenticationToken retrieves an authentication token using client credentials. It constructs a form\-encoded request, sends it with retry logic, and parses the response.
-
 <a name="Config"></a>
-## type Config
+## type [Config](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L37-L42>)
 
 Config configures the notification service client
 
@@ -74,23 +63,8 @@ type Config struct {
 }
 ```
 
-<a name="KeycloakAuthentication"></a>
-## type KeycloakAuthentication
-
-KeycloakAuthentication holds the credentials and configuration details required for Keycloak authentication in the notification service.
-
-```go
-type KeycloakAuthentication struct {
-    ClientID      string
-    Username      string
-    Password      string
-    AuthURL       string
-    KeycloakRealm string
-}
-```
-
 <a name="Level"></a>
-## type Level
+## type [Level](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/model.go#L34>)
 
 Level describes the severity of the notification
 
@@ -109,7 +83,7 @@ const (
 ```
 
 <a name="Notification"></a>
-## type Notification
+## type [Notification](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/model.go#L9-L18>)
 
 
 
