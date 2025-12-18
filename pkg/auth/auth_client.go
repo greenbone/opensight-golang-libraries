@@ -17,6 +17,14 @@ import (
 	"time"
 )
 
+type Clock interface {
+	Now() time.Time
+}
+
+type realClock struct{}
+
+func (_ realClock) Now() time.Time { return time.Now() }
+
 const tokenRefreshMargin = 10 * time.Second
 
 // KeycloakConfig holds the credentials and configuration details
@@ -44,6 +52,8 @@ type KeycloakClient struct {
 	cfg        KeycloakConfig
 	tokenInfo  tokenInfo
 	tokenMutex sync.RWMutex
+
+	clock Clock // to mock time in tests
 }
 
 // NewKeycloakClient creates a new KeycloakClient.
@@ -51,6 +61,7 @@ func NewKeycloakClient(httpClient *http.Client, cfg KeycloakConfig) *KeycloakCli
 	return &KeycloakClient{
 		httpClient: httpClient,
 		cfg:        cfg,
+		clock:      realClock{},
 	}
 }
 
@@ -58,16 +69,7 @@ func NewKeycloakClient(httpClient *http.Client, cfg KeycloakConfig) *KeycloakCli
 // The token is obtained by `Resource owner password credentials grant` flow.
 // Ref: https://www.keycloak.org/docs/latest/server_admin/index.html#_oidc-auth-flows-direct
 func (c *KeycloakClient) GetToken(ctx context.Context) (string, error) {
-	getCachedToken := func() (token string, ok bool) {
-		c.tokenMutex.RLock()
-		defer c.tokenMutex.RUnlock()
-		if time.Now().Before(c.tokenInfo.ExpiresAt.Add(-tokenRefreshMargin)) {
-			return c.tokenInfo.AccessToken, true
-		}
-		return "", false
-	}
-
-	token, ok := getCachedToken()
+	token, ok := c.getCachedToken()
 	if ok {
 		return token, nil
 	}
@@ -77,7 +79,7 @@ func (c *KeycloakClient) GetToken(ctx context.Context) (string, error) {
 	defer c.tokenMutex.Unlock()
 
 	// check again in case another goroutine already refreshed the token
-	if time.Now().Before(c.tokenInfo.ExpiresAt.Add(-tokenRefreshMargin)) {
+	if c.clock.Now().Before(c.tokenInfo.ExpiresAt.Add(-tokenRefreshMargin)) {
 		return c.tokenInfo.AccessToken, nil
 	}
 
@@ -88,15 +90,22 @@ func (c *KeycloakClient) GetToken(ctx context.Context) (string, error) {
 
 	c.tokenInfo = tokenInfo{
 		AccessToken: authResponse.AccessToken,
-		ExpiresAt:   time.Now().Add(time.Duration(authResponse.ExpiresIn) * time.Second),
+		ExpiresAt:   c.clock.Now().UTC().Add(time.Duration(authResponse.ExpiresIn) * time.Second),
 	}
 
 	return authResponse.AccessToken, nil
 }
 
-func (c *KeycloakClient) requestToken(ctx context.Context) (authResponse, error) {
-	var empty authResponse
+func (c *KeycloakClient) getCachedToken() (token string, ok bool) {
+	c.tokenMutex.RLock()
+	defer c.tokenMutex.RUnlock()
+	if c.clock.Now().Before(c.tokenInfo.ExpiresAt.Add(-tokenRefreshMargin)) {
+		return c.tokenInfo.AccessToken, true
+	}
+	return "", false
+}
 
+func (c *KeycloakClient) requestToken(ctx context.Context) (*authResponse, error) {
 	data := url.Values{}
 	data.Set("client_id", c.cfg.ClientID)
 	data.Set("password", c.cfg.Password)
@@ -108,13 +117,13 @@ func (c *KeycloakClient) requestToken(ctx context.Context) (authResponse, error)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, authenticationURL, strings.NewReader(data.Encode()))
 	if err != nil {
-		return empty, fmt.Errorf("failed to create authentication request: %w", err)
+		return nil, fmt.Errorf("failed to create authentication request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return empty, fmt.Errorf("failed to execute authentication request with retry: %w", err)
+		return nil, fmt.Errorf("failed to execute authentication request: %w", err)
 	}
 	defer func() { _ = resp.Body.Close() }()
 
@@ -123,13 +132,13 @@ func (c *KeycloakClient) requestToken(ctx context.Context) (authResponse, error)
 		if err != nil {
 			respBody = []byte("failed to read response body: " + err.Error())
 		}
-		return empty, fmt.Errorf("authentication request failed with status: %s: %s", resp.Status, string(respBody))
+		return nil, fmt.Errorf("authentication request failed with status: %s: %s", resp.Status, string(respBody))
 	}
 
-	var authResponse authResponse
-	if err := json.NewDecoder(resp.Body).Decode(&authResponse); err != nil {
-		return empty, fmt.Errorf("failed to parse authentication response: %w", err)
+	var authResp authResponse
+	if err := json.NewDecoder(resp.Body).Decode(&authResp); err != nil {
+		return nil, fmt.Errorf("failed to parse authentication response: %w", err)
 	}
 
-	return authResponse, nil
+	return &authResp, nil
 }

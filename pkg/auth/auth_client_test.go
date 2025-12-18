@@ -6,10 +6,12 @@ package auth
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -62,22 +64,40 @@ func TestKeycloakClient_GetToken(t *testing.T) {
 	}
 }
 
+type fakeClock struct {
+	currentTime time.Time
+}
+
+func (fc *fakeClock) Now() time.Time {
+	return fc.currentTime
+}
+
+func (fc *fakeClock) Advance(d time.Duration) {
+	fc.currentTime = fc.currentTime.Add(d)
+}
+
+func NewFakeClock(startTime time.Time) *fakeClock {
+	return &fakeClock{currentTime: startTime}
+}
+
 func TestKeycloakClient_GetToken_Refresh(t *testing.T) {
+	tokenValidity := 60 * time.Second
+	kcMockResponse := []byte(fmt.Sprintf(`{"access_token": "test-token", "expires_in": %d}`, int(tokenValidity.Seconds())))
+
 	tests := map[string]struct {
 		responseBody     string
 		responseCode     int
+		requestAfter     time.Duration
 		wantServerCalled int
 		wantToken        string
 	}{
 		"token is cached": {
-			responseBody:     `{"access_token": "test-token", "expires_in": 3600}`,
-			responseCode:     http.StatusOK,
+			requestAfter:     tokenValidity - tokenRefreshMargin - time.Nanosecond,
 			wantServerCalled: 1, // should be called only once due to caching
 			wantToken:        "test-token",
 		},
 		"token expiry handling": {
-			responseBody:     `{"access_token": "test-token", "expires_in": 0}`, // expires immediately
-			responseCode:     http.StatusOK,
+			requestAfter:     tokenValidity - tokenRefreshMargin + time.Nanosecond,
 			wantServerCalled: 2, // should be called twice due to expiry
 			wantToken:        "test-token",
 		},
@@ -85,11 +105,13 @@ func TestKeycloakClient_GetToken_Refresh(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
+			fakeClock := NewFakeClock(time.Now())
+
 			var serverCallCount atomic.Int32
 			mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				serverCallCount.Add(1)
-				w.WriteHeader(tc.responseCode)
-				_, err := w.Write([]byte(tc.responseBody))
+				w.WriteHeader(200)
+				_, err := w.Write(kcMockResponse)
 				require.NoError(t, err)
 			}))
 			defer mockServer.Close()
@@ -98,8 +120,12 @@ func TestKeycloakClient_GetToken_Refresh(t *testing.T) {
 				AuthURL: mockServer.URL,
 				// the other fields are also required in real scenario, but omit here for brevity
 			})
+			client.clock = fakeClock
+
 			_, err := client.GetToken(context.Background())
 			require.NoError(t, err)
+
+			fakeClock.Advance(tc.requestAfter)
 
 			gotToken, err := client.GetToken(context.Background()) // second call to test caching/refresh
 			require.NoError(t, err)
