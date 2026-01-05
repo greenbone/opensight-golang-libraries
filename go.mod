@@ -93,7 +93,7 @@ require (
 	github.com/magiconair/properties v1.8.10 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-sqlite3 v1.14.32 // indirect
+	github.com/mattn/go-sqlite3 v1.14.33 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/go-archive v0.2.0 // indirect
 	github.com/moby/patternmatcher v0.6.0 // indirect
@@ -113,7 +113,7 @@ require (
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.58.0 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
-	github.com/shirou/gopsutil/v4 v4.25.11 // indirect
+	github.com/shirou/gopsutil/v4 v4.25.12 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
