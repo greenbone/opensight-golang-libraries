@@ -59,3 +59,8 @@ func toNotificationModel(n Notification) notificationModel {
 		CustomFields:     n.CustomFields,
 	}
 }
+
+type Origin struct {
+	Name  string `json:"name"`
+	Class string `json:"class"`
+}
