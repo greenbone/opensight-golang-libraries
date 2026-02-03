@@ -10,6 +10,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"time"
@@ -21,6 +22,7 @@ import (
 const (
 	basePath               = "/api/notification-service"
 	createNotificationPath = "/notifications"
+	registerOriginsPath    = "/origins"
 )
 
 // Client can be used to send notifications
@@ -93,4 +95,45 @@ func (c *Client) CreateNotification(ctx context.Context, notification Notificati
 	}
 
 	return err
+}
+
+func (c *Client) RegisterOrigins(ctx context.Context, serviceID string, origins []Origin) error {
+	token, err := c.authClient.GetToken(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get authentication token: %w", err)
+	}
+
+	originsSerialized, err := json.Marshal(origins)
+	if err != nil {
+		return fmt.Errorf("failed to serialize origins: %w", err)
+	}
+
+	registerOriginsEndpoint, err := url.JoinPath(c.notificationServiceAddress, basePath, registerOriginsPath, serviceID)
+	if err != nil {
+		return fmt.Errorf("invalid url '%s': %w", c.notificationServiceAddress, err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, registerOriginsEndpoint, bytes.NewReader(originsSerialized))
+	if err != nil {
+		return fmt.Errorf("failed to build request: %w", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+
+	response, err := c.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer func() { _ = response.Body.Close() }()
+
+	if response.StatusCode < 200 || response.StatusCode > 299 {
+		body, err := io.ReadAll(response.Body)
+		if err != nil {
+			return fmt.Errorf("failed to register origins, status: %s: %w body: %s", response.Status, err, string(body))
+		}
+		return fmt.Errorf("failed to register origins, status: %s: %s", response.Status, string(body))
+	}
+
+	return nil
 }
