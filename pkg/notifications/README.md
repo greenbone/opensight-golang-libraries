@@ -64,7 +64,7 @@ type Config struct {
 ```
 
 <a name="Level"></a>
-## type [Level](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/model.go#L34>)
+## type [Level](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/model.go#L36>)
 
 Level describes the severity of the notification
 
@@ -83,20 +83,21 @@ const (
 ```
 
 <a name="Notification"></a>
-## type [Notification](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/model.go#L9-L18>)
+## type [Notification](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/model.go#L9-L19>)
 
 
 
 ```go
 type Notification struct {
     // omit property `Id` here, as it is read only
-    Origin       string
-    OriginUri    string    // can be used to provide a link to the origin
-    Timestamp    time.Time // client will set timestamp if not set
-    Title        string    // can also be seen as the 'type'
-    Detail       string
-    Level        Level
-    CustomFields map[string]any // can contain arbitrary structured information about the notification
+    Origin           string    // name of the origin, e.g. `SBOM - React`
+    OriginClass      string    // unique identifier for the class of origins, e.g. `/vi/SBOM`
+    OriginResourceID string    // optional, together with class it can be used to provide a link to the origin, e.g. `<id of react sbom object>`
+    Timestamp        time.Time // client will set timestamp if not set
+    Title            string    // can also be seen as the 'type'
+    Detail           string
+    Level            Level
+    CustomFields     map[string]any // optional, can contain arbitrary structured information about the notification
 }
 ```
 

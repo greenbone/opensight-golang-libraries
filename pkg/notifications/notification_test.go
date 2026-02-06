@@ -30,24 +30,28 @@ const checkForCurrentTimestamp = "marker to check for current timestamp"
 
 func TestClient_CreateNotification(t *testing.T) {
 	notification := Notification{
-		Origin:       "Example Task XY",
-		Timestamp:    time.Date(1, 2, 3, 4, 5, 6, 7, time.UTC),
-		Title:        "Example Task XY failed",
-		Detail:       "Example Task XY failed because ...",
-		Level:        LevelError,
-		CustomFields: map[string]any{"extraProperty": "value"},
+		Origin:           "Example Task XY - 1",
+		OriginClass:      "ab/exampletaskxy",
+		OriginResourceID: "1",
+		Timestamp:        time.Date(1, 2, 3, 4, 5, 6, 7, time.UTC),
+		Title:            "Example Task XY failed",
+		Detail:           "Example Task XY failed because ...",
+		Level:            LevelError,
+		CustomFields:     map[string]any{"extraProperty": "value"},
 	}
 
 	notificationWithoutTimestamp := notification
 	notificationWithoutTimestamp.Timestamp = time.Time{}
 
 	wantNotification := notificationModel{
-		Origin:       "Example Task XY",
-		Timestamp:    "0001-02-03T04:05:06.000000007Z",
-		Title:        "Example Task XY failed",
-		Detail:       "Example Task XY failed because ...",
-		Level:        LevelError,
-		CustomFields: map[string]any{"extraProperty": "value"},
+		Origin:           "Example Task XY - 1",
+		OriginClass:      "ab/exampletaskxy",
+		OriginResourceID: "1",
+		Timestamp:        "0001-02-03T04:05:06.000000007Z",
+		Title:            "Example Task XY failed",
+		Detail:           "Example Task XY failed because ...",
+		Level:            LevelError,
+		CustomFields:     map[string]any{"extraProperty": "value"},
 	}
 	wantNotificationWithoutTimestamp := wantNotification
 	wantNotificationWithoutTimestamp.Timestamp = checkForCurrentTimestamp // can't test exact timestamp
