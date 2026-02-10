@@ -7,6 +7,7 @@ package httpassert
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -21,68 +22,127 @@ type Extractor func(t *testing.T, actual any) any
 //	request.Expect().JsonPath("$.data.id", httpassert.ExtractTo(&id))
 func ExtractTo(ptr any) Extractor {
 	return func(t *testing.T, actual any) any {
-		targetVal := reflect.ValueOf(ptr)
-		if targetVal.Kind() != reflect.Ptr || targetVal.IsNil() {
-			assert.Fail(t, "ExtractTo requires a non-nil pointer")
+		return extractInto(t, ptr, actual, nil)
+	}
+}
+
+func ExtractRegexTo(value string, ptr any) Extractor {
+	return func(t *testing.T, actual any) any {
+		return extractInto(t, ptr, actual, func(t *testing.T, v any, dstType reflect.Type) (any, bool) {
+			s, ok := v.(string)
+			if !ok {
+				assert.Fail(t, fmt.Sprintf("ExtractRegexTo expects actual to be string, got %T", v))
+				return nil, false
+			}
+
+			re := regexp.MustCompile(value)
+
+			m := re.FindStringSubmatch(s)
+			if m == nil {
+				assert.Fail(t, fmt.Sprintf("ExtractRegexTo no match for %q in %q", re.String(), s))
+				return nil, false
+			}
+
+			// m[0] full match, m[1:] groups
+			groups := m[1:]
+			if len(groups) == 0 {
+				groups = []string{m[0]}
+			}
+
+			if dstType.Kind() == reflect.Slice {
+				return groups, true
+			}
+			return groups[0], true
+		})
+	}
+}
+
+func extractInto(
+	t *testing.T,
+	ptr any,
+	actual any,
+	preprocess func(t *testing.T, actual any, dstType reflect.Type) (any, bool),
+) any {
+	target := reflect.ValueOf(ptr)
+	if target.Kind() != reflect.Ptr || target.IsNil() {
+		assert.Fail(t, "ExtractTo requires a non-nil pointer")
+		return nil
+	}
+	if actual == nil {
+		assert.Fail(t, "ExtractTo actual value is nil")
+		return nil
+	}
+
+	dst := target.Elem()
+	dstType := dst.Type()
+
+	if preprocess != nil {
+		var ok bool
+		actual, ok = preprocess(t, actual, dstType)
+		if !ok {
 			return nil
 		}
-
 		if actual == nil {
 			assert.Fail(t, "ExtractTo actual value is nil")
 			return nil
 		}
+	}
 
-		outVal := reflect.ValueOf(actual)
-		targetType := targetVal.Elem().Type()
+	src := reflect.ValueOf(actual)
 
-		// Direct assign / convert for simple values (string, int, etc.)
-		if outVal.Type().AssignableTo(targetType) {
-			targetVal.Elem().Set(outVal)
-			return ptr
-		}
+	// unwrap interface{}
+	if src.IsValid() && src.Kind() == reflect.Interface && !src.IsNil() {
+		src = reflect.ValueOf(src.Interface())
+	}
 
-		if outVal.Type().ConvertibleTo(targetType) {
-			targetVal.Elem().Set(outVal.Convert(targetType))
-			return ptr
-		}
+	// direct assign / convert
+	if src.IsValid() && src.Type().AssignableTo(dstType) {
+		dst.Set(src)
+		return ptr
+	}
+	if src.IsValid() && src.Type().ConvertibleTo(dstType) {
+		dst.Set(src.Convert(dstType))
+		return ptr
+	}
 
-		// Special handling for slices, e.g. []interface{} -> []string
-		if outVal.Kind() == reflect.Slice && targetType.Kind() == reflect.Slice {
-			elemType := targetType.Elem()
-			n := outVal.Len()
-			dst := reflect.MakeSlice(targetType, n, n)
+	// slice handling: e.g. []interface{} -> []string
+	if src.IsValid() && src.Kind() == reflect.Slice && dstType.Kind() == reflect.Slice {
+		elemType := dstType.Elem()
+		n := src.Len()
+		out := reflect.MakeSlice(dstType, n, n)
 
-			for i := 0; i < n; i++ {
-				src := outVal.Index(i)
+		for i := 0; i < n; i++ {
+			s := src.Index(i)
 
-				// If it's interface{}, unwrap to the underlying concrete value.
-				if src.Kind() == reflect.Interface && !src.IsNil() {
-					src = reflect.ValueOf(src.Interface())
-				}
-
-				if src.Type().AssignableTo(elemType) {
-					dst.Index(i).Set(src)
-					continue
-				}
-
-				if src.Type().ConvertibleTo(elemType) {
-					dst.Index(i).Set(src.Convert(elemType))
-					continue
-				}
-
-				assert.Fail(t,
-					fmt.Sprintf("ExtractTo slice element type mismatch at index %d: cannot assign %v to %v",
-						i, src.Type(), elemType))
-				return nil
+			// unwrap interface{} elements
+			if s.Kind() == reflect.Interface && !s.IsNil() {
+				s = reflect.ValueOf(s.Interface())
 			}
 
-			targetVal.Elem().Set(dst)
-			return ptr
+			if s.Type().AssignableTo(elemType) {
+				out.Index(i).Set(s)
+				continue
+			}
+			if s.Type().ConvertibleTo(elemType) {
+				out.Index(i).Set(s.Convert(elemType))
+				continue
+			}
+
+			assert.Fail(t, fmt.Sprintf(
+				"ExtractTo slice element type mismatch at index %d: cannot assign %v to %v",
+				i, s.Type(), elemType,
+			))
+			return nil
 		}
 
-		assert.Fail(t,
-			fmt.Sprintf("ExtractTo type mismatch: cannot assign %v to %v",
-				outVal.Type(), targetType))
-		return nil
+		dst.Set(out)
+		return ptr
 	}
+
+	srcType := any("<invalid>")
+	if src.IsValid() {
+		srcType = src.Type()
+	}
+	assert.Fail(t, fmt.Sprintf("ExtractTo type mismatch: cannot assign %v to %v", srcType, dstType))
+	return nil
 }
