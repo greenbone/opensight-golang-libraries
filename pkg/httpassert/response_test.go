@@ -164,8 +164,8 @@ func TestResponse(t *testing.T) {
 			var value string
 			m.Get("/api").
 				Expect().
-				Header("Content-Type", ExtractTo(&value))
-			assert.Equal(t, "application/json", value)
+				Header("Content-Type", ExtractRegexTo(`application/(.*)`, &value))
+			assert.Equal(t, "json", value)
 		})
 
 		t.Run("use matcher", func(t *testing.T) {
