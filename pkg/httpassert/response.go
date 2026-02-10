@@ -36,11 +36,30 @@ type Response interface {
 	JsonTemplateFile(path string, values map[string]any) Response
 	JsonFile(path string) Response
 
+	Header(name string, value any) Response
+
 	Body(body string) Response
 	GetJsonBodyObject(target any) Response
 	GetBody() string
 
 	Log() Response
+}
+
+func (r *responseImpl) Header(name string, value any) Response {
+	out := r.response.Header().Get(name)
+
+	switch v := value.(type) {
+	case Extractor:
+		v(r.t, out)
+		return r
+	case Matcher:
+		v(r.t, out)
+		return r
+
+	default:
+		assert.Equal(r.t, value, out)
+		return r
+	}
 }
 
 func (r *responseImpl) StatusCode(expected int) Response {

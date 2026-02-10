@@ -6,6 +6,7 @@ package httpassert
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -43,5 +44,15 @@ func Contains(v string) Matcher {
 	return func(t *testing.T, value any) bool {
 		valid := assert.Contains(t, value, v)
 		return valid
+	}
+}
+
+// Regex checks if a string matches the given regular expression
+// Example: ExpectJsonPath("$.data.name", httpassert.Regex("^foo.*bar$"))
+func Regex(expr string) Matcher {
+	re := regexp.MustCompile(expr)
+
+	return func(t *testing.T, value any) bool {
+		return assert.Regexp(t, re, value)
 	}
 }

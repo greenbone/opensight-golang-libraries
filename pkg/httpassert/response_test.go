@@ -143,6 +143,40 @@ func TestResponse(t *testing.T) {
 		})
 	})
 
+	t.Run("Header", func(t *testing.T) {
+		router := http.NewServeMux()
+		router.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+		})
+
+		t.Run("compare string", func(t *testing.T) {
+			m := New(t, router)
+
+			m.Get("/api").
+				Expect().
+				Header("Content-Type", "application/json")
+		})
+
+		t.Run("extract value to variable", func(t *testing.T) {
+			m := New(t, router)
+
+			var value string
+			m.Get("/api").
+				Expect().
+				Header("Content-Type", ExtractTo(&value))
+			assert.Equal(t, "application/json", value)
+		})
+
+		t.Run("use matcher", func(t *testing.T) {
+			m := New(t, router)
+
+			m.Get("/api").
+				Expect().
+				Header("Content-Type", Regex("application/[json]"))
+		})
+	})
+
 	t.Run("POST basic JSON", func(t *testing.T) {
 		request.Post("/json").
 			ContentType("application/json").
