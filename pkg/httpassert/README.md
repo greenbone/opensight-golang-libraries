@@ -12,10 +12,12 @@ import "github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 
 - [Constants](<#constants>)
 - [type Extractor](<#Extractor>)
+  - [func ExtractRegexTo\(value string, ptr any\) Extractor](<#ExtractRegexTo>)
   - [func ExtractTo\(ptr any\) Extractor](<#ExtractTo>)
 - [type Matcher](<#Matcher>)
   - [func Contains\(v string\) Matcher](<#Contains>)
   - [func HasSize\(e int\) Matcher](<#HasSize>)
+  - [func Regex\(expr string\) Matcher](<#Regex>)
 - [type Request](<#Request>)
   - [func New\(t \*testing.T, router http.Handler\) Request](<#New>)
 - [type Response](<#Response>)
@@ -30,7 +32,7 @@ const IgnoreJsonValue = "<IGNORE>"
 ```
 
 <a name="Extractor"></a>
-## type [Extractor](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/extracter.go#L15>)
+## type [Extractor](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/extracter.go#L16>)
 
 
 
@@ -38,8 +40,17 @@ const IgnoreJsonValue = "<IGNORE>"
 type Extractor func(t *testing.T, actual any) any
 ```
 
+<a name="ExtractRegexTo"></a>
+### func [ExtractRegexTo](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/extracter.go#L29>)
+
+```go
+func ExtractRegexTo(value string, ptr any) Extractor
+```
+
+
+
 <a name="ExtractTo"></a>
-### func [ExtractTo](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/extracter.go#L22>)
+### func [ExtractTo](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/extracter.go#L23>)
 
 ```go
 func ExtractTo(ptr any) Extractor
@@ -53,7 +64,7 @@ request.Expect().JsonPath("$.data.id", httpassert.ExtractTo(&id))
 ```
 
 <a name="Matcher"></a>
-## type [Matcher](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/matcher.go#L14>)
+## type [Matcher](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/matcher.go#L15>)
 
 
 
@@ -62,7 +73,7 @@ type Matcher func(t *testing.T, actual any) bool
 ```
 
 <a name="Contains"></a>
-### func [Contains](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/matcher.go#L42>)
+### func [Contains](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/matcher.go#L43>)
 
 ```go
 func Contains(v string) Matcher
@@ -71,13 +82,22 @@ func Contains(v string) Matcher
 Contains checks if a string contains the value Example: ExpectJsonPath\("$.data.name", httpassert.Contains\("foo"\)\)
 
 <a name="HasSize"></a>
-### func [HasSize](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/matcher.go#L18>)
+### func [HasSize](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/matcher.go#L19>)
 
 ```go
 func HasSize(e int) Matcher
 ```
 
 HasSize checks the length of arrays, maps, or strings. Example: ExpectJsonPath\("$.data", httpassert.HasSize\(11\)\)
+
+<a name="Regex"></a>
+### func [Regex](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/matcher.go#L52>)
+
+```go
+func Regex(expr string) Matcher
+```
+
+Regex checks if a string matches the given regular expression Example: ExpectJsonPath\("$.data.name", httpassert.Regex\("^foo.\*bar$"\)\)
 
 <a name="Request"></a>
 ## type [Request](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/request.go#L23-L55>)
@@ -130,7 +150,7 @@ func New(t *testing.T, router http.Handler) Request
 New returns a new Request instance for the given router.
 
 <a name="Response"></a>
-## type [Response](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/response.go#L24-L44>)
+## type [Response](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/response.go#L24-L46>)
 
 nolint:interfacebloat Response interface provides fluent response assertions.
 
@@ -149,6 +169,8 @@ type Response interface {
     JsonTemplate(json string, values map[string]any) Response
     JsonTemplateFile(path string, values map[string]any) Response
     JsonFile(path string) Response
+
+    Header(name string, value any) Response
 
     Body(body string) Response
     GetJsonBodyObject(target any) Response

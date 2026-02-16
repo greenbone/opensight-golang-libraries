@@ -70,17 +70,17 @@ type request struct {
 
 func (m *request) Perform(verb string, path string) Request {
 	switch verb {
-	case "Post":
+	case "Post", http.MethodPost:
 		return m.Post(path)
-	case "Put":
+	case "Put", http.MethodPut:
 		return m.Put(path)
-	case "Get":
+	case "Get", http.MethodGet:
 		return m.Get(path)
-	case "Delete":
+	case "Delete", http.MethodDelete:
 		return m.Delete(path)
-	case "Options":
+	case "Options", http.MethodOptions:
 		return m.Options(path)
-	case "Patch":
+	case "Patch", http.MethodPatch:
 		return m.Patch(path)
 	default:
 		m.t.Fatalf("unknown verb: %s", verb)
@@ -90,17 +90,17 @@ func (m *request) Perform(verb string, path string) Request {
 
 func (m *request) Performf(verb string, path string, a ...interface{}) Request {
 	switch verb {
-	case "Post":
+	case "Post", http.MethodPost:
 		return m.Postf(path, a...)
-	case "Put":
+	case "Put", http.MethodPut:
 		return m.Putf(path, a...)
-	case "Get":
+	case "Get", http.MethodGet:
 		return m.Getf(path, a...)
-	case "Delete":
+	case "Delete", http.MethodDelete:
 		return m.Deletef(path, a...)
-	case "Options":
+	case "Options", http.MethodOptions:
 		return m.Optionsf(path, a...)
-	case "Patch":
+	case "Patch", http.MethodPatch:
 		return m.Patchf(path, a...)
 	default:
 		m.t.Fatalf("unknown verb: %s", verb)
