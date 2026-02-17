@@ -65,6 +65,23 @@ func TestRequestPerform(t *testing.T) {
 		"Options": {
 			verb: "Options",
 		},
+		"Get (all caps)": {
+			verb: http.MethodGet,
+		},
+		"Post (all caps)": {
+			verb:    http.MethodPost,
+			content: `{}`,
+		},
+		"Put (all caps)": {
+			verb:    http.MethodPut,
+			content: `{}`,
+		},
+		"Delete (all caps)": {
+			verb: http.MethodDelete,
+		},
+		"Options (all caps)": {
+			verb: http.MethodOptions,
+		},
 	}
 
 	for name, tc := range tests {
