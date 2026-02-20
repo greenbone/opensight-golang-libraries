@@ -703,7 +703,8 @@ func TestBoolQueryBuilder_AddFilterRequest(t *testing.T) {
 				t.Logf("sending search request to OpenSearch: %s", string(requestBody))
 				gotDocuments, totalResults, err := client.ListDocuments(alias, requestBody)
 				require.NoError(t, err, "listing documents failed")
-				require.Len(t, gotDocuments, int(totalResults), "test requires results to be returned on a single page") // catch paging misconfiguration
+				require.Len(t, gotDocuments, int(totalResults),
+					"test requires results to be returned on a single page") // catch paging misconfiguration
 
 				assert.ElementsMatch(t, tt.wantDocuments, gotDocuments)
 			}
@@ -751,7 +752,9 @@ func TestBoolQueryBuilder_AddTermFilter(t *testing.T) {
 
 	// index setup needed only once, as test cases are only reading data
 	_, alias := tester.NewTestTypeIndexAlias(t, "arbitrary")
-	tester.CreateDocuments(t, alias, ostesting.ToAnySlice(allDocs), []string{"id0", "id1", "id2", "id3", "id4"})
+	tester.CreateDocuments(t, alias, ostesting.ToAnySlice(allDocs), []string{
+		"id0", "id1", "id2", "id3", "id4",
+	})
 	client, err := newTestOSClient(tester.OSClient())
 	require.NoError(t, err)
 
@@ -939,7 +942,8 @@ func TestBoolQueryBuilder_AddTermFilter(t *testing.T) {
 			t.Logf("sending search request to OpenSearch: %s", string(requestBody))
 			gotDocuments, totalResults, err := client.ListDocuments(alias, requestBody)
 			require.NoError(t, err, "listing documents failed")
-			require.Len(t, gotDocuments, int(totalResults), "test requires results to be returned on a single page") // catch paging misconfiguration
+			require.Len(t, gotDocuments, int(totalResults),
+				"test requires results to be returned on a single page") // catch paging misconfiguration
 
 			assert.ElementsMatch(t, tt.wantDocuments, gotDocuments)
 		})

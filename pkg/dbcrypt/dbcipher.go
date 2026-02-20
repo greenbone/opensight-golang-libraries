@@ -25,7 +25,7 @@ type Config struct {
 	Version string
 
 	// Contains the password used to derive encryption key
-	Password string
+	Password string //nolint:gosec
 
 	// Contains the salt for increasing password entropy
 	PasswordSalt string

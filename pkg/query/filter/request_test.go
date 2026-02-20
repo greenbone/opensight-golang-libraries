@@ -74,14 +74,22 @@ func TestReadableValues(t *testing.T) {
 			want:  []filter.ReadableValue[filter.ControlType]{},
 		},
 		{
-			name:  "already-sorted",
-			given: []filter.ReadableValue[filter.ControlType]{{Label: "aaa", Value: filter.ControlTypeBool}, {Label: "bbb", Value: filter.ControlTypeEnum}},
-			want:  []filter.ReadableValue[filter.ControlType]{{Label: "aaa", Value: filter.ControlTypeBool}, {Label: "bbb", Value: filter.ControlTypeEnum}},
+			name: "already-sorted",
+			given: []filter.ReadableValue[filter.ControlType]{{
+				Label: "aaa", Value: filter.ControlTypeBool,
+			}, {Label: "bbb", Value: filter.ControlTypeEnum}},
+			want: []filter.ReadableValue[filter.ControlType]{{
+				Label: "aaa", Value: filter.ControlTypeBool,
+			}, {Label: "bbb", Value: filter.ControlTypeEnum}},
 		},
 		{
-			name:  "reordered",
-			given: []filter.ReadableValue[filter.ControlType]{{Label: "aaa", Value: filter.ControlTypeEnum}, {Label: "bbb", Value: filter.ControlTypeBool}},
-			want:  []filter.ReadableValue[filter.ControlType]{{Label: "bbb", Value: filter.ControlTypeBool}, {Label: "aaa", Value: filter.ControlTypeEnum}},
+			name: "reordered",
+			given: []filter.ReadableValue[filter.ControlType]{{
+				Label: "aaa", Value: filter.ControlTypeEnum,
+			}, {Label: "bbb", Value: filter.ControlTypeBool}},
+			want: []filter.ReadableValue[filter.ControlType]{{
+				Label: "bbb", Value: filter.ControlTypeBool,
+			}, {Label: "aaa", Value: filter.ControlTypeEnum}},
 		},
 	}
 	for _, test := range tests {

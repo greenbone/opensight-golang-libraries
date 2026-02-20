@@ -151,7 +151,8 @@ func (q *BoolQueryBuilder) AddFilterRequest(request *filter.Request) error {
 		if handler, ok := operatorMapping[field.Operator]; ok {
 			value := field.Value
 
-			if field.Operator == filter.CompareOperatorExists || field.Operator == filter.CompareOperatorDoesNotExist {
+			if field.Operator == filter.CompareOperatorExists ||
+				field.Operator == filter.CompareOperatorDoesNotExist {
 				value = "" // exists operator does not need a value, but for more consistent handling just pass a dummy value
 			}
 			if value == nil {

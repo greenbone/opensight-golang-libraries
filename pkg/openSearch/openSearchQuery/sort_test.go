@@ -70,7 +70,8 @@ func TestSorting(t *testing.T) {
 			}
 			termsAggregation := esquery.TermsAgg("vulnerabilityWithAssetCountAgg", "vulnerabilityTest.oid.keyword").
 				Aggs(subAggs...)
-			termsAggregation, err = AddOrder(termsAggregation, testCases[name].SortingRequest, sortFieldMapping)
+			termsAggregation, err = AddOrder(termsAggregation,
+				testCases[name].SortingRequest, sortFieldMapping)
 			resultingJson, queryErr := esquery.Search().Query(q.Build()).Aggs(termsAggregation).Size(0).MarshalJSON()
 			assert.Nil(t, queryErr)
 			assert.JSONEq(t, testCases[name].ExpectedQueryJson, string(resultingJson))

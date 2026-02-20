@@ -6,7 +6,6 @@ package httpassert
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"strings"
 
@@ -63,7 +62,11 @@ func (r *responseImpl) Header(name string, value any) Response {
 }
 
 func (r *responseImpl) StatusCode(expected int) Response {
-	require.Equal(r.t, expected, r.response.Code)
+	if assert.Equal(r.t, expected, r.response.Code) {
+		return r
+	}
+	r.Log()
+	r.t.FailNow()
 	return r
 }
 
@@ -210,9 +213,15 @@ func (r *responseImpl) GetJsonBodyObject(target any) Response {
 }
 
 func (r *responseImpl) Log() Response {
-	fmt.Printf("Response: %d\nHeaders: %v\nBody: %s\n",
+	r.t.Logf("Request\nMethod: %s\nURL: %s\nContent-Type: %s\nHeaders: %v\nBody: %s\n",
+		r.request.method,
+		r.request.url,
+		r.request.contentType,
+		r.request.headers,
+		r.request.body)
+	r.t.Logf("Response\nCode: %d\nHeaders: %v\nBody: %s\n",
 		r.response.Code,
 		r.response.Header(),
-		r.response.Body.String())
+		r.response.Body)
 	return r
 }

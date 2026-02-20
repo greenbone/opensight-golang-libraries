@@ -20,9 +20,8 @@ type TestType struct {
 	KeywordOmitEmpty string    `json:"keywordOmitEmpty,omitempty"`
 }
 
-var (
-	// testTypeMapping is an index mapping for testType
-	testTypeMapping string = `{
+// testTypeMapping is an index mapping for testType
+var testTypeMapping string = `{
 		"mappings": {
 			"properties": {
 				"id": {
@@ -64,4 +63,3 @@ var (
 			}
 		}
 	}`
-)

@@ -25,7 +25,8 @@ func composeQuery(
 	dbColumnName, ok := fieldMapping[field.Name]
 	if !ok {
 		return "", filter.NewInvalidFilterFieldError(
-			"invalid filter field '%s', available fields: ", slices.Collect(maps.Keys(fieldMapping)))
+			"invalid filter field '%s', available fields: ",
+			slices.Collect(maps.Keys(fieldMapping)))
 	}
 	quotedName, err := getQuotedName(dbColumnName)
 	if err != nil {
