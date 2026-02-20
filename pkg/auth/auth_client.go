@@ -31,19 +31,19 @@ const tokenRefreshMargin = 10 * time.Second
 type KeycloakConfig struct {
 	ClientID      string
 	Username      string
-	Password      string
+	Password      string //nolint:gosec
 	AuthURL       string
 	KeycloakRealm string
 }
 
 type tokenInfo struct {
-	AccessToken string
+	AccessToken string //nolint:gosec
 	ExpiresAt   time.Time
 }
 
 type authResponse struct {
-	AccessToken string `json:"access_token"`
-	ExpiresIn   int    `json:"expires_in"` // in seconds
+	AccessToken string `json:"access_token"` //nolint:gosec
+	ExpiresIn   int    `json:"expires_in"`   // in seconds
 }
 
 // KeycloakClient can be used to authenticate against a Keycloak server.
@@ -121,7 +121,7 @@ func (c *KeycloakClient) requestToken(ctx context.Context) (*authResponse, error
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.httpClient.Do(req) //nolint:gosec
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute authentication request: %w", err)
 	}

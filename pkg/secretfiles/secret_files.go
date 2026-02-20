@@ -24,7 +24,7 @@ func ReadSecret(envVar string, target *string) error {
 	}
 	path := os.Getenv(envVar)
 	if path != "" {
-		content, err := os.ReadFile(path)
+		content, err := os.ReadFile(path) //nolint:gosec
 		if err != nil {
 			return fmt.Errorf("failed to read secret from file: %w", err)
 		}

@@ -20,7 +20,8 @@ import (
 // ExecuteRequestWithRetry executes the given request via the passed http client and retries on failures.
 // An error is only returned if there was a non retryable error or the maximum number of retries was reached.
 // It uses the retry policy of [retryablehttp.ErrorPropagatedRetryPolicy] and exponential backoff from [retryablehttp.DefaultBackoff].
-func ExecuteRequestWithRetry(ctx context.Context, client *http.Client, request *http.Request,
+func ExecuteRequestWithRetry(
+	ctx context.Context, client *http.Client, request *http.Request,
 	maxRetries int, retryWaitMin, retryWaitMax time.Duration,
 ) (*http.Response, error) {
 	var errList []error
@@ -30,7 +31,7 @@ func ExecuteRequestWithRetry(ctx context.Context, client *http.Client, request *
 			return nil, fmt.Errorf("failed to copy request for repeated use: %w", err)
 		}
 
-		response, err := client.Do(requestCopy.WithContext(ctx))
+		response, err := client.Do(requestCopy.WithContext(ctx)) //nolint:gosec
 
 		if err == nil && IsOk(response.StatusCode) {
 			return response, nil

@@ -107,7 +107,8 @@ func sanitizeFilterValue(value any) (sanitizedValue any, err error) {
 
 	sanitizedValue = value
 
-	if reflect.TypeOf(value).Kind() == reflect.Slice || reflect.TypeOf(value).Kind() == reflect.Array {
+	if reflect.TypeOf(value).Kind() == reflect.Slice ||
+		reflect.TypeOf(value).Kind() == reflect.Array {
 		slice := reflect.ValueOf(value)
 
 		if slice.Len() == 0 { // disallow empty list values, as the there is no clear way to interpret this kind of filter

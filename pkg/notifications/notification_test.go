@@ -113,7 +113,8 @@ func TestClient_CreateNotification(t *testing.T) {
 			mockAuthServer := setupMockAuthServer(t, tt.serverErrors.authenticationFail)
 			defer mockAuthServer.Close()
 
-			mockNotificationServer := setupMockNotificationServer(t, &serverCallCount, tt.wantNotificationSent, tt.serverErrors)
+			mockNotificationServer := setupMockNotificationServer(t, &serverCallCount,
+				tt.wantNotificationSent, tt.serverErrors)
 			defer mockNotificationServer.Close()
 
 			config := Config{
@@ -158,7 +159,9 @@ func setupMockAuthServer(t *testing.T, failAuth bool) *httptest.Server {
 	}))
 }
 
-func setupMockNotificationServer(t *testing.T, serverCallCount *atomic.Int32, wantNotification notificationModel, errors serverErrors) *httptest.Server {
+func setupMockNotificationServer(t *testing.T, serverCallCount *atomic.Int32,
+	wantNotification notificationModel, errors serverErrors,
+) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		serverCallCount.Add(1)
 

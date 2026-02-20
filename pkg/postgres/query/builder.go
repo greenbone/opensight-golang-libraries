@@ -81,7 +81,7 @@ func (qb *Builder) addFilters(request *filter.Request) (args []any, err error) {
 		}
 
 		if index > 0 {
-			qb.query.WriteString(fmt.Sprintf(" %s ", logicOperator))
+			fmt.Fprintf(&qb.query, " %s ", logicOperator)
 		}
 		qb.query.WriteString(conditionTemplate)
 	}
@@ -163,11 +163,11 @@ func (qb *Builder) addPaging(paging paging.Request) error {
 
 	if paging.PageIndex > 0 {
 		offset := paging.PageIndex * paging.PageSize
-		qb.query.WriteString(fmt.Sprintf(" OFFSET %d", offset))
+		fmt.Fprintf(&qb.query, " OFFSET %d", offset)
 	}
 
 	if paging.PageSize > 0 {
-		qb.query.WriteString(fmt.Sprintf(" LIMIT %d", paging.PageSize))
+		fmt.Fprintf(&qb.query, " LIMIT %d", paging.PageSize)
 	}
 	return nil
 }

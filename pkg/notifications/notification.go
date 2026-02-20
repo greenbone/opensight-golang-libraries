@@ -121,7 +121,7 @@ func (c *Client) RegisterOrigins(ctx context.Context, serviceID string, origins 
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Content-Type", "application/json")
 
-	response, err := c.httpClient.Do(req)
+	response, err := c.httpClient.Do(req) //nolint:gosec
 	if err != nil {
 		return fmt.Errorf("failed to execute request: %w", err)
 	}

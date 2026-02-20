@@ -33,7 +33,7 @@ const KeepFailedEnv = "TEST_KEEP_FAILED"
 type ClientConfig struct {
 	Address  string
 	User     string
-	Password string
+	Password string //nolint:gosec
 }
 
 const (
@@ -43,15 +43,13 @@ const (
 	defaultTestUser     = "admin"
 )
 
-var (
-	// defaultOSConf is the default configuration used for testing OpenSearch to connect
-	// to the test OpenSearch instance running in docker
-	defaultOSConf = ClientConfig{
-		Address:  defaultTestAddress,
-		User:     defaultTestUser,
-		Password: defaultTestPassword,
-	}
-)
+// defaultOSConf is the default configuration used for testing OpenSearch to connect
+// to the test OpenSearch instance running in docker
+var defaultOSConf = ClientConfig{
+	Address:  defaultTestAddress,
+	User:     defaultTestUser,
+	Password: defaultTestPassword,
+}
 
 // Tester manages connecting with testing OpenSearch instance and implements
 // helper methods
@@ -109,7 +107,8 @@ func NewTester(t *testing.T, opts ...TesterOption) *Tester {
 			Addresses: []string{tst.conf.Address},
 			Username:  tst.conf.User,
 			Password:  tst.conf.Password,
-		}})
+		},
+	})
 	if err != nil {
 		t.Fatalf("error while initializing opensearchapi.Client for testing: %v", err)
 	}
@@ -177,7 +176,7 @@ func (tst Tester) NewIndex(t *testing.T, prefix string, mapping *string) string 
 	if createResponse != nil {
 		resp = createResponse.Inspect().Response
 	}
-	defer func() { //close response body
+	defer func() { // close response body
 		if resp != nil {
 			if err := resp.Body.Close(); err != nil {
 				t.Errorf("failed to close response body: %v", err)

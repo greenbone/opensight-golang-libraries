@@ -549,10 +549,12 @@ func Test_PostgresQueryBuilder_Build(t *testing.T) {
 	value := doc1.String
 	require.Greater(t, len(value), 1, "test requires value to be longer than 1 character for `contains` operator")
 	firstPart := value[:len(value)/2]
-	require.NotEqual(t, firstPart, strings.ToLower(firstPart), "test requires mixed case, to verify case insensitivity")
+	require.NotEqual(t, firstPart, strings.ToLower(firstPart),
+		"test requires mixed case, to verify case insensitivity")
 	firstPart = strings.ToLower(firstPart)
 	secondPart := value[len(value)/2:]
-	require.NotEqual(t, secondPart, strings.ToLower(secondPart), "test requires mixed case, to verify case insensitivity")
+	require.NotEqual(t, secondPart, strings.ToLower(secondPart),
+		"test requires mixed case, to verify case insensitivity")
 	secondPart = strings.ToLower(secondPart)
 
 	addTest("operator Contains: single value", testCase{
@@ -652,10 +654,12 @@ func Test_PostgresQueryBuilder_Build(t *testing.T) {
 	for _, value := range values {
 		require.Greater(t, len(value), 1, "test requires value to be longer than 1 character for `contains` operator")
 		firstPart := value[:len(value)/2]
-		require.NotEqual(t, firstPart, strings.ToLower(firstPart), "test requires mixed case, to verify case insensitivity")
+		require.NotEqual(t, firstPart, strings.ToLower(firstPart),
+			"test requires mixed case, to verify case insensitivity")
 		firstParts = append(firstParts, strings.ToLower(firstPart))
 		secondPart := value[len(value)/2:]
-		require.NotEqual(t, secondPart, strings.ToLower(secondPart), "test requires mixed case, to verify case insensitivity")
+		require.NotEqual(t, secondPart, strings.ToLower(secondPart),
+			"test requires mixed case, to verify case insensitivity")
 		secondParts = append(secondParts, strings.ToLower(secondPart))
 	}
 
@@ -726,7 +730,10 @@ func Test_PostgresQueryBuilder_Build(t *testing.T) {
 
 	// date specific filters, multiple values
 	dateValues := map[string][]any{
-		"date as string":    {doc1.DateTime.Format(time.RFC3339Nano), doc2.DateTime.Format(time.RFC3339Nano)},
+		"date as string": {
+			doc1.DateTime.Format(time.RFC3339Nano),
+			doc2.DateTime.Format(time.RFC3339Nano),
+		},
 		"date as time.Time": {doc1.DateTime, doc2.DateTime},
 	}
 	for valueType, values := range dateValues {

@@ -39,7 +39,9 @@ func TestKeycloakClient_GetToken(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			var serverCallCount atomic.Int32
-			mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			mockServer := httptest.NewServer(http.HandlerFunc(func(
+				w http.ResponseWriter, r *http.Request,
+			) {
 				serverCallCount.Add(1)
 				w.WriteHeader(tt.responseCode)
 				_, err := w.Write([]byte(tt.responseBody))
@@ -108,7 +110,9 @@ func TestKeycloakClient_GetToken_Refresh(t *testing.T) {
 			fakeClock := NewFakeClock(time.Now())
 
 			var serverCallCount atomic.Int32
-			mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			mockServer := httptest.NewServer(http.HandlerFunc(func(
+				w http.ResponseWriter, r *http.Request,
+			) {
 				serverCallCount.Add(1)
 				w.WriteHeader(200)
 				_, err := w.Write(kcMockResponse)
