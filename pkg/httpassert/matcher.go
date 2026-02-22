@@ -56,3 +56,16 @@ func Regex(expr string) Matcher {
 		return assert.Regexp(t, re, value)
 	}
 }
+
+// NotEmpty checks if a string is not empty
+// Example: ExpectJsonPath("$.data.name", httpassert.NotEmpty())
+func NotEmpty() Matcher {
+	return func(t *testing.T, value any) bool {
+		str, ok := value.(string)
+		if !ok {
+			return assert.Fail(t, "value is not a string")
+		}
+
+		return assert.NotEmpty(t, str)
+	}
+}

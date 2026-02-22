@@ -41,3 +41,18 @@ func Test_ContainsMatcher(t *testing.T) {
 		StatusCode(http.StatusOK).
 		JsonPath("$.data.name", Contains("foo"))
 }
+
+func Test_NoEmptyMatcher(t *testing.T) {
+	router := http.NewServeMux()
+	router.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
+		_, err := fmt.Fprint(w, `{"data":{"name":  "a"}}`)
+		assert.NoError(t, err)
+	})
+
+	request := New(t, router)
+
+	request.Get("/api").
+		Expect().
+		StatusCode(http.StatusOK).
+		JsonPath("$.data.name", NotEmpty())
+}
