@@ -12,6 +12,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 	"github.com/yalp/jsonpath"
 )
@@ -71,6 +72,8 @@ func (r *responseImpl) StatusCode(expected int) Response {
 }
 
 func (r *responseImpl) JsonPath(path string, expected any) Response {
+	r.t.Helper()
+
 	var tmp any
 	if err := jsoniter.Unmarshal(r.response.Body.Bytes(), &tmp); err != nil {
 		assert.Fail(r.t, err.Error())
@@ -142,6 +145,10 @@ func (r *responseImpl) JsonTemplate(expectedJsonTemplate string, values map[stri
 		key = strings.ReplaceAll(key, "[", ".")
 		key = strings.ReplaceAll(key, "]", "")
 
+		if !gjson.Get(expectedJson, key).Exists() {
+			assert.Fail(r.t, "Json key does not exist in template: "+k)
+		}
+
 		tmp, err := sjson.Set(expectedJson, key, v)
 		if err != nil {
 			assert.Fail(r.t, "JsonTemplate set value failed: "+err.Error())
@@ -160,6 +167,10 @@ func (r *responseImpl) JsonTemplate(expectedJsonTemplate string, values map[stri
 		key := strings.TrimPrefix(k, "$.")
 		key = strings.ReplaceAll(key, "[", ".")
 		key = strings.ReplaceAll(key, "]", "")
+
+		if !gjson.Get(actual, key).Exists() {
+			assert.Fail(r.t, "Json key does not exist in template: "+k)
+		}
 
 		tmp, err := sjson.Set(actual, key, v)
 		if err != nil {

@@ -9,13 +9,14 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 type Matcher func(t *testing.T, actual any) bool
 
 // HasSize checks the length of arrays, maps, or strings.
-// Example: ExpectJsonPath("$.data", httpassert.HasSize(11))
+// Example: JsonPath("$.data", httpassert.HasSize(11))
 func HasSize(e int) Matcher {
 	return func(t *testing.T, actual any) bool {
 		var size int
@@ -39,7 +40,7 @@ func HasSize(e int) Matcher {
 }
 
 // Contains checks if a string contains the value
-// Example: ExpectJsonPath("$.data.name", httpassert.Contains("foo"))
+// Example: JsonPath("$.data.name", httpassert.Contains("foo"))
 func Contains(v string) Matcher {
 	return func(t *testing.T, value any) bool {
 		valid := assert.Contains(t, value, v)
@@ -48,7 +49,7 @@ func Contains(v string) Matcher {
 }
 
 // Regex checks if a string matches the given regular expression
-// Example: ExpectJsonPath("$.data.name", httpassert.Regex("^foo.*bar$"))
+// Example: JsonPath("$.data.name", httpassert.Regex("^foo.*bar$"))
 func Regex(expr string) Matcher {
 	re := regexp.MustCompile(expr)
 
@@ -58,7 +59,7 @@ func Regex(expr string) Matcher {
 }
 
 // NotEmpty checks if a string is not empty
-// Example: ExpectJsonPath("$.data.name", httpassert.NotEmpty())
+// Example: JsonPath("$.data.name", httpassert.NotEmpty())
 func NotEmpty() Matcher {
 	return func(t *testing.T, value any) bool {
 		str, ok := value.(string)
@@ -67,5 +68,25 @@ func NotEmpty() Matcher {
 		}
 
 		return assert.NotEmpty(t, str)
+	}
+}
+
+// IsUUID checks if a string is a UUID
+// Example: JsonPath("$.id", httpassert.IsUUID())
+func IsUUID() Matcher {
+	return func(t *testing.T, value any) bool {
+		t.Helper()
+
+		str, ok := value.(string)
+		if !ok {
+			return assert.Fail(t, "value is not a string")
+		}
+
+		_, err := uuid.Parse(str)
+		if err != nil {
+			return assert.Fail(t, "value is not a valid UUID", "'%s': %v", str, err)
+		}
+
+		return true
 	}
 }

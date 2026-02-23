@@ -249,7 +249,7 @@ func (m *request) JsonContentTemplate(body string, values map[string]any) Reques
 		key = strings.ReplaceAll(key, "]", "")
 
 		if !gjson.Get(jsonBody, key).Exists() {
-			require.Fail(m.t, "Json key does not exist in template: "+k)
+			assert.Fail(m.t, "Json key does not exist in template: "+k)
 		}
 
 		tmp, err := sjson.Set(jsonBody, key, v)
