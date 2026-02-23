@@ -11,11 +11,14 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 )
 
 // nolint:interfacebloat
@@ -45,9 +48,11 @@ type Request interface {
 	ContentType(string) Request
 
 	Content(string) Request
-	JsonContent(string) Request
-	JsonContentObject(any) Request
 	ContentFile(string) Request
+
+	JsonContent(string) Request
+	JsonContentTemplate(body string, values map[string]any) Request
+	JsonContentObject(any) Request
 	JsonContentFile(path string) Request
 
 	Expect() Response
@@ -229,6 +234,33 @@ func (m *request) Content(body string) Request {
 func (m *request) JsonContent(body string) Request {
 	m.ContentType("application/json")
 	m.Content(body)
+	return m
+}
+
+func (m *request) JsonContentTemplate(body string, values map[string]any) Request {
+	m.ContentType("application/json")
+
+	jsonBody := body
+	// apply provided values into the template
+	for k, v := range values {
+		// normalize JSONPath-like keys (convert $.a[0].b to a.0.b)
+		key := strings.TrimPrefix(k, "$.")
+		key = strings.ReplaceAll(key, "[", ".")
+		key = strings.ReplaceAll(key, "]", "")
+
+		if !gjson.Get(jsonBody, key).Exists() {
+			require.Fail(m.t, "Json key does not exist in template: "+k)
+		}
+
+		tmp, err := sjson.Set(jsonBody, key, v)
+		if err != nil {
+			assert.Fail(m.t, "JsonTemplate set value failed: "+err.Error())
+			return m
+		}
+		jsonBody = tmp
+	}
+
+	m.Content(jsonBody)
 	return m
 }
 
