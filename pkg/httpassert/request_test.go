@@ -180,7 +180,7 @@ func TestRequest(t *testing.T) {
 			Expect().
 			StatusCode(http.StatusOK)
 
-		assert.JSONEq(t, `{"n": {"foo": "bar","asd":"123"}}`, string(content))
+		AssertJSONCanonicalEq(t, `{"n": {"foo": "bar","asd":"123"}}`, string(content))
 	})
 }
 

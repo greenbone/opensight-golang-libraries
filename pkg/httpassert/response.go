@@ -118,7 +118,7 @@ func (r *responseImpl) JsonPathJson(path string, expectedJson string) Response {
 		assert.Fail(r.t, err.Error())
 		return r
 	}
-	assert.JSONEq(r.t, expectedJson, string(pathJson))
+	AssertJSONCanonicalEq(r.t, expectedJson, string(pathJson))
 	return r
 }
 
@@ -128,7 +128,7 @@ func (r *responseImpl) NoContent() Response {
 }
 
 func (r *responseImpl) Json(expectedJson string) Response {
-	assert.JSONEq(r.t, expectedJson, r.response.Body.String())
+	AssertJSONCanonicalEq(r.t, expectedJson, r.response.Body.String())
 	return r
 }
 
@@ -169,8 +169,7 @@ func (r *responseImpl) JsonTemplate(expectedJsonTemplate string, values map[stri
 		actual = tmp
 	}
 
-	// compare the resulting JSONs ignoring order
-	valid := assert.JSONEq(r.t, expectedJson, actual)
+	valid := AssertJSONCanonicalEq(r.t, expectedJson, actual)
 	if !valid {
 		r.Log()
 	}
@@ -198,7 +197,7 @@ func (r *responseImpl) JsonFile(path string) Response {
 		assert.Fail(r.t, err.Error())
 		return r
 	}
-	assert.JSONEq(r.t, string(content), r.response.Body.String())
+	AssertJSONCanonicalEq(r.t, string(content), r.response.Body.String())
 	return r
 }
 
