@@ -11,15 +11,20 @@ import "github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 ## Index
 
 - [Constants](<#constants>)
+- [func AssertJSONCanonicalEq\(t \*testing.T, expected, actual string\) bool](<#AssertJSONCanonicalEq>)
+- [func NormalizeJSON\(t \*testing.T, s string\) string](<#NormalizeJSON>)
 - [type Extractor](<#Extractor>)
   - [func ExtractRegexTo\(value string, ptr any\) Extractor](<#ExtractRegexTo>)
   - [func ExtractTo\(ptr any\) Extractor](<#ExtractTo>)
 - [type Matcher](<#Matcher>)
   - [func Contains\(v string\) Matcher](<#Contains>)
   - [func HasSize\(e int\) Matcher](<#HasSize>)
+  - [func IsUUID\(\) Matcher](<#IsUUID>)
+  - [func NotEmpty\(\) Matcher](<#NotEmpty>)
   - [func Regex\(expr string\) Matcher](<#Regex>)
 - [type Request](<#Request>)
-  - [func New\(t \*testing.T, router http.Handler\) Request](<#New>)
+- [type RequestStart](<#RequestStart>)
+  - [func New\(t \*testing.T, router http.Handler\) RequestStart](<#New>)
 - [type Response](<#Response>)
 
 
@@ -30,6 +35,24 @@ import "github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
 ```go
 const IgnoreJsonValue = "<IGNORE>"
 ```
+
+<a name="AssertJSONCanonicalEq"></a>
+## func [AssertJSONCanonicalEq](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/assert.go#L32>)
+
+```go
+func AssertJSONCanonicalEq(t *testing.T, expected, actual string) bool
+```
+
+AssertJSONCanonicalEq compares two JSON strings by normalizing both first. On mismatch, it prints a readable diff of the normalized forms.
+
+<a name="NormalizeJSON"></a>
+## func [NormalizeJSON](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/assert.go#L15>)
+
+```go
+func NormalizeJSON(t *testing.T, s string) string
+```
+
+NormalizeJSON parses JSON and re\-marshals it with stable key ordering and indentation. \- Uses Decoder.UseNumber\(\) to preserve numeric fidelity \(avoid float64 surprises\).
 
 <a name="Extractor"></a>
 ## type [Extractor](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/extracter.go#L16>)
@@ -64,7 +87,7 @@ request.Expect().JsonPath("$.data.id", httpassert.ExtractTo(&id))
 ```
 
 <a name="Matcher"></a>
-## type [Matcher](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/matcher.go#L15>)
+## type [Matcher](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/matcher.go#L16>)
 
 
 
@@ -73,39 +96,84 @@ type Matcher func(t *testing.T, actual any) bool
 ```
 
 <a name="Contains"></a>
-### func [Contains](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/matcher.go#L43>)
+### func [Contains](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/matcher.go#L44>)
 
 ```go
 func Contains(v string) Matcher
 ```
 
-Contains checks if a string contains the value Example: ExpectJsonPath\("$.data.name", httpassert.Contains\("foo"\)\)
+Contains checks if a string contains the value Example: JsonPath\("$.data.name", httpassert.Contains\("foo"\)\)
 
 <a name="HasSize"></a>
-### func [HasSize](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/matcher.go#L19>)
+### func [HasSize](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/matcher.go#L20>)
 
 ```go
 func HasSize(e int) Matcher
 ```
 
-HasSize checks the length of arrays, maps, or strings. Example: ExpectJsonPath\("$.data", httpassert.HasSize\(11\)\)
+HasSize checks the length of arrays, maps, or strings. Example: JsonPath\("$.data", httpassert.HasSize\(11\)\)
+
+<a name="IsUUID"></a>
+### func [IsUUID](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/matcher.go#L76>)
+
+```go
+func IsUUID() Matcher
+```
+
+IsUUID checks if a string is a UUID Example: JsonPath\("$.id", httpassert.IsUUID\(\)\)
+
+<a name="NotEmpty"></a>
+### func [NotEmpty](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/matcher.go#L63>)
+
+```go
+func NotEmpty() Matcher
+```
+
+NotEmpty checks if a string is not empty Example: JsonPath\("$.data.name", httpassert.NotEmpty\(\)\)
 
 <a name="Regex"></a>
-### func [Regex](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/matcher.go#L52>)
+### func [Regex](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/matcher.go#L53>)
 
 ```go
 func Regex(expr string) Matcher
 ```
 
-Regex checks if a string matches the given regular expression Example: ExpectJsonPath\("$.data.name", httpassert.Regex\("^foo.\*bar$"\)\)
+Regex checks if a string matches the given regular expression Example: JsonPath\("$.data.name", httpassert.Regex\("^foo.\*bar$"\)\)
 
 <a name="Request"></a>
-## type [Request](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/request.go#L23-L55>)
+## type [Request](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/request.go#L47-L65>)
 
-nolint:interfacebloat Request interface provides fluent HTTP request building.
+nolint:interfacebloat Request provides fluent request configuration
 
 ```go
 type Request interface {
+    AuthHeader(header string) Request
+    Headers(headers map[string]string) Request
+    Header(key, value string) Request
+    AuthJwt(jwt string) Request
+
+    ContentType(string) Request
+
+    Content(string) Request
+    ContentFile(string) Request
+
+    JsonContent(string) Request
+    JsonContentTemplate(body string, values map[string]any) Request
+    JsonContentObject(any) Request
+    JsonContentFile(path string) Request
+
+    Expect() Response
+    ExpectEventually(check func(r Response), timeout time.Duration, interval time.Duration) Response
+}
+```
+
+<a name="RequestStart"></a>
+## type [RequestStart](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/request.go#L27-L43>)
+
+nolint:interfacebloat RequestStart provides fluent HTTP \*method \+ path\* selection. Each call returns a fresh Request
+
+```go
+type RequestStart interface {
     Get(path string) Request
     Getf(format string, a ...interface{}) Request
     Post(path string) Request
@@ -121,33 +189,17 @@ type Request interface {
 
     Perform(verb string, path string) Request
     Performf(verb string, path string, a ...interface{}) Request
-
-    AuthHeader(header string) Request
-    Headers(headers map[string]string) Request
-    Header(key, value string) Request
-    AuthJwt(jwt string) Request
-
-    ContentType(string) Request
-
-    Content(string) Request
-    JsonContent(string) Request
-    JsonContentObject(any) Request
-    ContentFile(string) Request
-    JsonContentFile(path string) Request
-
-    Expect() Response
-    ExpectEventually(check func(r Response), timeout time.Duration, interval time.Duration) Response
 }
 ```
 
 <a name="New"></a>
-### func [New](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/request.go#L119>)
+### func [New](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/request.go#L95>)
 
 ```go
-func New(t *testing.T, router http.Handler) Request
+func New(t *testing.T, router http.Handler) RequestStart
 ```
 
-New returns a new Request instance for the given router.
+New returns a new RequestStart instance for the given router. All method calls \(Get/Post/...\) return a \*fresh\* Request.
 
 <a name="Response"></a>
 ## type [Response](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/response.go#L24-L46>)

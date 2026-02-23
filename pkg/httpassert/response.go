@@ -12,6 +12,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 	"github.com/yalp/jsonpath"
 )
@@ -71,6 +72,8 @@ func (r *responseImpl) StatusCode(expected int) Response {
 }
 
 func (r *responseImpl) JsonPath(path string, expected any) Response {
+	r.t.Helper()
+
 	var tmp any
 	if err := jsoniter.Unmarshal(r.response.Body.Bytes(), &tmp); err != nil {
 		assert.Fail(r.t, err.Error())
@@ -118,7 +121,7 @@ func (r *responseImpl) JsonPathJson(path string, expectedJson string) Response {
 		assert.Fail(r.t, err.Error())
 		return r
 	}
-	assert.JSONEq(r.t, expectedJson, string(pathJson))
+	AssertJSONCanonicalEq(r.t, expectedJson, string(pathJson))
 	return r
 }
 
@@ -128,7 +131,7 @@ func (r *responseImpl) NoContent() Response {
 }
 
 func (r *responseImpl) Json(expectedJson string) Response {
-	assert.JSONEq(r.t, expectedJson, r.response.Body.String())
+	AssertJSONCanonicalEq(r.t, expectedJson, r.response.Body.String())
 	return r
 }
 
@@ -141,6 +144,10 @@ func (r *responseImpl) JsonTemplate(expectedJsonTemplate string, values map[stri
 		key := strings.TrimPrefix(k, "$.")
 		key = strings.ReplaceAll(key, "[", ".")
 		key = strings.ReplaceAll(key, "]", "")
+
+		if !gjson.Get(expectedJson, key).Exists() {
+			assert.Fail(r.t, "Json key does not exist in template: "+k)
+		}
 
 		tmp, err := sjson.Set(expectedJson, key, v)
 		if err != nil {
@@ -161,6 +168,10 @@ func (r *responseImpl) JsonTemplate(expectedJsonTemplate string, values map[stri
 		key = strings.ReplaceAll(key, "[", ".")
 		key = strings.ReplaceAll(key, "]", "")
 
+		if !gjson.Get(actual, key).Exists() {
+			assert.Fail(r.t, "Json key does not exist in template: "+k)
+		}
+
 		tmp, err := sjson.Set(actual, key, v)
 		if err != nil {
 			assert.Fail(r.t, "JsonTemplate ignore replacement failed: "+err.Error())
@@ -169,8 +180,7 @@ func (r *responseImpl) JsonTemplate(expectedJsonTemplate string, values map[stri
 		actual = tmp
 	}
 
-	// compare the resulting JSONs ignoring order
-	valid := assert.JSONEq(r.t, expectedJson, actual)
+	valid := AssertJSONCanonicalEq(r.t, expectedJson, actual)
 	if !valid {
 		r.Log()
 	}
@@ -198,7 +208,7 @@ func (r *responseImpl) JsonFile(path string) Response {
 		assert.Fail(r.t, err.Error())
 		return r
 	}
-	assert.JSONEq(r.t, string(content), r.response.Body.String())
+	AssertJSONCanonicalEq(r.t, string(content), r.response.Body.String())
 	return r
 }
 

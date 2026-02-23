@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -55,4 +56,19 @@ func Test_NoEmptyMatcher(t *testing.T) {
 		Expect().
 		StatusCode(http.StatusOK).
 		JsonPath("$.data.name", NotEmpty())
+}
+
+func Test_IsUUIDMatcher(t *testing.T) {
+	router := http.NewServeMux()
+	router.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
+		_, err := fmt.Fprintf(w, `{"id": "%s"}`, uuid.New())
+		assert.NoError(t, err)
+	})
+
+	request := New(t, router)
+
+	request.Get("/api").
+		Expect().
+		StatusCode(http.StatusOK).
+		JsonPath("$.id", IsUUID())
 }

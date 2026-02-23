@@ -6,6 +6,7 @@ package httpassert
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"testing"
 	"time"
@@ -154,6 +155,32 @@ func TestRequest(t *testing.T) {
 			ContentType("application/json").
 			Expect().
 			StatusCode(http.StatusOK)
+	})
+
+	t.Run("JSON content template", func(t *testing.T) {
+		var content []byte
+		router := http.NewServeMux()
+		router.HandleFunc("/json", func(w http.ResponseWriter, r *http.Request) {
+			bodyBytes, err := io.ReadAll(r.Body)
+			require.NoError(t, err)
+			content = bodyBytes
+			w.WriteHeader(http.StatusOK)
+		})
+
+		New(t, router).
+			Post("/json").
+			JsonContentTemplate(`{
+				"n": {
+					"foo": "bar",
+					"asd": ""
+				}
+			}`, map[string]any{
+				"$.n.asd": "123",
+			}).
+			Expect().
+			StatusCode(http.StatusOK)
+
+		AssertJSONCanonicalEq(t, `{"n": {"foo": "bar","asd":"123"}}`, string(content))
 	})
 }
 
