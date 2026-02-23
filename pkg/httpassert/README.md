@@ -23,7 +23,8 @@ import "github.com/greenbone/opensight-golang-libraries/pkg/httpassert"
   - [func NotEmpty\(\) Matcher](<#NotEmpty>)
   - [func Regex\(expr string\) Matcher](<#Regex>)
 - [type Request](<#Request>)
-  - [func New\(t \*testing.T, router http.Handler\) Request](<#New>)
+- [type RequestStart](<#RequestStart>)
+  - [func New\(t \*testing.T, router http.Handler\) RequestStart](<#New>)
 - [type Response](<#Response>)
 
 
@@ -140,28 +141,12 @@ func Regex(expr string) Matcher
 Regex checks if a string matches the given regular expression Example: JsonPath\("$.data.name", httpassert.Regex\("^foo.\*bar$"\)\)
 
 <a name="Request"></a>
-## type [Request](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/request.go#L26-L60>)
+## type [Request](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/request.go#L47-L65>)
 
-nolint:interfacebloat Request interface provides fluent HTTP request building.
+nolint:interfacebloat Request provides fluent request configuration
 
 ```go
 type Request interface {
-    Get(path string) Request
-    Getf(format string, a ...interface{}) Request
-    Post(path string) Request
-    Postf(format string, a ...interface{}) Request
-    Put(path string) Request
-    Putf(format string, a ...interface{}) Request
-    Delete(path string) Request
-    Deletef(format string, a ...interface{}) Request
-    Options(path string) Request
-    Optionsf(format string, a ...interface{}) Request
-    Patch(path string) Request
-    Patchf(format string, a ...interface{}) Request
-
-    Perform(verb string, path string) Request
-    Performf(verb string, path string, a ...interface{}) Request
-
     AuthHeader(header string) Request
     Headers(headers map[string]string) Request
     Header(key, value string) Request
@@ -182,14 +167,39 @@ type Request interface {
 }
 ```
 
-<a name="New"></a>
-### func [New](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/request.go#L124>)
+<a name="RequestStart"></a>
+## type [RequestStart](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/request.go#L27-L43>)
+
+nolint:interfacebloat RequestStart provides fluent HTTP \*method \+ path\* selection. Each call returns a fresh Request
 
 ```go
-func New(t *testing.T, router http.Handler) Request
+type RequestStart interface {
+    Get(path string) Request
+    Getf(format string, a ...interface{}) Request
+    Post(path string) Request
+    Postf(format string, a ...interface{}) Request
+    Put(path string) Request
+    Putf(format string, a ...interface{}) Request
+    Delete(path string) Request
+    Deletef(format string, a ...interface{}) Request
+    Options(path string) Request
+    Optionsf(format string, a ...interface{}) Request
+    Patch(path string) Request
+    Patchf(format string, a ...interface{}) Request
+
+    Perform(verb string, path string) Request
+    Performf(verb string, path string, a ...interface{}) Request
+}
 ```
 
-New returns a new Request instance for the given router.
+<a name="New"></a>
+### func [New](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/request.go#L95>)
+
+```go
+func New(t *testing.T, router http.Handler) RequestStart
+```
+
+New returns a new RequestStart instance for the given router. All method calls \(Get/Post/...\) return a \*fresh\* Request.
 
 <a name="Response"></a>
 ## type [Response](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/response.go#L24-L46>)

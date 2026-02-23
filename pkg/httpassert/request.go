@@ -22,8 +22,9 @@ import (
 )
 
 // nolint:interfacebloat
-// Request interface provides fluent HTTP request building.
-type Request interface {
+// RequestStart provides fluent HTTP *method + path* selection.
+// Each call returns a fresh Request
+type RequestStart interface {
 	Get(path string) Request
 	Getf(format string, a ...interface{}) Request
 	Post(path string) Request
@@ -39,7 +40,11 @@ type Request interface {
 
 	Perform(verb string, path string) Request
 	Performf(verb string, path string, a ...interface{}) Request
+}
 
+// nolint:interfacebloat
+// Request provides fluent request configuration
+type Request interface {
 	AuthHeader(header string) Request
 	Headers(headers map[string]string) Request
 	Header(key, value string) Request
@@ -59,9 +64,14 @@ type Request interface {
 	ExpectEventually(check func(r Response), timeout time.Duration, interval time.Duration) Response
 }
 
-type request struct {
-	t *testing.T
+type starter struct {
+	t      *testing.T
+	router http.Handler
+}
 
+// request holds the per-request state (fresh instance per verb selection).
+type request struct {
+	t      *testing.T
 	router http.Handler
 
 	method      string
@@ -73,46 +83,6 @@ type request struct {
 	response *httptest.ResponseRecorder
 }
 
-func (m *request) Perform(verb string, path string) Request {
-	switch verb {
-	case "Post", http.MethodPost:
-		return m.Post(path)
-	case "Put", http.MethodPut:
-		return m.Put(path)
-	case "Get", http.MethodGet:
-		return m.Get(path)
-	case "Delete", http.MethodDelete:
-		return m.Delete(path)
-	case "Options", http.MethodOptions:
-		return m.Options(path)
-	case "Patch", http.MethodPatch:
-		return m.Patch(path)
-	default:
-		m.t.Fatalf("unknown verb: %s", verb)
-		return m
-	}
-}
-
-func (m *request) Performf(verb string, path string, a ...interface{}) Request {
-	switch verb {
-	case "Post", http.MethodPost:
-		return m.Postf(path, a...)
-	case "Put", http.MethodPut:
-		return m.Putf(path, a...)
-	case "Get", http.MethodGet:
-		return m.Getf(path, a...)
-	case "Delete", http.MethodDelete:
-		return m.Deletef(path, a...)
-	case "Options", http.MethodOptions:
-		return m.Optionsf(path, a...)
-	case "Patch", http.MethodPatch:
-		return m.Patchf(path, a...)
-	default:
-		m.t.Fatalf("unknown verb: %s", verb)
-		return m
-	}
-}
-
 // responseImpl implements Response.
 type responseImpl struct {
 	t        *testing.T
@@ -120,85 +90,107 @@ type responseImpl struct {
 	request  *request
 }
 
-// New returns a new Request instance for the given router.
-func New(t *testing.T, router http.Handler) Request {
+// New returns a new RequestStart instance for the given router.
+// All method calls (Get/Post/...) return a *fresh* Request.
+func New(t *testing.T, router http.Handler) RequestStart {
+	return &starter{t: t, router: router}
+}
+
+func (s *starter) newRequest(method, url string) Request {
 	return &request{
-		t:       t,
-		router:  router,
-		headers: map[string]string{},
+		t:       s.t,
+		router:  s.router,
+		method:  method,
+		url:     url,
+		headers: map[string]string{}, // fresh map: no tinted headers
 	}
 }
 
-func (m *request) Post(path string) Request {
-	m.method = http.MethodPost
-	m.url = path
-	return m
+func (s *starter) Post(path string) Request {
+	return s.newRequest(http.MethodPost, path)
 }
 
-func (m *request) Postf(format string, a ...interface{}) Request {
-	m.method = http.MethodPost
-	m.url = fmt.Sprintf(format, a...)
-	return m
+func (s *starter) Postf(format string, a ...interface{}) Request {
+	return s.newRequest(http.MethodPost, fmt.Sprintf(format, a...))
 }
 
-func (m *request) Put(path string) Request {
-	m.method = http.MethodPut
-	m.url = path
-	return m
+func (s *starter) Put(path string) Request {
+	return s.newRequest(http.MethodPut, path)
 }
 
-func (m *request) Putf(format string, a ...interface{}) Request {
-	m.method = http.MethodPut
-	m.url = fmt.Sprintf(format, a...)
-	return m
+func (s *starter) Putf(format string, a ...interface{}) Request {
+	return s.newRequest(http.MethodPut, fmt.Sprintf(format, a...))
 }
 
-func (m *request) Get(path string) Request {
-	m.method = http.MethodGet
-	m.url = path
-	return m
+func (s *starter) Get(path string) Request {
+	return s.newRequest(http.MethodGet, path)
 }
 
-func (m *request) Getf(format string, a ...interface{}) Request {
-	m.method = http.MethodGet
-	m.url = fmt.Sprintf(format, a...)
-	return m
+func (s *starter) Getf(format string, a ...interface{}) Request {
+	return s.newRequest(http.MethodGet, fmt.Sprintf(format, a...))
 }
 
-func (m *request) Options(path string) Request {
-	m.method = http.MethodOptions
-	m.url = path
-	return m
+func (s *starter) Options(path string) Request {
+	return s.newRequest(http.MethodOptions, path)
+}
+func (s *starter) Optionsf(format string, a ...interface{}) Request {
+	return s.newRequest(http.MethodOptions, fmt.Sprintf(format, a...))
 }
 
-func (m *request) Optionsf(format string, a ...interface{}) Request {
-	m.method = http.MethodOptions
-	m.url = fmt.Sprintf(format, a...)
-	return m
+func (s *starter) Delete(path string) Request {
+	return s.newRequest(http.MethodDelete, path)
 }
 
-func (m *request) Delete(path string) Request {
-	m.method = http.MethodDelete
-	m.url = path
-	return m
+func (s *starter) Deletef(format string, a ...interface{}) Request {
+	return s.newRequest(http.MethodDelete, fmt.Sprintf(format, a...))
 }
 
-func (m *request) Deletef(format string, a ...interface{}) Request {
-	m.method = http.MethodDelete
-	m.url = fmt.Sprintf(format, a...)
-	return m
+func (s *starter) Patch(path string) Request {
+	return s.newRequest(http.MethodPatch, path)
 }
 
-func (m *request) Patch(path string) Request {
-	m.method = http.MethodPatch
-	m.url = path
-	return m
+func (s *starter) Patchf(format string, a ...interface{}) Request {
+	return s.newRequest(http.MethodPatch, fmt.Sprintf(format, a...))
 }
 
-func (m *request) Patchf(format string, a ...interface{}) Request {
-	m.method = http.MethodPatch
-	m.url = fmt.Sprintf(format, a...)
-	return m
+func (s *starter) Perform(verb string, path string) Request {
+	switch verb {
+	case "Post", http.MethodPost:
+		return s.Post(path)
+	case "Put", http.MethodPut:
+		return s.Put(path)
+	case "Get", http.MethodGet:
+		return s.Get(path)
+	case "Delete", http.MethodDelete:
+		return s.Delete(path)
+	case "Options", http.MethodOptions:
+		return s.Options(path)
+	case "Patch", http.MethodPatch:
+		return s.Patch(path)
+	default:
+		s.t.Fatalf("unknown verb: %s", verb)
+		return &request{} // unreachable, but keeps compiler happy
+	}
+}
+
+func (s *starter) Performf(verb string, format string, a ...interface{}) Request {
+	switch verb {
+	case "Post", http.MethodPost:
+		return s.Postf(format, a...)
+	case "Put", http.MethodPut:
+		return s.Putf(format, a...)
+	case "Get", http.MethodGet:
+		return s.Getf(format, a...)
+	case "Delete", http.MethodDelete:
+		return s.Deletef(format, a...)
+	case "Options", http.MethodOptions:
+		return s.Optionsf(format, a...)
+	case "Patch", http.MethodPatch:
+		return s.Patchf(format, a...)
+	default:
+		s.t.Fatalf("unknown verb: %s", verb)
+		return &request{} // unreachable, but keeps compiler happy
+	}
 }
 
 func (m *request) AuthHeader(header string) Request {
@@ -228,6 +220,15 @@ func (m *request) ContentType(ct string) Request {
 
 func (m *request) Content(body string) Request {
 	m.body = body
+	return m
+}
+
+func (m *request) ContentFile(path string) Request {
+	content, err := os.ReadFile(path)
+	if err != nil {
+		assert.Fail(m.t, err.Error())
+	}
+	m.body = string(content)
 	return m
 }
 
@@ -269,15 +270,6 @@ func (m *request) JsonContentObject(obj any) Request {
 	require.NoError(m.t, err)
 
 	m.JsonContent(string(marshal))
-	return m
-}
-
-func (m *request) ContentFile(path string) Request {
-	content, err := os.ReadFile(path)
-	if err != nil {
-		assert.Fail(m.t, err.Error())
-	}
-	m.body = string(content)
 	return m
 }
 
