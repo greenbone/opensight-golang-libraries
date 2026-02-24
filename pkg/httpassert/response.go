@@ -140,10 +140,7 @@ func (r *responseImpl) JsonTemplate(expectedJsonTemplate string, values map[stri
 
 	// apply provided values into the template
 	for k, v := range values {
-		// normalize JSONPath-like keys (convert $.a[0].b to a.0.b)
-		key := strings.TrimPrefix(k, "$.")
-		key = strings.ReplaceAll(key, "[", ".")
-		key = strings.ReplaceAll(key, "]", "")
+		key := normalizeJSONPath(k)
 
 		if !gjson.Get(expectedJson, key).Exists() {
 			assert.Fail(r.t, "Json key does not exist in template: "+k)
@@ -164,9 +161,7 @@ func (r *responseImpl) JsonTemplate(expectedJsonTemplate string, values map[stri
 			continue
 		}
 
-		key := strings.TrimPrefix(k, "$.")
-		key = strings.ReplaceAll(key, "[", ".")
-		key = strings.ReplaceAll(key, "]", "")
+		key := normalizeJSONPath(k)
 
 		if !gjson.Get(actual, key).Exists() {
 			assert.Fail(r.t, "Json key does not exist in template: "+k)
@@ -234,4 +229,15 @@ func (r *responseImpl) Log() Response {
 		r.response.Header(),
 		r.response.Body)
 	return r
+}
+
+// normalizeJSONPath converts jsonpath syntax to gjson/sjson syntax.
+// E.g. convert $.a[0].b to a.0.b and $[0].a to 0.a
+// This allows a unified path syntax to the caller, regardless which library is used internally.
+func normalizeJSONPath(path string) string {
+	path = strings.ReplaceAll(path, "[", ".")
+	path = strings.ReplaceAll(path, "]", "")
+	path = strings.TrimPrefix(path, "$.")
+
+	return path
 }

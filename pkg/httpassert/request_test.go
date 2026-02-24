@@ -157,7 +157,7 @@ func TestRequest(t *testing.T) {
 			StatusCode(http.StatusOK)
 	})
 
-	t.Run("JSON content template", func(t *testing.T) {
+	t.Run("JSON content template with object", func(t *testing.T) {
 		var content []byte
 		router := http.NewServeMux()
 		router.HandleFunc("/json", func(w http.ResponseWriter, r *http.Request) {
@@ -181,6 +181,32 @@ func TestRequest(t *testing.T) {
 			StatusCode(http.StatusOK)
 
 		AssertJSONCanonicalEq(t, `{"n": {"foo": "bar","asd":"123"}}`, string(content))
+	})
+
+	t.Run("JSON content template with array", func(t *testing.T) {
+		var content []byte
+		router := http.NewServeMux()
+		router.HandleFunc("/json", func(w http.ResponseWriter, r *http.Request) {
+			bodyBytes, err := io.ReadAll(r.Body)
+			require.NoError(t, err)
+			content = bodyBytes
+			w.WriteHeader(http.StatusOK)
+		})
+
+		New(t, router).
+			Post("/json").
+			JsonContentTemplate(`[{
+				"n": {
+					"foo": "bar",
+					"asd": ""
+				}
+			}]`, map[string]any{
+				"$[0].n.asd": "123",
+			}).
+			Expect().
+			StatusCode(http.StatusOK)
+
+		AssertJSONCanonicalEq(t, `[{"n": {"foo": "bar","asd":"123"}}]`, string(content))
 	})
 }
 
