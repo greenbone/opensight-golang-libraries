@@ -24,7 +24,7 @@ func TestResponse(t *testing.T) {
 			JsonFile(path)
 	})
 
-	t.Run("JsonTemplate value replacement and ignore handling", func(t *testing.T) {
+	t.Run("JsonTemplate value replacement and ignore handling with object", func(t *testing.T) {
 		router := http.NewServeMux()
 		router.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -75,6 +75,26 @@ func TestResponse(t *testing.T) {
 					"$.meta.info.build": IgnoreJsonValue, // ignored build number
 				})
 		})
+	})
+
+	t.Run("JsonTemplate value replacement with array", func(t *testing.T) {
+		router := http.NewServeMux()
+		router.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, err := fmt.Fprint(w, `[{"id":42,"name":"Greenbone","version":"1.0.0","tags":["alpha","beta"]}]`)
+			require.NoError(t, err)
+		})
+
+		New(t, router).Get("/api").
+			Expect().
+			JsonTemplate(`[{"id":0,"name":"","version":"","tags":["x","y"]}]`, map[string]any{
+				"$[0].id":      42,
+				"$[0].name":    "Greenbone",
+				"$[0].tags[0]": "alpha",
+				"$[0].tags[1]": "beta",
+				"$[0].version": "1.0.0",
+			})
 	})
 
 	t.Run("GetBody returns non-empty", func(t *testing.T) {

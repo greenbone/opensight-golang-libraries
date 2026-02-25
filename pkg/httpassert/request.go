@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"strings"
 	"testing"
 	"time"
 
@@ -244,10 +243,7 @@ func (m *request) JsonContentTemplate(body string, values map[string]any) Reques
 	jsonBody := body
 	// apply provided values into the template
 	for k, v := range values {
-		// normalize JSONPath-like keys (convert $.a[0].b to a.0.b)
-		key := strings.TrimPrefix(k, "$.")
-		key = strings.ReplaceAll(key, "[", ".")
-		key = strings.ReplaceAll(key, "]", "")
+		key := normalizeJSONPath(k)
 
 		if !gjson.Get(jsonBody, key).Exists() {
 			assert.Fail(m.t, "Json key does not exist in template: "+k)
