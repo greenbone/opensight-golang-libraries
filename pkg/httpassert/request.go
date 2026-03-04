@@ -132,6 +132,7 @@ func (s *starter) Getf(format string, a ...interface{}) Request {
 func (s *starter) Options(path string) Request {
 	return s.newRequest(http.MethodOptions, path)
 }
+
 func (s *starter) Optionsf(format string, a ...interface{}) Request {
 	return s.newRequest(http.MethodOptions, fmt.Sprintf(format, a...))
 }
