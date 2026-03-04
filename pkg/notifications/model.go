@@ -39,7 +39,15 @@ const (
 	LevelInfo    Level = "info"
 	LevelWarning Level = "warning"
 	LevelError   Level = "error"
+	LevelUrgent  Level = "urgent"
 )
+
+var AllowedLevels = []Level{
+	LevelInfo,
+	LevelWarning,
+	LevelError,
+	LevelUrgent,
+}
 
 // toNotificationModel converts a Notification to the rest model for the notification service.
 // It also adds the current time as timestamp if it is not set.
