@@ -33,7 +33,11 @@ type Client struct {
 // openSearchProjectClient is the official OpenSearch client to wrap. Use NewOpenSearchProjectClient to create it.
 // updateMaxRetries is the number of retries for update requests.
 // updateRetryDelay is the delay between retries.
-func NewClient(openSearchProjectClient *opensearchapi.Client, updateMaxRetries int, updateRetryDelay time.Duration) *Client {
+func NewClient(
+	openSearchProjectClient *opensearchapi.Client,
+	updateMaxRetries int,
+	updateRetryDelay time.Duration,
+) *Client {
 	c := &Client{
 		openSearchProjectClient: openSearchProjectClient,
 	}
@@ -107,7 +111,12 @@ func (c *Client) Count(indexName string, requestBody []byte) (count int64, err e
 	return countResp.Count, nil
 }
 
-func (c *Client) SearchStream(indexName string, requestBody []byte, scrollTimeout time.Duration, ctx context.Context) (io.Reader, error) {
+func (c *Client) SearchStream(
+	indexName string,
+	requestBody []byte,
+	scrollTimeout time.Duration,
+	ctx context.Context,
+) (io.Reader, error) {
 	reader, writer := io.Pipe()
 	startSignal := make(chan error, 1)
 
@@ -208,7 +217,7 @@ func (c *Client) SearchStream(indexName string, requestBody []byte, scrollTimeou
 		clearScrollReq := opensearchapi.ScrollDeleteReq{
 			ScrollIDs: []string{scrollID},
 		}
-		_, err = c.openSearchProjectClient.Scroll.Delete(context.Background(), clearScrollReq)
+		_, err = c.openSearchProjectClient.Scroll.Delete(ctx, clearScrollReq)
 		if err != nil {
 			log.Warn().Err(err).Msgf("failed to delete scroll context")
 		}

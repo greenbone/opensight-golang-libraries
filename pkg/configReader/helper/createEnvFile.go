@@ -7,6 +7,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -17,7 +18,15 @@ func main() {
 	// Find all Go files in the current directory and its subdirectories
 	var envVarsGoFile []string
 	var envVars []string
-	err := filepath.Walk("internal/", func(path string, info os.FileInfo, err error) error {
+
+	root, err := os.OpenRoot("internal/")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer root.Close()
+
+	err = fs.WalkDir(root.FS(), ".", func(path string, info fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -33,7 +42,7 @@ func main() {
 
 		// Parse the Go file and look for structs with the "viperEnv" tag
 		fmt.Printf("Looking for %s\n", path)
-		file, err := os.Open(path)
+		file, err := root.Open(path)
 		if err != nil {
 			return err
 		}
