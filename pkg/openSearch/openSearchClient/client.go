@@ -217,7 +217,8 @@ func (c *Client) SearchStream(
 		clearScrollReq := opensearchapi.ScrollDeleteReq{
 			ScrollIDs: []string{scrollID},
 		}
-		_, err = c.openSearchProjectClient.Scroll.Delete(ctx, clearScrollReq)
+		detachedCtx := context.WithoutCancel(ctx)
+		_, err = c.openSearchProjectClient.Scroll.Delete(detachedCtx, clearScrollReq)
 		if err != nil {
 			log.Warn().Err(err).Msgf("failed to delete scroll context")
 		}
