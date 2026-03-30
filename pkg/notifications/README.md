@@ -12,16 +12,44 @@ Package Notifications provides a client to communicate with the OpenSight Notifi
 
 ## Index
 
+- [Variables](<#variables>)
+- [type AuthClient](<#AuthClient>)
 - [type Client](<#Client>)
-  - [func NewClient\(httpClient \*http.Client, config Config, authCfg auth.KeycloakConfig\) \*Client](<#NewClient>)
+  - [func NewClient\(httpClient \*http.Client, config Config, authClient AuthClient\) \*Client](<#NewClient>)
   - [func \(c \*Client\) CreateNotification\(ctx context.Context, notification Notification\) error](<#Client.CreateNotification>)
+  - [func \(c \*Client\) RegisterOrigins\(ctx context.Context, serviceID string, origins \[\]Origin\) error](<#Client.RegisterOrigins>)
 - [type Config](<#Config>)
 - [type Level](<#Level>)
 - [type Notification](<#Notification>)
+- [type Origin](<#Origin>)
 
+
+## Variables
+
+<a name="AllowedLevels"></a>
+
+```go
+var AllowedLevels = []Level{
+    LevelInfo,
+    LevelWarning,
+    LevelError,
+    LevelUrgent,
+}
+```
+
+<a name="AuthClient"></a>
+## type [AuthClient](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L45-L47>)
+
+
+
+```go
+type AuthClient interface {
+    GetToken(ctx context.Context) (string, error)
+}
+```
 
 <a name="Client"></a>
-## type [Client](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L27-L34>)
+## type [Client](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L28-L35>)
 
 Client can be used to send notifications
 
@@ -32,16 +60,16 @@ type Client struct {
 ```
 
 <a name="NewClient"></a>
-### func [NewClient](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L46>)
+### func [NewClient](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L51>)
 
 ```go
-func NewClient(httpClient *http.Client, config Config, authCfg auth.KeycloakConfig) *Client
+func NewClient(httpClient *http.Client, config Config, authClient AuthClient) *Client
 ```
 
 NewClient returns a new [Client](<#Client>) with the notification service address \(host:port\) set. As httpClient you can use e.g. \[http.DefaultClient\].
 
 <a name="Client.CreateNotification"></a>
-### func \(\*Client\) [CreateNotification](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L62>)
+### func \(\*Client\) [CreateNotification](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L65>)
 
 ```go
 func (c *Client) CreateNotification(ctx context.Context, notification Notification) error
@@ -49,8 +77,17 @@ func (c *Client) CreateNotification(ctx context.Context, notification Notificati
 
 CreateNotification sends a notification to the notification service. It is retried up to the configured number of retries with an exponential backoff, So it can take some time until the functions returns.
 
+<a name="Client.RegisterOrigins"></a>
+### func \(\*Client\) [RegisterOrigins](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L101>)
+
+```go
+func (c *Client) RegisterOrigins(ctx context.Context, serviceID string, origins []Origin) error
+```
+
+
+
 <a name="Config"></a>
-## type [Config](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L37-L42>)
+## type [Config](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/notification.go#L38-L43>)
 
 Config configures the notification service client
 
@@ -79,6 +116,7 @@ const (
     LevelInfo    Level = "info"
     LevelWarning Level = "warning"
     LevelError   Level = "error"
+    LevelUrgent  Level = "urgent"
 )
 ```
 
@@ -98,6 +136,18 @@ type Notification struct {
     Detail           string
     Level            Level
     CustomFields     map[string]any // optional, can contain arbitrary structured information about the notification
+}
+```
+
+<a name="Origin"></a>
+## type [Origin](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/notifications/model.go#L71-L74>)
+
+
+
+```go
+type Origin struct {
+    Name  string `json:"name"`
+    Class string `json:"class"`
 }
 ```
 

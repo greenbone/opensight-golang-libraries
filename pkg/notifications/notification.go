@@ -15,7 +15,6 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/greenbone/opensight-golang-libraries/pkg/auth"
 	"github.com/greenbone/opensight-golang-libraries/pkg/retryableRequest"
 )
 
@@ -28,7 +27,7 @@ const (
 // Client can be used to send notifications
 type Client struct {
 	httpClient                 *http.Client
-	authClient                 *auth.KeycloakClient
+	authClient                 AuthClient
 	notificationServiceAddress string
 	maxRetries                 int
 	retryWaitMin               time.Duration
@@ -43,11 +42,13 @@ type Config struct {
 	RetryWaitMax time.Duration
 }
 
+type AuthClient interface {
+	GetToken(ctx context.Context) (string, error)
+}
+
 // NewClient returns a new [Client] with the notification service address (host:port) set.
 // As httpClient you can use e.g. [http.DefaultClient].
-func NewClient(httpClient *http.Client, config Config, authCfg auth.KeycloakConfig) *Client {
-	authClient := auth.NewKeycloakClient(httpClient, authCfg)
-
+func NewClient(httpClient *http.Client, config Config, authClient AuthClient) *Client {
 	return &Client{
 		httpClient:                 httpClient,
 		authClient:                 authClient,

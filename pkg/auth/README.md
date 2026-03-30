@@ -12,14 +12,52 @@ Package auth provides a client to authenticate against a Keycloak server.
 
 ## Index
 
+- [type ClientCredentials](<#ClientCredentials>)
+- [type Clock](<#Clock>)
+- [type Credentials](<#Credentials>)
 - [type KeycloakClient](<#KeycloakClient>)
-  - [func NewKeycloakClient\(httpClient \*http.Client, cfg KeycloakConfig\) \*KeycloakClient](<#NewKeycloakClient>)
+  - [func NewKeycloakClient\(httpClient \*http.Client, cfg KeycloakConfig, credentials Credentials\) \*KeycloakClient](<#NewKeycloakClient>)
   - [func \(c \*KeycloakClient\) GetToken\(ctx context.Context\) \(string, error\)](<#KeycloakClient.GetToken>)
 - [type KeycloakConfig](<#KeycloakConfig>)
+- [type ResourceOwnerCredentials](<#ResourceOwnerCredentials>)
 
+
+<a name="ClientCredentials"></a>
+## type [ClientCredentials](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/auth/auth_client.go#L53-L56>)
+
+ClientCredentials to authenticate via \`Client credentials grant\` flow. Ref: https://www.keycloak.org/docs/latest/server_admin/index.html#_client_credentials_grant
+
+```go
+type ClientCredentials struct {
+    ClientID     string
+    ClientSecret string
+}
+```
+
+<a name="Clock"></a>
+## type [Clock](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/auth/auth_client.go#L20-L22>)
+
+
+
+```go
+type Clock interface {
+    Now() time.Time
+}
+```
+
+<a name="Credentials"></a>
+## type [Credentials](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/auth/auth_client.go#L47-L49>)
+
+Credentials holds the required credentials and determines the used auth type.
+
+```go
+type Credentials interface {
+    // contains filtered or unexported methods
+}
+```
 
 <a name="KeycloakClient"></a>
-## type [KeycloakClient](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/auth/auth_client.go#L42-L47>)
+## type [KeycloakClient](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/auth/auth_client.go#L86-L94>)
 
 KeycloakClient can be used to authenticate against a Keycloak server.
 
@@ -30,35 +68,45 @@ type KeycloakClient struct {
 ```
 
 <a name="NewKeycloakClient"></a>
-### func [NewKeycloakClient](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/auth/auth_client.go#L50>)
+### func [NewKeycloakClient](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/auth/auth_client.go#L97>)
 
 ```go
-func NewKeycloakClient(httpClient *http.Client, cfg KeycloakConfig) *KeycloakClient
+func NewKeycloakClient(httpClient *http.Client, cfg KeycloakConfig, credentials Credentials) *KeycloakClient
 ```
 
-NewKeycloakClient creates a new KeycloakClient.
+NewKeycloakClient creates a new KeycloakClient. Passed [Credentials](<#Credentials>) determines the used auth type.
 
 <a name="KeycloakClient.GetToken"></a>
-### func \(\*KeycloakClient\) [GetToken](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/auth/auth_client.go#L60>)
+### func \(\*KeycloakClient\) [GetToken](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/auth/auth_client.go#L107>)
 
 ```go
 func (c *KeycloakClient) GetToken(ctx context.Context) (string, error)
 ```
 
-GetToken retrieves a valid access token. The token is cached and refreshed before expiry. The token is obtained by \`Resource owner password credentials grant\` flow. Ref: https://www.keycloak.org/docs/latest/server_admin/index.html#_oidc-auth-flows-direct
+GetToken retrieves a valid access token. The token is cached and refreshed before expiry.
 
 <a name="KeycloakConfig"></a>
-## type [KeycloakConfig](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/auth/auth_client.go#L23-L29>)
+## type [KeycloakConfig](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/auth/auth_client.go#L31-L34>)
 
 KeycloakConfig holds the credentials and configuration details
 
 ```go
 type KeycloakConfig struct {
-    ClientID      string
-    Username      string
-    Password      string
     AuthURL       string
     KeycloakRealm string
+}
+```
+
+<a name="ResourceOwnerCredentials"></a>
+## type [ResourceOwnerCredentials](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/auth/auth_client.go#L60-L64>)
+
+ResourceOwnerCredentials to authenticate via \`Resource owner password credentials grant\` flow. Ref: https://www.keycloak.org/docs/latest/server_admin/index.html#_oidc-auth-flows-direct
+
+```go
+type ResourceOwnerCredentials struct {
+    ClientID string
+    Username string
+    Password string
 }
 ```
 

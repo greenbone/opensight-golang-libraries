@@ -1,0 +1,10 @@
+dir: "{{.InterfaceDir}}/mocks"
+pkgname: "mocks"
+structname: "{{.InterfaceName}}"
+filename: "{{.InterfaceName}}.go"
+all: true
+
+packages:
+  github.com/greenbone/opensight-golang-libraries/pkg/notifications:
+    config:
+      recursive: true
