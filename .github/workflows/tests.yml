@@ -15,7 +15,7 @@ jobs:
       - uses: ./.github/actions/go-setup
       - run: make test-codecov
       - name: Upload unit test coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           files: cov-unit-tests.out
           flags: unit-tests
@@ -31,7 +31,7 @@ jobs:
       - name: Execute OpenSearch tests
         run: make test-opensearch
       - name: Upload OpenSearch test coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           files: cov-os-tests.out
           flags: opensearch-tests
@@ -47,7 +47,7 @@ jobs:
       - name: Execute Postgres tests
         run: make test-postgres
       - name: Upload Postgres test coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           files: cov-pg-tests.out
           flags: postgres-tests
