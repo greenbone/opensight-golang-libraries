@@ -12,6 +12,7 @@ To use the latest swagger-ui (by using github.com/swaggo/files/v2) we needed to 
 ## Sources used
 To compile the new package we took the gin-echo package (https://github.com/swaggo/echo-swagger/blob/master/swagger.go) as a reference and added the gin based functionality.
 
+*Note:* It is not yet compatible with `Authorization Code + PKCE` login flow. If that becomes necessary see open PR of related package: https://github.com/swaggo/echo-swagger/pull/100 as a start.
 
 ## Usage
 
@@ -50,18 +51,25 @@ import "github.com/greenbone/opensight-golang-libraries/pkg/swagger"
 
 ## Index
 
-- [Variables](<#variables>)
-- [func DeepLinking\(deepLinking bool\) func\(\*Config\)](<#DeepLinking>)
-- [func DocExpansion\(docExpansion string\) func\(\*Config\)](<#DocExpansion>)
-- [func DomID\(domID string\) func\(\*Config\)](<#DomID>)
-- [func GinWrapHandler\(options ...func\(\*Config\)\) gin.HandlerFunc](<#GinWrapHandler>)
-- [func InstanceName\(instanceName string\) func\(\*Config\)](<#InstanceName>)
-- [func OAuth\(config \*OAuthConfig\) func\(\*Config\)](<#OAuth>)
-- [func PersistAuthorization\(persistAuthorization bool\) func\(\*Config\)](<#PersistAuthorization>)
-- [func SyntaxHighlight\(syntaxHighlight bool\) func\(\*Config\)](<#SyntaxHighlight>)
-- [func URL\(url string\) func\(\*Config\)](<#URL>)
-- [type Config](<#Config>)
-- [type OAuthConfig](<#OAuthConfig>)
+- [ginSwagger](#ginswagger)
+  - [Reason for implementation](#reason-for-implementation)
+  - [Sources used](#sources-used)
+  - [Usage](#usage)
+- [License](#license)
+- [ginSwagger](#ginswagger-1)
+  - [Index](#index)
+  - [Variables](#variables)
+  - [func DeepLinking](#func-deeplinking)
+  - [func DocExpansion](#func-docexpansion)
+  - [func DomID](#func-domid)
+  - [func GinWrapHandler](#func-ginwraphandler)
+  - [func InstanceName](#func-instancename)
+  - [func OAuth](#func-oauth)
+  - [func PersistAuthorization](#func-persistauthorization)
+  - [func SyntaxHighlight](#func-syntaxhighlight)
+  - [func URL](#func-url)
+  - [type Config](#type-config)
+  - [type OAuthConfig](#type-oauthconfig)
 
 
 ## Variables
