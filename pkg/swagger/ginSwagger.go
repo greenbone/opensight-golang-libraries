@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files/v2"
@@ -26,6 +27,7 @@ type Config struct {
 	PersistAuthorization bool
 	SyntaxHighlight      bool
 	OAuth                *OAuthConfig
+	CSPConnectSrc        []string
 }
 
 type OAuthConfig struct {
@@ -82,6 +84,15 @@ func OAuth(config *OAuthConfig) func(*Config) {
 	}
 }
 
+// CSPConnectSrc adds URLs to the Content Security Policy's connect-src directive.
+// This is necessary to allow the Swagger UI to communicate with Keycloak for authentication.
+// Note: The connect-src directive expects only scheme://host:port without paths
+func CSPConnectSrc(urls ...string) func(*Config) {
+	return func(c *Config) {
+		c.CSPConnectSrc = append(c.CSPConnectSrc, urls...)
+	}
+}
+
 func newConfig(configFns ...func(*Config)) *Config {
 	config := Config{
 		URLs:                 []string{"doc.json", "doc.yaml"},
@@ -106,13 +117,23 @@ var WrapHandler = GinWrapHandler()
 func GinWrapHandler(options ...func(*Config)) gin.HandlerFunc {
 	config := newConfig(options...)
 	index, _ := template.New("swagger_index.html").Parse(indexTemplate)
-	re := regexp.MustCompile(`^(.*/)([^?].*)?[?|.]*$`)
+	re := regexp.MustCompile(`^(.*/)([^?]*)?(\?.*)?$`) // e.g. /api/users?sort=name => [ "api/", "users", "?sort=name" ]
 
 	return func(c *gin.Context) {
 		// Set security headers to protect against ClickJacking and XSS
 		c.Header("X-Frame-Options", "DENY")
 		c.Header("X-XSS-Protection", "1; mode=block")
-		c.Header("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; frame-ancestors 'none'")
+		csp := []string{
+			"default-src 'self'",
+			"script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+			"frame-ancestors 'none'",
+		}
+		if len(config.CSPConnectSrc) > 0 {
+			sources := append(config.CSPConnectSrc, "'self'")
+			connectSrc := "connect-src " + strings.Join(sources, " ")
+			csp = append(csp, connectSrc)
+		}
+		c.Header("Content-Security-Policy", strings.Join(csp, "; "))
 		c.Header("X-Content-Type-Options", "nosniff")
 
 		if c.Request.Method != http.MethodGet {

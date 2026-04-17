@@ -14,16 +14,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/greenbone/opensight-golang-libraries/pkg/auth"
+	"github.com/greenbone/opensight-golang-libraries/pkg/notifications/mocks"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
 type serverErrors struct { // set at most one of the fields to true
-	fatalFail          bool
-	retryableFail      bool
-	authenticationFail bool
-	unexpectedResponse bool
+	fatalFail               bool
+	retryableFail           bool
+	authClientFail          bool
+	persistentInternalError bool
 }
 
 const checkForCurrentTimestamp = "marker to check for current timestamp"
@@ -94,14 +95,14 @@ func TestClient_CreateNotification(t *testing.T) {
 		{
 			name:                 "client fails on authentication error",
 			notification:         notification,
-			serverErrors:         serverErrors{authenticationFail: true},
+			serverErrors:         serverErrors{authClientFail: true},
 			wantNotificationSent: wantNotification,
 			wantErr:              true,
 		},
 		{
 			name:                 "sending notification fails after maximum number of retries",
 			notification:         notification,
-			serverErrors:         serverErrors{unexpectedResponse: true},
+			serverErrors:         serverErrors{persistentInternalError: true},
 			wantNotificationSent: wantNotification,
 			wantErr:              true,
 		},
@@ -109,9 +110,6 @@ func TestClient_CreateNotification(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var serverCallCount atomic.Int32
-
-			mockAuthServer := setupMockAuthServer(t, tt.serverErrors.authenticationFail)
-			defer mockAuthServer.Close()
 
 			mockNotificationServer := setupMockNotificationServer(t, &serverCallCount,
 				tt.wantNotificationSent, tt.serverErrors)
@@ -124,17 +122,17 @@ func TestClient_CreateNotification(t *testing.T) {
 				RetryWaitMax: time.Second,
 			}
 
-			authentication := auth.KeycloakConfig{
-				ClientID: "client_id",
-				Username: "username",
-				Password: "password",
-				AuthURL:  mockAuthServer.URL,
+			authClient := mocks.NewAuthClient(t)
+			if tt.serverErrors.authClientFail {
+				authClient.EXPECT().GetToken(mock.Anything).Return("", assert.AnError).Times(1)
+			} else {
+				authClient.EXPECT().GetToken(mock.Anything).Return("mock-token", nil).Times(1)
 			}
 
-			client := NewClient(http.DefaultClient, config, authentication)
+			client := NewClient(http.DefaultClient, config, authClient)
 			err := client.CreateNotification(context.Background(), tt.notification)
 
-			if !tt.serverErrors.authenticationFail {
+			if !tt.serverErrors.authClientFail {
 				assert.Greater(t, serverCallCount.Load(), int32(0), "notification server was not called")
 			}
 
@@ -145,18 +143,6 @@ func TestClient_CreateNotification(t *testing.T) {
 			}
 		})
 	}
-}
-
-func setupMockAuthServer(t *testing.T, failAuth bool) *httptest.Server {
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if failAuth {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		w.Write([]byte(`{"access_token": "mock-token", "expires_in": 3600}`))
-		err := json.NewEncoder(w).Encode(map[string]any{})
-		require.NoError(t, err)
-	}))
 }
 
 func setupMockNotificationServer(t *testing.T, serverCallCount *atomic.Int32,
@@ -204,7 +190,7 @@ func setupMockNotificationServer(t *testing.T, serverCallCount *atomic.Int32,
 				return
 			}
 		}
-		if errors.unexpectedResponse {
+		if errors.persistentInternalError {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

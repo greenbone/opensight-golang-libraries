@@ -29,11 +29,8 @@ const tokenRefreshMargin = 10 * time.Second
 
 // KeycloakConfig holds the credentials and configuration details
 type KeycloakConfig struct {
-	ClientID      string
-	Username      string
-	Password      string //nolint:gosec
-	AuthURL       string
-	KeycloakRealm string
+	AuthURL string
+	Realm   string
 }
 
 type tokenInfo struct {
@@ -46,28 +43,67 @@ type authResponse struct {
 	ExpiresIn   int    `json:"expires_in"`   // in seconds
 }
 
+// Credentials holds the required credentials and determines the used auth type.
+type Credentials interface {
+	constructUrlValues() url.Values // unexported method to prevent external implementation
+}
+
+// ClientCredentials to authenticate via `Client credentials grant` flow.
+// Ref: https://www.keycloak.org/docs/latest/server_admin/index.html#_client_credentials_grant
+type ClientCredentials struct {
+	ClientID     string
+	ClientSecret string
+}
+
+func (c ClientCredentials) constructUrlValues() url.Values {
+	urlValues := url.Values{}
+	urlValues.Set("grant_type", "client_credentials")
+	urlValues.Set("client_id", c.ClientID)
+	urlValues.Set("client_secret", c.ClientSecret)
+
+	return urlValues
+}
+
+// ResourceOwnerCredentials to authenticate via `Resource owner password credentials grant` flow.
+// Ref: https://www.keycloak.org/docs/latest/server_admin/index.html#_oidc-auth-flows-direct
+type ResourceOwnerCredentials struct {
+	ClientID string
+	Username string
+	Password string
+}
+
+func (c ResourceOwnerCredentials) constructUrlValues() url.Values {
+	urlValues := url.Values{}
+	urlValues.Set("grant_type", "password")
+	urlValues.Set("client_id", c.ClientID)
+	urlValues.Set("username", c.Username)
+	urlValues.Set("password", c.Password)
+
+	return urlValues
+}
+
 // KeycloakClient can be used to authenticate against a Keycloak server.
 type KeycloakClient struct {
-	httpClient *http.Client
-	cfg        KeycloakConfig
-	tokenInfo  tokenInfo
-	tokenMutex sync.RWMutex
+	httpClient  *http.Client
+	cfg         KeycloakConfig
+	credentials Credentials
+	tokenInfo   tokenInfo
+	tokenMutex  sync.RWMutex
 
 	clock Clock // to mock time in tests
 }
 
-// NewKeycloakClient creates a new KeycloakClient.
-func NewKeycloakClient(httpClient *http.Client, cfg KeycloakConfig) *KeycloakClient {
+// NewKeycloakClient creates a new KeycloakClient. Passed [Credentials] determines the used auth type.
+func NewKeycloakClient(httpClient *http.Client, cfg KeycloakConfig, credentials Credentials) *KeycloakClient {
 	return &KeycloakClient{
-		httpClient: httpClient,
-		cfg:        cfg,
-		clock:      realClock{},
+		httpClient:  httpClient,
+		cfg:         cfg,
+		credentials: credentials,
+		clock:       realClock{},
 	}
 }
 
 // GetToken retrieves a valid access token. The token is cached and refreshed before expiry.
-// The token is obtained by `Resource owner password credentials grant` flow.
-// Ref: https://www.keycloak.org/docs/latest/server_admin/index.html#_oidc-auth-flows-direct
 func (c *KeycloakClient) GetToken(ctx context.Context) (string, error) {
 	token, ok := c.getCachedToken()
 	if ok {
@@ -106,14 +142,10 @@ func (c *KeycloakClient) getCachedToken() (token string, ok bool) {
 }
 
 func (c *KeycloakClient) requestToken(ctx context.Context) (*authResponse, error) {
-	data := url.Values{}
-	data.Set("client_id", c.cfg.ClientID)
-	data.Set("password", c.cfg.Password)
-	data.Set("username", c.cfg.Username)
-	data.Set("grant_type", "password")
+	data := c.credentials.constructUrlValues()
 
 	authenticationURL := fmt.Sprintf("%s/realms/%s/protocol/openid-connect/token",
-		c.cfg.AuthURL, c.cfg.KeycloakRealm)
+		c.cfg.AuthURL, c.cfg.Realm)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, authenticationURL, strings.NewReader(data.Encode()))
 	if err != nil {

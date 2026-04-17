@@ -21,7 +21,7 @@ GO-MOD-UPGRADE  = go run github.com/oligot/go-mod-upgrade@latest
 SWAG            = github.com/swaggo/swag/cmd/swag@v1.16.2
 
 INSTALL_GOMARKDOC = go install github.com/princjef/gomarkdoc/cmd/gomarkdoc@latest
-INSTALL_MOCKERY	= go install github.com/vektra/mockery/v2@v2.44.1
+MOCKERY	= github.com/vektra/mockery/v3@v3.5.1
 
 OS="$(shell go env var GOOS | xargs)"
 
@@ -49,9 +49,11 @@ format: ## format and tidy
 	go fmt ./...
 
 generate-code: ## create mocks and enums
-	@ echo "\033[36m  Generate mocks and enums  \033[0m"
+	@ echo "\033[36m  Generate enums  \033[0m"
 	go get github.com/abice/go-enum
 	go generate ./...
+	@ echo "\033[36m  Generate mocks  \033[0m"
+	go run $(MOCKERY) --log-level warn
 
 
 .PHONY: lint
@@ -119,7 +121,7 @@ test-postgres:
 .PHONY: generate_docs
 generate_docs: check_tools
 	gomarkdoc -e --output '{{.Dir}}/README.md' \
-		--exclude-dirs .,./pkg/configReader/helper,./pkg/dbcrypt/config,./pkg/openSearch/openSearchClient/config \
+		--exclude-dirs .,./pkg/configReader/helper,./pkg/dbcrypt/config,./pkg/openSearch/openSearchClient/config,./pkg/notifications/mocks \
 		./pkg/...
 
 check_tools:

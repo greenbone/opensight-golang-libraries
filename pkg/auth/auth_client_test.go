@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -19,21 +20,50 @@ import (
 
 func TestKeycloakClient_GetToken(t *testing.T) {
 	tests := map[string]struct {
-		responseBody string
-		responseCode int
-		wantErr      bool
-		wantToken    string
+		credentials   Credentials
+		responseBody  string
+		responseCode  int
+		wantUrlValues url.Values
+		wantErr       bool
+		wantToken     string
 	}{
-		"successful token retrieval": {
+		"successful token retrieval (client credentials)": {
+			credentials: ClientCredentials{ClientID: "test-client-id", ClientSecret: "test-client-secret"},
+
 			responseBody: `{"access_token": "test-token", "expires_in": 3600}`,
 			responseCode: http.StatusOK,
-			wantErr:      false,
-			wantToken:    "test-token",
+			wantUrlValues: url.Values{
+				"grant_type":    {"client_credentials"},
+				"client_id":     {"test-client-id"},
+				"client_secret": {"test-client-secret"},
+			},
+			wantErr:   false,
+			wantToken: "test-token",
+		},
+		"successful token retrieval (resource owner credentials)": {
+			credentials: ResourceOwnerCredentials{ClientID: "test-client-id", Username: "test-user", Password: "test-password"},
+
+			responseBody: `{"access_token": "test-token", "expires_in": 3600}`,
+			responseCode: http.StatusOK,
+			wantUrlValues: url.Values{
+				"grant_type": {"password"},
+				"client_id":  {"test-client-id"},
+				"username":   {"test-user"},
+				"password":   {"test-password"},
+			},
+			wantErr:   false,
+			wantToken: "test-token",
 		},
 		"failed authentication": {
+			credentials:  ClientCredentials{ClientID: "invalid-client-id", ClientSecret: "invalid-client-secret"},
 			responseBody: `{}`,
 			responseCode: http.StatusUnauthorized,
-			wantErr:      true,
+			wantUrlValues: url.Values{
+				"grant_type":    {"client_credentials"},
+				"client_id":     {"invalid-client-id"},
+				"client_secret": {"invalid-client-secret"},
+			},
+			wantErr: true,
 		},
 	}
 	for name, tt := range tests {
@@ -43,8 +73,14 @@ func TestKeycloakClient_GetToken(t *testing.T) {
 				w http.ResponseWriter, r *http.Request,
 			) {
 				serverCallCount.Add(1)
+
+				// Verify required URL parameters are present
+				err := r.ParseForm()
+				require.NoError(t, err)
+				require.Equal(t, tt.wantUrlValues, r.Form)
+
 				w.WriteHeader(tt.responseCode)
-				_, err := w.Write([]byte(tt.responseBody))
+				_, err = w.Write([]byte(tt.responseBody))
 				require.NoError(t, err)
 			}))
 			defer mockServer.Close()
@@ -52,7 +88,7 @@ func TestKeycloakClient_GetToken(t *testing.T) {
 			client := NewKeycloakClient(http.DefaultClient, KeycloakConfig{
 				AuthURL: mockServer.URL,
 				// the other fields are also required in real scenario, but omit here for brevity
-			})
+			}, tt.credentials)
 			gotToken, err := client.GetToken(context.Background())
 			assert.Greater(t, serverCallCount.Load(), int32(0), "server was not called")
 
@@ -123,7 +159,7 @@ func TestKeycloakClient_GetToken_Refresh(t *testing.T) {
 			client := NewKeycloakClient(http.DefaultClient, KeycloakConfig{
 				AuthURL: mockServer.URL,
 				// the other fields are also required in real scenario, but omit here for brevity
-			})
+			}, ClientCredentials{})
 			client.clock = fakeClock
 
 			_, err := client.GetToken(context.Background())
