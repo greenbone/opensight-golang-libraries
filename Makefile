@@ -85,7 +85,7 @@ stop-opensearch-test-service:
 
 .PHONY: run-opensearch-tests
 run-opensearch-tests:
-	TEST_OPENSEARCH=1 go test ./pkg/openSearch/osquery -coverprofile=cov-os-tests.out
+	TEST_OPENSEARCH=1 go test ./pkg/openSearch/osquery ./pkg/openSearch/osquery -p 1 -coverprofile=cov-os-tests.out
 
 # test-opensearch runs whole opensearch execution with docker setup and cleanup
 # we want to stop-opensearch-test-service regardless of the result of run-opensearch-tests
