@@ -174,3 +174,13 @@ func (c *KeycloakClient) requestToken(ctx context.Context) (*authResponse, error
 
 	return &authResp, nil
 }
+
+// HTTPClient returns the underlying http.Client used by the KeycloakClient.
+func (c *KeycloakClient) HTTPClient() *http.Client {
+	return c.httpClient
+}
+
+// Config returns the KeycloakConfig used by the KeycloakClient.
+func (c *KeycloakClient) Config() KeycloakConfig {
+	return c.cfg
+}
