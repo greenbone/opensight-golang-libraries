@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-package keycloakApi
+package keycloakapi
 
 import (
 	"context"
@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/greenbone/opensight-golang-libraries/pkg/auth"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -56,9 +57,11 @@ func TestListGroups(t *testing.T) {
 	groups, err := apiClient.ListGroups(context.Background())
 	require.NoError(t, err, "expected no error")
 
-	require.Equal(t, 2, len(groups), "expected 2 groups")
-	require.Equal(t, "group1", groups[0].Name, "first group name mismatch")
-	require.Equal(t, "group2", groups[1].Name, "second group name mismatch")
+	wantGroups := []Group{
+		{ID: "1", Name: "group1"},
+		{ID: "2", Name: "group2"},
+	}
+	assert.ElementsMatch(t, wantGroups, groups, "groups mismatch")
 }
 
 func TestListUsers(t *testing.T) {
@@ -89,7 +92,9 @@ func TestListUsers(t *testing.T) {
 	users, err := apiClient.ListUsers(context.Background())
 	require.NoError(t, err, "expected no error")
 
-	require.Equal(t, 2, len(users), "expected 2 users")
-	require.Equal(t, "user1", users[0].Username, "first user username mismatch")
-	require.Equal(t, "user2@example.com", users[1].Email, "second user email mismatch")
+	wantUsers := []User{
+		{ID: "1", Username: "user1", Email: "user1@example.com"},
+		{ID: "2", Username: "user2", Email: "user2@example.com"},
+	}
+	assert.ElementsMatch(t, wantUsers, users, "users mismatch")
 }

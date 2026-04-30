@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-package keycloakApi
+package keycloakapi
 
 import (
 	"context"
@@ -32,22 +32,22 @@ type User struct {
 
 // KeycloakAPIClient provides methods to interact with Keycloak's REST API.
 type KeycloakAPIClient struct {
-	AuthClient *auth.KeycloakClient
+	authClient *auth.KeycloakClient
 }
 
 // NewKeycloakAPIClient creates a new KeycloakAPIClient.
 func NewKeycloakAPIClient(authClient *auth.KeycloakClient) *KeycloakAPIClient {
-	return &KeycloakAPIClient{AuthClient: authClient}
+	return &KeycloakAPIClient{authClient: authClient}
 }
 
 // ListGroups retrieves all groups from Keycloak.
 func (kc *KeycloakAPIClient) ListGroups(ctx context.Context) ([]Group, error) {
-	token, err := kc.AuthClient.GetToken(ctx)
+	token, err := kc.authClient.GetToken(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get token: %w", err)
 	}
 
-	config := kc.AuthClient.Config()
+	config := kc.authClient.Config()
 	url := fmt.Sprintf("%s/admin/realms/%s/groups", config.AuthURL, config.Realm)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
@@ -55,15 +55,19 @@ func (kc *KeycloakAPIClient) ListGroups(ctx context.Context) ([]Group, error) {
 	}
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
-	resp, err := kc.AuthClient.HTTPClient().Do(req)
+	resp, err := kc.authClient.HTTPClient().Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("failed to list groups: %s: %s", resp.Status, strings.TrimSpace(string(body)))
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list users: %s: could not read response body: %w", resp.Status, err)
+		}
+
+		return nil, fmt.Errorf("failed to list users: %s: %s", resp.Status, strings.TrimSpace(string(body)))
 	}
 
 	var groups []Group
@@ -75,12 +79,12 @@ func (kc *KeycloakAPIClient) ListGroups(ctx context.Context) ([]Group, error) {
 
 // ListUsers retrieves all users from Keycloak.
 func (kc *KeycloakAPIClient) ListUsers(ctx context.Context) ([]User, error) {
-	token, err := kc.AuthClient.GetToken(ctx)
+	token, err := kc.authClient.GetToken(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get token: %w", err)
 	}
 
-	config := kc.AuthClient.Config()
+	config := kc.authClient.Config()
 	url := fmt.Sprintf("%s/admin/realms/%s/users", config.AuthURL, config.Realm)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
@@ -88,14 +92,18 @@ func (kc *KeycloakAPIClient) ListUsers(ctx context.Context) ([]User, error) {
 	}
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
-	resp, err := kc.AuthClient.HTTPClient().Do(req)
+	resp, err := kc.authClient.HTTPClient().Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list users: %s: could not read response body: %w", resp.Status, err)
+		}
+
 		return nil, fmt.Errorf("failed to list users: %s: %s", resp.Status, strings.TrimSpace(string(body)))
 	}
 
