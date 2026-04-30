@@ -54,12 +54,11 @@ func TestListGroups(t *testing.T) {
 	authClient := newTestKeycloakClient(server.URL)
 	apiClient := NewKeycloakAPIClient(authClient)
 	groups, err := apiClient.ListGroups(context.Background())
-	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
-	}
-	if len(groups) != 2 || groups[0].Name != "group1" || groups[1].Name != "group2" {
-		t.Fatalf("unexpected groups: %+v", groups)
-	}
+	require.NoError(t, err, "expected no error")
+
+	require.Equal(t, 2, len(groups), "expected 2 groups")
+	require.Equal(t, "group1", groups[0].Name, "first group name mismatch")
+	require.Equal(t, "group2", groups[1].Name, "second group name mismatch")
 }
 
 func TestListUsers(t *testing.T) {
@@ -88,10 +87,9 @@ func TestListUsers(t *testing.T) {
 	authClient := newTestKeycloakClient(server.URL)
 	apiClient := NewKeycloakAPIClient(authClient)
 	users, err := apiClient.ListUsers(context.Background())
-	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
-	}
-	if len(users) != 2 || users[0].Username != "user1" || users[1].Email != "user2@example.com" {
-		t.Fatalf("unexpected users: %+v", users)
-	}
+	require.NoError(t, err, "expected no error")
+
+	require.Equal(t, 2, len(users), "expected 2 users")
+	require.Equal(t, "user1", users[0].Username, "first user username mismatch")
+	require.Equal(t, "user2@example.com", users[1].Email, "second user email mismatch")
 }
