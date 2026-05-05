@@ -31,7 +31,7 @@ func ReadEnvVarsIntoStruct(s any) (any, error) {
 		defaultTag := structType.Field(i).Tag.Get("default")
 
 		envValue := viper.GetString(fieldTag)
-		if envValue == "" && fieldType.Kind() != reflect.Struct && fieldType.Kind() != reflect.Ptr {
+		if envValue == "" && fieldType.Kind() != reflect.Struct && fieldType.Kind() != reflect.Pointer {
 			var ok bool
 			envValue, ok = os.LookupEnv(fieldTag)
 			if !ok {
@@ -95,7 +95,7 @@ func ReadEnvVarsIntoStruct(s any) (any, error) {
 					field.Set(reflect.ValueOf(nestedValue).Elem())
 				}
 			}
-		case reflect.Ptr:
+		case reflect.Pointer:
 			if fieldType.Elem().Kind() == reflect.Struct {
 				if field.IsNil() {
 					field.Set(reflect.New(fieldType.Elem()))
