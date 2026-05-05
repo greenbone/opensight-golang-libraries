@@ -64,7 +64,7 @@ func extractInto(
 	preprocess func(t *testing.T, actual any, dstType reflect.Type) (any, bool),
 ) any {
 	target := reflect.ValueOf(ptr)
-	if target.Kind() != reflect.Ptr || target.IsNil() {
+	if target.Kind() != reflect.Pointer || target.IsNil() {
 		assert.Fail(t, "ExtractTo requires a non-nil pointer")
 		return nil
 	}
