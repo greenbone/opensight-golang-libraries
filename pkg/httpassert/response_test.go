@@ -121,6 +121,14 @@ func TestResponse(t *testing.T) {
 		assert.Equal(t, []string{"a", "b", "c"}, asd.Items)
 	})
 
+	t.Run("GetStatusCode returns correct code", func(t *testing.T) {
+		code := request.Post("/non-existent").
+			Expect().
+			GetStatusCode()
+
+		assert.Equal(t, http.StatusNotFound, code)
+	})
+
 	t.Run("Log prints response", func(t *testing.T) {
 		request.Post("/json").
 			Expect().
