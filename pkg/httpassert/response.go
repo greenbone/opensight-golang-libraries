@@ -42,6 +42,8 @@ type Response interface {
 	GetJsonBodyObject(target any) Response
 	GetBody() string
 
+	GetStatusCode() int
+
 	Log() Response
 }
 
@@ -215,6 +217,10 @@ func (r *responseImpl) GetJsonBodyObject(target any) Response {
 	err := json.Unmarshal(r.response.Body.Bytes(), &target)
 	require.NoError(r.t, err)
 	return r
+}
+
+func (r *responseImpl) GetStatusCode() int {
+	return r.response.Code
 }
 
 func (r *responseImpl) Log() Response {

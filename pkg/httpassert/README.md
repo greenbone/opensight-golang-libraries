@@ -37,7 +37,7 @@ const IgnoreJsonValue = "<IGNORE>"
 ```
 
 <a name="AssertJSONCanonicalEq"></a>
-## func [AssertJSONCanonicalEq](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/assert.go#L32>)
+## func [AssertJSONCanonicalEq](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/assert.go#L36>)
 
 ```go
 func AssertJSONCanonicalEq(t *testing.T, expected, actual string) bool
@@ -46,7 +46,7 @@ func AssertJSONCanonicalEq(t *testing.T, expected, actual string) bool
 AssertJSONCanonicalEq compares two JSON strings by normalizing both first. On mismatch, it prints a readable diff of the normalized forms.
 
 <a name="NormalizeJSON"></a>
-## func [NormalizeJSON](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/assert.go#L15>)
+## func [NormalizeJSON](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/assert.go#L19>)
 
 ```go
 func NormalizeJSON(t *testing.T, s string) string
@@ -141,7 +141,7 @@ func Regex(expr string) Matcher
 Regex checks if a string matches the given regular expression Example: JsonPath\("$.data.name", httpassert.Regex\("^foo.\*bar$"\)\)
 
 <a name="Request"></a>
-## type [Request](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/request.go#L47-L65>)
+## type [Request](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/request.go#L46-L64>)
 
 nolint:interfacebloat Request provides fluent request configuration
 
@@ -168,7 +168,7 @@ type Request interface {
 ```
 
 <a name="RequestStart"></a>
-## type [RequestStart](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/request.go#L27-L43>)
+## type [RequestStart](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/request.go#L26-L42>)
 
 nolint:interfacebloat RequestStart provides fluent HTTP \*method \+ path\* selection. Each call returns a fresh Request
 
@@ -193,7 +193,7 @@ type RequestStart interface {
 ```
 
 <a name="New"></a>
-### func [New](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/request.go#L95>)
+### func [New](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/request.go#L94>)
 
 ```go
 func New(t *testing.T, router http.Handler) RequestStart
@@ -202,7 +202,7 @@ func New(t *testing.T, router http.Handler) RequestStart
 New returns a new RequestStart instance for the given router. All method calls \(Get/Post/...\) return a \*fresh\* Request.
 
 <a name="Response"></a>
-## type [Response](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/response.go#L24-L46>)
+## type [Response](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/httpassert/response.go#L24-L48>)
 
 nolint:interfacebloat Response interface provides fluent response assertions.
 
@@ -227,6 +227,8 @@ type Response interface {
     Body(body string) Response
     GetJsonBodyObject(target any) Response
     GetBody() string
+
+    GetStatusCode() int
 
     Log() Response
 }
