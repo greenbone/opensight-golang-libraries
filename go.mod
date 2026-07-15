@@ -1,6 +1,6 @@
 module github.com/greenbone/opensight-golang-libraries
 
-go 1.25.0
+go 1.25.9
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
@@ -13,7 +13,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/json-iterator/go v1.1.12
 	github.com/lib/pq v1.12.3
-	github.com/opensearch-project/opensearch-go/v4 v4.6.0
+	github.com/opensearch-project/opensearch-go/v4 v4.7.0
 	github.com/peterldowns/pgtestdb v0.1.1
 	github.com/peterldowns/pgtestdb/migrators/golangmigrator v0.1.1
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2
@@ -72,7 +72,7 @@ require (
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.22 // indirect
-	github.com/mattn/go-sqlite3 v1.14.47 // indirect
+	github.com/mattn/go-sqlite3 v1.14.48 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.4.3 // indirect
