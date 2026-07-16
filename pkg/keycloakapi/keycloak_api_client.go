@@ -30,6 +30,14 @@ type User struct {
 	LastName  string `json:"lastName"`
 }
 
+// Internal DTO for Keycloak response.
+type keycloakGroup struct {
+	ID        string          `json:"id"`
+	Name      string          `json:"name"`
+	Path      string          `json:"path"`
+	SubGroups []keycloakGroup `json:"subGroups"`
+}
+
 // KeycloakAPIClient provides methods to interact with Keycloak's REST API.
 type KeycloakAPIClient struct {
 	authClient *auth.KeycloakClient
@@ -41,6 +49,7 @@ func NewKeycloakAPIClient(authClient *auth.KeycloakClient) *KeycloakAPIClient {
 }
 
 // ListGroups retrieves all groups from Keycloak.
+// ListGroups retrieves all groups from Keycloak and flattens groups + subgroups.
 func (kc *KeycloakAPIClient) ListGroups(ctx context.Context) ([]Group, error) {
 	token, err := kc.authClient.GetToken(ctx)
 	if err != nil {
@@ -48,7 +57,7 @@ func (kc *KeycloakAPIClient) ListGroups(ctx context.Context) ([]Group, error) {
 	}
 
 	config := kc.authClient.Config()
-	url := fmt.Sprintf("%s/admin/realms/%s/groups", config.AuthURL, config.Realm)
+	url := fmt.Sprintf("%s/admin/realms/%s/groups?search=*", config.AuthURL, config.Realm)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -64,17 +73,22 @@ func (kc *KeycloakAPIClient) ListGroups(ctx context.Context) ([]Group, error) {
 	if resp.StatusCode != http.StatusOK {
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			return nil, fmt.Errorf("failed to list users: %s: could not read response body: %w", resp.Status, err)
+			return nil, fmt.Errorf("failed to list groups: %s: could not read response body: %w", resp.Status, err)
 		}
-
-		return nil, fmt.Errorf("failed to list users: %s: %s", resp.Status, strings.TrimSpace(string(body)))
+		return nil, fmt.Errorf("failed to list groups: %s: %s", resp.Status, strings.TrimSpace(string(body)))
 	}
 
-	var groups []Group
-	if err := json.NewDecoder(resp.Body).Decode(&groups); err != nil {
+	var rootGroups []keycloakGroup
+	if err := json.NewDecoder(resp.Body).Decode(&rootGroups); err != nil {
 		return nil, fmt.Errorf("failed to decode groups response: %w", err)
 	}
-	return groups, nil
+
+	flattened := make([]Group, 0)
+	for _, g := range rootGroups {
+		flattened = append(flattened, flattenGroupTree(g)...)
+	}
+
+	return flattened, nil
 }
 
 // ListUsers retrieves all users from Keycloak.
@@ -112,4 +126,24 @@ func (kc *KeycloakAPIClient) ListUsers(ctx context.Context) ([]User, error) {
 		return nil, fmt.Errorf("failed to decode users response: %w", err)
 	}
 	return users, nil
+}
+
+func flattenGroupTree(g keycloakGroup) []Group {
+	name := g.Path
+	if name == "" {
+		name = g.Name
+	}
+
+	out := []Group{
+		{
+			ID:   g.ID,
+			Name: name, // Use path as requested
+		},
+	}
+
+	for _, child := range g.SubGroups {
+		out = append(out, flattenGroupTree(child)...)
+	}
+
+	return out
 }

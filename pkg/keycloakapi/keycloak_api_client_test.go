@@ -98,3 +98,60 @@ func TestListUsers(t *testing.T) {
 	}
 	assert.ElementsMatch(t, wantUsers, users, "users mismatch")
 }
+
+func TestListGroups_FlattensNestedGroups_UsesPathAsName(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/realms/test-realm/protocol/openid-connect/token":
+			w.Header().Set("Content-Type", "application/json")
+			_, err := w.Write([]byte(`{"access_token":"test-token","expires_in":3600}`))
+			require.NoError(t, err)
+			return
+
+		case "/admin/realms/test-realm/groups":
+			if r.Header.Get("Authorization") != "Bearer test-token" {
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_, err := w.Write([]byte(`[
+				  {
+					"id":"p1",
+					"name":"Platform",
+					"path":"/Platform",
+					"subGroupCount":2,
+					"subGroups":[
+					  {"id":"c1","name":"Admins","path":"/Platform/Admins","subGroupCount":0,"subGroups":[]},
+					  {"id":"c2","name":"Users","path":"/Platform/Users","subGroupCount":0,"subGroups":[]}
+					]
+				  },
+				  {
+					"id":"s1",
+					"name":"System",
+					"path":"/System",
+					"subGroupCount":0,
+					"subGroups":[]
+				  }
+				]`))
+			require.NoError(t, err)
+			return
+		}
+
+		w.WriteHeader(http.StatusNotFound)
+	}))
+	defer server.Close()
+
+	authClient := newTestKeycloakClient(server.URL)
+	apiClient := NewKeycloakAPIClient(authClient)
+
+	got, err := apiClient.ListGroups(context.Background())
+	require.NoError(t, err)
+
+	want := []Group{
+		{ID: "p1", Name: "/Platform"},
+		{ID: "c1", Name: "/Platform/Admins"},
+		{ID: "c2", Name: "/Platform/Users"},
+		{ID: "s1", Name: "/System"},
+	}
+	assert.ElementsMatch(t, want, got)
+}
