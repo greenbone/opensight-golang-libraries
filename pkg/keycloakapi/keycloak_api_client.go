@@ -18,7 +18,7 @@ import (
 // Group represents a Keycloak group.
 type Group struct {
 	ID   string `json:"id"`
-	Name string `json:"name"` // It is normally the path of the Group
+	Name string `json:"name"` // Name represents (always) the full group path
 }
 
 // User represents a Keycloak user.
@@ -129,10 +129,7 @@ func (kc *KeycloakAPIClient) ListUsers(ctx context.Context) ([]User, error) {
 }
 
 func flattenGroupTree(g keycloakGroup) []Group {
-	name := g.Path
-	if name == "" {
-		name = g.Name
-	}
+	name := g.Path // Name represents (always) the full group path,
 
 	out := []Group{
 		{
