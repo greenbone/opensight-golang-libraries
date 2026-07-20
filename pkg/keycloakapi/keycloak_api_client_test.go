@@ -30,7 +30,7 @@ func newTestKeycloakClient(serverURL string) *auth.KeycloakClient {
 }
 
 func TestListGroups(t *testing.T) {
-	groupsJSON := `[{"id":"1","name":"group1"},{"id":"2","name":"group2"}]`
+	groupsJSON := `[{"id":"1","name":"group1","path":"/group1"},{"id":"2","name":"group2","path":"/group2"}]`
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/realms/test-realm/protocol/openid-connect/token" {
 			w.Header().Set("Content-Type", "application/json")
@@ -58,8 +58,8 @@ func TestListGroups(t *testing.T) {
 	require.NoError(t, err, "expected no error")
 
 	wantGroups := []Group{
-		{ID: "1", Name: "group1"},
-		{ID: "2", Name: "group2"},
+		{ID: "1", Name: "/group1"},
+		{ID: "2", Name: "/group2"},
 	}
 	assert.ElementsMatch(t, wantGroups, groups, "groups mismatch")
 }
@@ -122,7 +122,7 @@ func TestListGroups_FlattensNestedGroups_UsesPathAsName(t *testing.T) {
 					"subGroupCount":2,
 					"subGroups":[
 					  {"id":"c1","name":"Admins","path":"/Platform/Admins","subGroupCount":0,"subGroups":[]},
-					  {"id":"c2","name":"Users","path":"/Platform/Users","subGroupCount":0,"subGroups":[
+					  {"id":"c2","name":"Users","path":"/Platform/Users","subGroupCount":1,"subGroups":[
 					  	{"id":"g1","name":"Grandkid","path":"/Platform/Users/Grandkid","subGroupCount":0,"subGroups":[]}]}
 					]
 				  },
