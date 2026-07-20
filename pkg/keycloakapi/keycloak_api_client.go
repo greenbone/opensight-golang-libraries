@@ -18,7 +18,7 @@ import (
 // Group represents a Keycloak group.
 type Group struct {
 	ID   string `json:"id"`
-	Name string `json:"name"`
+	Name string `json:"name"` // It is normally the path of the Group
 }
 
 // User represents a Keycloak user.

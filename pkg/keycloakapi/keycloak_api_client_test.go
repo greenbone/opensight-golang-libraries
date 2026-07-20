@@ -122,7 +122,8 @@ func TestListGroups_FlattensNestedGroups_UsesPathAsName(t *testing.T) {
 					"subGroupCount":2,
 					"subGroups":[
 					  {"id":"c1","name":"Admins","path":"/Platform/Admins","subGroupCount":0,"subGroups":[]},
-					  {"id":"c2","name":"Users","path":"/Platform/Users","subGroupCount":0,"subGroups":[]}
+					  {"id":"c2","name":"Users","path":"/Platform/Users","subGroupCount":0,"subGroups":[
+					  	{"id":"g1","name":"Grandkid","path":"/Platform/Users/Grandkid","subGroupCount":0,"subGroups":[]}]}
 					]
 				  },
 				  {
@@ -151,6 +152,7 @@ func TestListGroups_FlattensNestedGroups_UsesPathAsName(t *testing.T) {
 		{ID: "p1", Name: "/Platform"},
 		{ID: "c1", Name: "/Platform/Admins"},
 		{ID: "c2", Name: "/Platform/Users"},
+		{ID: "g1", Name: "/Platform/Users/Grandkid"},
 		{ID: "s1", Name: "/System"},
 	}
 	assert.ElementsMatch(t, want, got)
