@@ -397,7 +397,7 @@ func (tst Tester) refreshIndex(index string) error {
 	_, err := tst.osClient.Indices.Refresh(
 		context.Background(),
 		&opensearchapi.IndicesRefreshReq{
-			Indices: []string{index},
+			Index: []string{index},
 		},
 	)
 	if err != nil {

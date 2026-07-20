@@ -158,26 +158,17 @@ func (i *IndexFunction) CreateOrPutAlias(aliasName string, indexNames ...string)
 		return fmt.Errorf("failed to encode alias body: %w", err)
 	}
 
-	resp, err := i.openSearchProjectClient.Client.Do(
-		context.Background(),
+	resp, err := i.openSearchProjectClient.Aliases(context.Background(),
 		opensearchapi.AliasesReq{
 			Body: &buf,
-		},
-		nil,
-	)
+		})
+
 	if err != nil {
-		log.Debug().Err(err).Msg("error while creating and putting alias")
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode == http.StatusConflict {
-		log.Debug().Msgf("alias %s already exists, nothing to create", aliasName)
-		return nil
-	}
-
-	if resp.IsError() {
-		return fmt.Errorf("error while creating or putting alias %s: %s", aliasName, resp.String())
+		if resp.Inspect().Response != nil && resp.Inspect().Response.StatusCode == http.StatusConflict {
+			log.Debug().Msgf("alias %s already exists, nothing to create", aliasName)
+			return nil
+		}
+		return fmt.Errorf("error while creating or putting alias %s: %w", aliasName, err)
 	}
 
 	log.Debug().Msgf("alias %s created or updated successfully", aliasName)
@@ -292,24 +283,17 @@ func (i *IndexFunction) RemoveIndexesFromAlias(indexesToRemove []string, aliasNa
 
 	actionsBytes, err := json.Marshal(actions)
 	if err != nil {
-		log.Debug().Err(err).Msg("error marshaling actions to remove indexes")
-		return fmt.Errorf("error marshaling actions: %w", err)
+		return fmt.Errorf("error marshaling actions to remove indexes from alias: %w", err)
 	}
 
-	res, err := i.openSearchProjectClient.Client.Do(
+	_, err = i.openSearchProjectClient.Aliases(
 		context.Background(),
 		opensearchapi.AliasesReq{
 			Body: bytes.NewReader(actionsBytes),
 		},
-		nil,
 	)
 	if err != nil {
-		return fmt.Errorf("error updating alias: %w", err)
-	}
-
-	if res.IsError() {
-		log.Debug().Msgf("error removing non-compliant indexes from alias: %s", res.String())
-		return fmt.Errorf("error removing non-compliant indexes from alias: %s", res.String())
+		return fmt.Errorf("error removing non-compliant indexes from alias: %w", err)
 	}
 
 	log.Debug().Msg("all non-compliant indexes removed from the alias.")
@@ -340,7 +324,7 @@ func (i *IndexFunction) RefreshIndex(index string) error {
 	refreshResp, err := i.openSearchProjectClient.Indices.Refresh(
 		ctx,
 		&opensearchapi.IndicesRefreshReq{
-			Indices: []string{index},
+			Index: []string{index},
 		},
 	)
 	if err != nil {

@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"net/http"
 	"strings"
 	"time"
 
@@ -83,32 +82,17 @@ func (c *Client) Search(indexName string, requestBody []byte) (responseBody []by
 
 func (c *Client) Count(indexName string, requestBody []byte) (count int64, err error) {
 	log.Debug().Msgf("count requestBody: %s", string(requestBody))
-	request := CountReq{
+	request := opensearchapi.IndicesCountReq{
 		Indices: []string{indexName},
 		Body:    bytes.NewReader(requestBody),
 	}
-	countRequest, err := request.GetRequest()
+	response, err := c.openSearchProjectClient.Indices.Count(context.Background(), &request)
 	if err != nil {
-		return 0, err
-	}
-	response, err := c.openSearchProjectClient.Client.Perform(countRequest)
-	if err != nil {
-		return 0, err
-	}
-	defer response.Body.Close()
-
-	if response.StatusCode != http.StatusOK {
-		responseBody, _ := io.ReadAll(response.Body)
-		log.Warn().Msgf("count response - statusCode:'%d' body:'%s'", response.StatusCode, responseBody)
+		return 0, fmt.Errorf("count request failed: %w", err)
 	}
 
-	var countResp CountResp
-	if err := json.NewDecoder(response.Body).Decode(&countResp); err != nil {
-		log.Error().Msgf("error decoding count response: %v", err)
-		return 0, err
-	}
-
-	return countResp.Count, nil
+	count = int64(response.Count) // keep type consistent with previous implementation for compatibility
+	return count, nil
 }
 
 func (c *Client) SearchStream(
