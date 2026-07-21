@@ -408,7 +408,7 @@ func (c *Client) deleteByQuery(indexName string, requestBody []byte, isAsync boo
 
 	if waitForCompletion {
 		// Only add refresh=true when we wait for the deletion to complete
-		params.Refresh = opensearchapi.ToPointer(true)
+		params.Refresh = new(true)
 	}
 
 	resp, err := c.openSearchProjectClient.Document.DeleteByQuery(
