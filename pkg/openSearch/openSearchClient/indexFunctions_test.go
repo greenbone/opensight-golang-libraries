@@ -133,6 +133,7 @@ func TestIndexCheck(t *testing.T) {
 
 	// Now check if we can get the settings from the index
 	settings, err := iFunc.GetIndexSettings(indexName + "2")
+	assert.NoError(t, err)
 	jsonData, err := json.Marshal(settings)
 	assert.NoError(t, err)
 	assert.Contains(t, string(jsonData), "settings")

@@ -12,8 +12,8 @@ import (
 	"io"
 	"net/http"
 	"sort"
-	"strings"
 
+	"github.com/opensearch-project/opensearch-go/v4"
 	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
 	"github.com/rs/zerolog/log"
 )
@@ -343,25 +343,16 @@ func (i *IndexFunction) RefreshIndex(index string) error {
 }
 
 func (i *IndexFunction) GetIndexSettings(index string) (map[string]interface{}, error) {
-	body := strings.NewReader(``)
-	urlString := "/" + index + "/_settings?include_defaults=true"
-	settingsRequest, err := http.NewRequest("GET", urlString, body)
-	if err != nil {
-		return nil, err
+	req := opensearchapi.SettingsGetReq{
+		Indices: []string{index},
+		Params: opensearchapi.SettingsGetParams{
+			IncludeDefaults: new(true),
+		},
 	}
-	settingsRequest.Header.Set("Content-Type", "application/json")
-	searchResp, err := i.openSearchProjectClient.Client.Perform(settingsRequest)
-	if err != nil {
-		return nil, err
-	}
-	defer searchResp.Body.Close()
 
-	searchRespBody, err := io.ReadAll(searchResp.Body)
-	if err != nil {
-		return nil, err
-	}
 	var settings map[string]interface{}
-	if err := json.Unmarshal(searchRespBody, &settings); err != nil {
+	_, err := opensearch.Do(context.Background(), i.openSearchProjectClient.Client, http.MethodGet, req, &settings)
+	if err != nil {
 		return nil, err
 	}
 
