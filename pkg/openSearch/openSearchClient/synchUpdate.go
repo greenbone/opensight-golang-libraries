@@ -45,7 +45,7 @@ func (s *SyncUpdateClient) Update(indexName string, requestBody []byte) ([]byte,
 				Body:    bytes.NewReader(requestBody),
 				Params: opensearchapi.UpdateByQueryParams{
 					Pretty:  true,
-					Refresh: opensearchapi.ToPointer(true),
+					Refresh: new(true),
 				},
 			},
 		)

@@ -5,6 +5,7 @@
 package openSearchClient
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -219,9 +220,9 @@ func TestInjectAuthenticationIntoClient(t *testing.T) {
 	err := InjectAuthenticationIntoClient(client, conf, mockTokenReceiver)
 	require.NoError(t, err)
 
-	req, _ := http.NewRequest("GET", "http://localhost", nil)
+	req := opensearchapi.IndicesCountReq{}
 
-	_, err = client.Client.Perform(req)
+	_, err = opensearch.Do(context.Background(), client.Client, http.MethodGet, req, new(struct{}{}))
 	assert.NoError(t, err)
 
 	mockTransport.AssertCalled(t, "Perform")
