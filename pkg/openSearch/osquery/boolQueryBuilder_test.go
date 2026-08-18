@@ -676,8 +676,8 @@ func TestBoolQueryBuilder_AddFilterRequest(t *testing.T) {
 	})
 
 	// index setup needed only once, as test cases are only reading data
-	_, alias := tester.NewTestTypeIndexAlias(t, "arbitrary")
-	tester.CreateDocuments(t, alias, ostesting.ToAnySlice(allDocs), []string{"id0", "id1", "id2"})
+	index := tester.NewTestTypeIndex(t, "arbitrary")
+	tester.CreateDocuments(t, index, ostesting.ToAnySlice(allDocs), []string{"id0", "id1", "id2"})
 	client, err := newTestOSClient(tester.OSClient())
 	require.NoError(t, err)
 
@@ -701,13 +701,229 @@ func TestBoolQueryBuilder_AddFilterRequest(t *testing.T) {
 				require.NoError(t, err, "could not marshal search request")
 
 				t.Logf("sending search request to OpenSearch: %s", string(requestBody))
-				gotDocuments, totalResults, err := client.ListDocuments(alias, requestBody)
+				gotDocuments, totalResults, err := client.ListDocuments(index, requestBody)
 				require.NoError(t, err, "listing documents failed")
 				require.Len(t, gotDocuments, int(totalResults),
 					"test requires results to be returned on a single page") // catch paging misconfiguration
 
 				assert.ElementsMatch(t, tt.wantDocuments, gotDocuments)
 			}
+		})
+	}
+}
+
+func TestBoolQueryBuilder_AddFilterRequest_TextContains(t *testing.T) {
+	tester := ostesting.NewTester(t)
+
+	querySettings := QuerySettings{
+		FilterFieldMapping: map[string]string{
+			"textField":               "text",
+			"textAndKeywordTextField": "textAndKeyword",
+		},
+	}
+
+	memoryLeaks := ostesting.TestType{
+		ID:             "memory-leaks",
+		Text:           "Memory leaks",
+		TextAndKeyword: "Memory leaks",
+		DateTimeStr:    "2024-01-01T00:00:00.000Z",
+	}
+	vulnerable := ostesting.TestType{
+		ID:          "vulnerable",
+		Text:        "This system is vulnerable",
+		DateTimeStr: "2024-01-02T00:00:00.000Z",
+	}
+	notVulnerable := ostesting.TestType{
+		ID:          "not-vulnerable",
+		Text:        "This system is not vulnerable",
+		DateTimeStr: "2024-01-03T00:00:00.000Z",
+	}
+	microarchitecture := ostesting.TestType{
+		ID:          "microarchitecture",
+		Text:        "the Microarchitecture",
+		DateTimeStr: "2024-01-04T00:00:00.000Z",
+	}
+	plc := ostesting.TestType{
+		ID:          "plc",
+		Text:        "PLC settings spot",
+		DateTimeStr: "2024-01-05T00:00:00.000Z",
+	}
+
+	allDocs := []ostesting.TestType{
+		memoryLeaks,
+		vulnerable,
+		notVulnerable,
+		microarchitecture,
+		plc,
+	}
+
+	// index setup needed only once, as test cases are only reading data
+	index := tester.NewTestTypeIndex(t, "text-contains")
+	tester.CreateDocuments(t, index, ostesting.ToAnySlice(allDocs), []string{
+		"memory-leaks", "vulnerable", "not-vulnerable", "microarchitecture", "plc",
+	})
+	client, err := newTestOSClient(tester.OSClient())
+	require.NoError(t, err)
+
+	// NOTE: The filter alone does not guarantee the results,
+	// it relies on the OpenSearch index configuration as outlined in the spec.
+	successCases := map[string]struct {
+		fieldName     string
+		value         any
+		wantDocuments []ostesting.TestType
+	}{
+		"exact terms": {
+			fieldName:     "textField",
+			value:         "memory leak",
+			wantDocuments: []ostesting.TestType{memoryLeaks},
+		},
+		"case-insensitive matching": {
+			fieldName:     "textField",
+			value:         "MEMORY LEAK",
+			wantDocuments: []ostesting.TestType{memoryLeaks},
+		},
+		"inflected terms": {
+			fieldName:     "textField",
+			value:         "memories leaking",
+			wantDocuments: []ostesting.TestType{memoryLeaks},
+		},
+		"word matching without ngram subfield": {
+			fieldName:     "textAndKeywordTextField",
+			value:         "memory",
+			wantDocuments: []ostesting.TestType{memoryLeaks},
+		},
+		"in-word substring without ngram subfield does not match": { // just a sanity check
+			fieldName: "textAndKeywordTextField",
+			value:     "emor",
+		},
+		"in-word substring": {
+			fieldName:     "textField",
+			value:         "roarch",
+			wantDocuments: []ostesting.TestType{microarchitecture},
+		},
+		"minimum ngram boundary": {
+			fieldName:     "textField",
+			value:         "roa",
+			wantDocuments: []ostesting.TestType{microarchitecture},
+		},
+		"maximum ngram boundary": {
+			fieldName:     "textField",
+			value:         "roarchitec",
+			wantDocuments: []ostesting.TestType{microarchitecture},
+		},
+		"below minimum ngram boundary (no substring matching)": {
+			fieldName: "textField",
+			value:     "ro",
+		},
+		"above maximum ngram boundary (no substring matching)": {
+			fieldName: "textField",
+			value:     "roarchitect",
+		},
+		"all meaningful terms required": {
+			fieldName: "textField",
+			value:     "memory unrelated",
+		},
+		"stopword plus content": {
+			fieldName:     "textField",
+			value:         "the memory",
+			wantDocuments: []ostesting.TestType{memoryLeaks},
+		},
+		"stopwords only": {
+			fieldName: "textField",
+			value:     "the with",
+		},
+		"content without negation": {
+			fieldName:     "textField",
+			value:         "vulnerable",
+			wantDocuments: []ostesting.TestType{vulnerable, notVulnerable},
+		},
+		"preserved negation": {
+			fieldName:     "textField",
+			value:         "not vulnerable",
+			wantDocuments: []ostesting.TestType{notVulnerable},
+		},
+		"mixed exact and substring terms": {
+			fieldName:     "textField",
+			value:         "PLC ttings spot",
+			wantDocuments: []ostesting.TestType{plc},
+		},
+		"mixed substring and stemmed terms do match": {
+			fieldName:     "textField",
+			value:         "PLC ttings spotted",
+			wantDocuments: []ostesting.TestType{plc},
+		},
+		"stopword is neutral within mixed terms": {
+			fieldName:     "textField",
+			value:         "PLC the ttings spot",
+			wantDocuments: []ostesting.TestType{plc},
+		},
+		"mixed terms still require all meaningful terms": {
+			fieldName: "textField",
+			value:     "PLC ttings unrelated",
+		},
+		"punctuation within mixed terms": {
+			fieldName:     "textField",
+			value:         "PLC ttings, spot",
+			wantDocuments: []ostesting.TestType{plc},
+		},
+		"all analyzed tokens within a whitespace unit are required": {
+			fieldName: "textField",
+			value:     "PLC settings/unrelated",
+		},
+		"OR between array alternatives": {
+			fieldName:     "textField",
+			value:         []any{"mem", "not vulnerable"},
+			wantDocuments: []ostesting.TestType{memoryLeaks, notVulnerable},
+		},
+	}
+
+	for name, tt := range successCases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			queryBuilder := NewBoolQueryBuilder(&querySettings)
+			err := queryBuilder.AddFilterRequest(singleFilter(filter.RequestField{
+				Name:     tt.fieldName,
+				Operator: filter.CompareOperatorTextContains,
+				Value:    tt.value,
+			}))
+			require.NoError(t, err)
+
+			searchRequest := esquery.Search().Size(maxPageSize)
+			searchRequest.Query(queryBuilder.Build())
+			requestBody, err := searchRequest.MarshalJSON()
+			require.NoError(t, err, "could not marshal search request")
+
+			gotDocuments, totalResults, err := client.ListDocuments(index, requestBody)
+			require.NoError(t, err, "listing documents failed")
+			require.Len(t, gotDocuments, int(totalResults),
+				"test requires results to be returned on a single page")
+			assert.ElementsMatch(t, tt.wantDocuments, gotDocuments)
+		})
+	}
+
+	validationCases := []struct {
+		name  string
+		value any
+	}{
+		{name: "empty string", value: ""},
+		{name: "whitespace-only string", value: " \t\n "},
+		{name: "non-string scalar", value: 1},
+		{name: "empty array", value: []any{}},
+		{name: "empty string after valid value", value: []any{"memory leak", ""}},
+		{name: "non-string after valid value", value: []any{"memory leak", 1}},
+	}
+
+	for _, tt := range validationCases {
+		t.Run("rejects "+tt.name, func(t *testing.T) {
+			queryBuilder := NewBoolQueryBuilder(&querySettings)
+			err := queryBuilder.AddFilterRequest(singleFilter(filter.RequestField{
+				Name:     "textField",
+				Operator: filter.CompareOperatorTextContains,
+				Value:    tt.value,
+			}))
+
+			assert.Error(t, err)
 		})
 	}
 }

@@ -6,6 +6,7 @@ package osquery
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/aquasecurity/esquery"
@@ -48,18 +49,54 @@ func HandleCompareOperatorContains(fieldName string, fieldValue any) (esquery.Ma
 }
 
 // HandleCompareOperatorTextContains performs a full text search on the given field.
-// In the index mapping it must be a string of type `text`.
+// For substring matching the index mapping must be a string of type `text` with an `ngram`
+// multi-field. Otherwise it will only match whole words.
 func HandleCompareOperatorTextContains(fieldName string, fieldValue any) (esquery.Mappable, error) {
 	if values, ok := fieldValue.([]any); ok {
-		return esquery.Bool(). // chain by OR
-					Should(
-				lo.Map(values, func(value any, _ int) esquery.Mappable {
-					return esquery.Match(fieldName, value).MinimumShouldMatch("100%")
-				})...,
-			).
-			MinimumShouldMatch(1), nil
+		if len(values) == 0 {
+			return nil, fmt.Errorf("operator requires at least one value")
+		}
+
+		queries := make([]esquery.Mappable, 0, len(values))
+		for _, value := range values {
+			query, err := textSearchQuery(fieldName, value)
+			if err != nil {
+				return nil, err
+			}
+			queries = append(queries, query)
+		}
+
+		return esquery.Bool().Should(queries...).MinimumShouldMatch(1), nil
 	}
-	return esquery.Match(fieldName, fieldValue).MinimumShouldMatch("100%"), nil // no query term is optional
+
+	return textSearchQuery(fieldName, fieldValue)
+}
+
+func textSearchQuery(fieldName string, value any) (esquery.Mappable, error) {
+	val, ok := value.(string)
+	terms := strings.Fields(val)
+	if !ok || len(terms) == 0 {
+		return nil, fmt.Errorf("operator only supports non-empty string values: got value %v of type %T", value, value)
+	}
+
+	query := esquery.Bool().Must( // guard against empty string values after potential analyzers were run
+		esquery.Bool().Should(
+			esquery.Match(fieldName, value),
+			esquery.Match(fieldName+".ngram", value),
+		).MinimumShouldMatch(1),
+	)
+	for _, term := range terms {
+		query.Must(esquery.Bool().Should(
+			esquery.Match(fieldName, term).
+				Operator(esquery.OperatorAnd).
+				ZeroTermsQuery(esquery.ZeroTermsAll),
+			esquery.Match(fieldName+".ngram", term).
+				Operator(esquery.OperatorAnd).
+				ZeroTermsQuery(esquery.ZeroTermsAll),
+		).MinimumShouldMatch(1))
+	}
+
+	return query, nil
 }
 
 // HandleCompareOperatorBeginsWith handles begins with
