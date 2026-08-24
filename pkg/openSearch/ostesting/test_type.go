@@ -21,14 +21,67 @@ type TestType struct {
 }
 
 // testTypeMapping is an index mapping for testType
+// Note: For test full text search filters, it uses a custom english analyzer which preserves negation,
+// for the default see https://docs.opensearch.org/latest/analyzers/language-analyzers/english
+// and https://docs.opensearch.org/latest/analyzers/token-filters/stop/
 var testTypeMapping string = `{
+		"settings": {
+			"index.max_ngram_diff": 7,
+			"analysis": {
+				"filter": {
+					"english_stop_without_negation": {
+						"type": "stop",
+						"stopwords": ["a", "an", "and", "are", "as", "at", "be", "but", "by", "for", "if", "in", "into", "is", "it", "of", "on", "or", "such", "that", "the", "their", "then", "there", "these", "they", "this", "to", "was", "will", "with"]
+					},
+					"english_possessive_stemmer": {
+						"type": "stemmer",
+						"language": "possessive_english"
+					},
+					"english_stemmer": {
+						"type": "stemmer",
+						"language": "english"
+					},
+					"substring_grams": {
+						"type": "ngram",
+						"min_gram": 3,
+						"max_gram": 10,
+						"preserve_original": true
+					}
+				},
+				"analyzer": {
+					"english_preserving_negation": {
+						"type": "custom",
+						"tokenizer": "standard",
+						"filter": ["english_possessive_stemmer", "lowercase", "english_stop_without_negation", "english_stemmer"]
+					},
+					"substring_index": {
+						"type": "custom",
+						"tokenizer": "standard",
+						"filter": ["lowercase", "asciifolding", "english_stop_without_negation", "substring_grams"]
+					},
+					"substring_search": {
+						"type": "custom",
+						"tokenizer": "standard",
+						"filter": ["lowercase", "asciifolding", "english_stop_without_negation"]
+					}
+				}
+			}
+		},
 		"mappings": {
 			"properties": {
 				"id": {
 					"type": "keyword"
 				},
 				"text": {
-					"type": "text"
+					"type": "text",
+					"analyzer": "english_preserving_negation",
+					"fields": {
+						"ngram": {
+							"type": "text",
+							"analyzer": "substring_index",
+							"search_analyzer": "substring_search"
+						}
+					}
 				},
 				"keyword": {
 					"type": "keyword"
