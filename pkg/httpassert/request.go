@@ -87,6 +87,7 @@ type responseImpl struct {
 	t        *testing.T
 	response *httptest.ResponseRecorder
 	request  *request
+	failNow  bool
 }
 
 // New returns a new RequestStart instance for the given router.
@@ -298,7 +299,7 @@ func (m *request) Expect() Response {
 	m.router.ServeHTTP(rec, req)
 	m.response = rec
 
-	return &responseImpl{t: m.t, response: rec, request: m}
+	return &responseImpl{t: m.t, response: rec, request: m, failNow: true}
 }
 
 func (m *request) ExpectEventually(assertions func(resp Response), timeout, interval time.Duration) Response {
@@ -328,7 +329,7 @@ func (m *request) ExpectEventually(assertions func(resp Response), timeout, inte
 		m.router.ServeHTTP(rec, req)
 		m.response = rec
 
-		resp := &responseImpl{t: m.t, response: rec, request: m}
+		resp := &responseImpl{t: m.t, response: rec, request: m, failNow: true}
 		lastResp = resp
 
 		sandbox := &testing.T{}

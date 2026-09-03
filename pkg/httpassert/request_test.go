@@ -238,3 +238,24 @@ func TestExpectEventually(t *testing.T) {
 				JsonPath("$.data.status", "finished")
 		}, 1*time.Second, 20*time.Millisecond)
 }
+
+func TestExpectEventuallyRetriesStatusCodeAssertion(t *testing.T) {
+	t.Parallel()
+
+	attempts := 0
+	router := http.NewServeMux()
+	router.HandleFunc("/api/assets/123", func(w http.ResponseWriter, r *http.Request) {
+		attempts++
+		if attempts == 1 {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+	})
+
+	New(t, router).
+		Get("/api/assets/123").
+		ExpectEventually(func(r Response) {
+			r.StatusCode(http.StatusNotFound)
+		}, time.Second, time.Millisecond)
+}
