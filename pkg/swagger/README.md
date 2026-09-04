@@ -51,25 +51,19 @@ import "github.com/greenbone/opensight-golang-libraries/pkg/swagger"
 
 ## Index
 
-- [ginSwagger](#ginswagger)
-  - [Reason for implementation](#reason-for-implementation)
-  - [Sources used](#sources-used)
-  - [Usage](#usage)
-- [License](#license)
-- [ginSwagger](#ginswagger-1)
-  - [Index](#index)
-  - [Variables](#variables)
-  - [func DeepLinking](#func-deeplinking)
-  - [func DocExpansion](#func-docexpansion)
-  - [func DomID](#func-domid)
-  - [func GinWrapHandler](#func-ginwraphandler)
-  - [func InstanceName](#func-instancename)
-  - [func OAuth](#func-oauth)
-  - [func PersistAuthorization](#func-persistauthorization)
-  - [func SyntaxHighlight](#func-syntaxhighlight)
-  - [func URL](#func-url)
-  - [type Config](#type-config)
-  - [type OAuthConfig](#type-oauthconfig)
+- [Variables](<#variables>)
+- [func CSPConnectSrc\(urls ...string\) func\(\*Config\)](<#CSPConnectSrc>)
+- [func DeepLinking\(deepLinking bool\) func\(\*Config\)](<#DeepLinking>)
+- [func DocExpansion\(docExpansion string\) func\(\*Config\)](<#DocExpansion>)
+- [func DomID\(domID string\) func\(\*Config\)](<#DomID>)
+- [func GinWrapHandler\(options ...func\(\*Config\)\) gin.HandlerFunc](<#GinWrapHandler>)
+- [func InstanceName\(instanceName string\) func\(\*Config\)](<#InstanceName>)
+- [func OAuth\(config \*OAuthConfig\) func\(\*Config\)](<#OAuth>)
+- [func PersistAuthorization\(persistAuthorization bool\) func\(\*Config\)](<#PersistAuthorization>)
+- [func SyntaxHighlight\(syntaxHighlight bool\) func\(\*Config\)](<#SyntaxHighlight>)
+- [func URL\(url string\) func\(\*Config\)](<#URL>)
+- [type Config](<#Config>)
+- [type OAuthConfig](<#OAuthConfig>)
 
 
 ## Variables
@@ -80,8 +74,17 @@ import "github.com/greenbone/opensight-golang-libraries/pkg/swagger"
 var WrapHandler = GinWrapHandler()
 ```
 
+<a name="CSPConnectSrc"></a>
+## func [CSPConnectSrc](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L90>)
+
+```go
+func CSPConnectSrc(urls ...string) func(*Config)
+```
+
+CSPConnectSrc adds URLs to the Content Security Policy's connect\-src directive. This is necessary to allow the Swagger UI to communicate with Keycloak for authentication. Note: The connect\-src directive expects only scheme://host:port without paths
+
 <a name="DeepLinking"></a>
-## func DeepLinking
+## func [DeepLinking](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L45>)
 
 ```go
 func DeepLinking(deepLinking bool) func(*Config)
@@ -90,7 +93,7 @@ func DeepLinking(deepLinking bool) func(*Config)
 
 
 <a name="DocExpansion"></a>
-## func DocExpansion
+## func [DocExpansion](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L57>)
 
 ```go
 func DocExpansion(docExpansion string) func(*Config)
@@ -99,7 +102,7 @@ func DocExpansion(docExpansion string) func(*Config)
 
 
 <a name="DomID"></a>
-## func DomID
+## func [DomID](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L63>)
 
 ```go
 func DomID(domID string) func(*Config)
@@ -108,7 +111,7 @@ func DomID(domID string) func(*Config)
 
 
 <a name="GinWrapHandler"></a>
-## func GinWrapHandler
+## func [GinWrapHandler](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L117>)
 
 ```go
 func GinWrapHandler(options ...func(*Config)) gin.HandlerFunc
@@ -117,7 +120,7 @@ func GinWrapHandler(options ...func(*Config)) gin.HandlerFunc
 
 
 <a name="InstanceName"></a>
-## func InstanceName
+## func [InstanceName](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L69>)
 
 ```go
 func InstanceName(instanceName string) func(*Config)
@@ -126,7 +129,7 @@ func InstanceName(instanceName string) func(*Config)
 
 
 <a name="OAuth"></a>
-## func OAuth
+## func [OAuth](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L81>)
 
 ```go
 func OAuth(config *OAuthConfig) func(*Config)
@@ -135,7 +138,7 @@ func OAuth(config *OAuthConfig) func(*Config)
 
 
 <a name="PersistAuthorization"></a>
-## func PersistAuthorization
+## func [PersistAuthorization](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L75>)
 
 ```go
 func PersistAuthorization(persistAuthorization bool) func(*Config)
@@ -144,7 +147,7 @@ func PersistAuthorization(persistAuthorization bool) func(*Config)
 
 
 <a name="SyntaxHighlight"></a>
-## func SyntaxHighlight
+## func [SyntaxHighlight](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L51>)
 
 ```go
 func SyntaxHighlight(syntaxHighlight bool) func(*Config)
@@ -153,7 +156,7 @@ func SyntaxHighlight(syntaxHighlight bool) func(*Config)
 
 
 <a name="URL"></a>
-## func URL
+## func [URL](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L39>)
 
 ```go
 func URL(url string) func(*Config)
@@ -162,7 +165,7 @@ func URL(url string) func(*Config)
 
 
 <a name="Config"></a>
-## type Config
+## type [Config](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L21-L31>)
 
 Config stores ginSwagger configuration variables.
 
@@ -176,11 +179,12 @@ type Config struct {
     PersistAuthorization bool
     SyntaxHighlight      bool
     OAuth                *OAuthConfig
+    CSPConnectSrc        []string
 }
 ```
 
 <a name="OAuthConfig"></a>
-## type OAuthConfig
+## type [OAuthConfig](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/swagger/ginSwagger.go#L33-L37>)
 
 
 

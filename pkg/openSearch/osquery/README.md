@@ -68,7 +68,7 @@ package osquery provides a query builder for OpenSearch.
 
 
 <a name="HandleCompareOperatorBeginsWith"></a>
-## func [HandleCompareOperatorBeginsWith](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L99>)
+## func [HandleCompareOperatorBeginsWith](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L103>)
 
 ```go
 func HandleCompareOperatorBeginsWith(fieldName string, fieldValue any) (esquery.Mappable, error)
@@ -77,7 +77,7 @@ func HandleCompareOperatorBeginsWith(fieldName string, fieldValue any) (esquery.
 HandleCompareOperatorBeginsWith handles begins with
 
 <a name="HandleCompareOperatorBetweenDates"></a>
-## func [HandleCompareOperatorBetweenDates](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L202>)
+## func [HandleCompareOperatorBetweenDates](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L206>)
 
 ```go
 func HandleCompareOperatorBetweenDates(fieldName string, fieldValue any) (esquery.Mappable, error)
@@ -97,7 +97,7 @@ func HandleCompareOperatorContains(fieldName string, fieldValue any) (esquery.Ma
 HandleCompareOperatorContains handles contains. In the index mapping the given field must be a string of type \`keyword\`.
 
 <a name="HandleCompareOperatorExists"></a>
-## func [HandleCompareOperatorExists](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L190>)
+## func [HandleCompareOperatorExists](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L194>)
 
 ```go
 func HandleCompareOperatorExists(fieldName string, _ any) (esquery.Mappable, error)
@@ -115,7 +115,7 @@ func HandleCompareOperatorIsEqualTo(fieldName string, fieldValue any) (esquery.M
 HandleCompareOperatorIsEqualTo handles is equal to
 
 <a name="HandleCompareOperatorIsGreaterThan"></a>
-## func [HandleCompareOperatorIsGreaterThan](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L157>)
+## func [HandleCompareOperatorIsGreaterThan](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L161>)
 
 ```go
 func HandleCompareOperatorIsGreaterThan(fieldName string, fieldValue any) (esquery.Mappable, error)
@@ -124,7 +124,7 @@ func HandleCompareOperatorIsGreaterThan(fieldName string, fieldValue any) (esque
 HandleCompareOperatorIsGreaterThan handles is greater than
 
 <a name="HandleCompareOperatorIsGreaterThanOrEqualTo"></a>
-## func [HandleCompareOperatorIsGreaterThanOrEqualTo](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L140>)
+## func [HandleCompareOperatorIsGreaterThanOrEqualTo](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L144>)
 
 ```go
 func HandleCompareOperatorIsGreaterThanOrEqualTo(fieldName string, fieldValue any) (esquery.Mappable, error)
@@ -133,7 +133,7 @@ func HandleCompareOperatorIsGreaterThanOrEqualTo(fieldName string, fieldValue an
 HandleCompareOperatorIsGreaterThanOrEqualTo handles is greater than or equal to
 
 <a name="HandleCompareOperatorIsLessThan"></a>
-## func [HandleCompareOperatorIsLessThan](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L174>)
+## func [HandleCompareOperatorIsLessThan](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L178>)
 
 ```go
 func HandleCompareOperatorIsLessThan(fieldName string, fieldValue any) (esquery.Mappable, error)
@@ -142,7 +142,7 @@ func HandleCompareOperatorIsLessThan(fieldName string, fieldValue any) (esquery.
 HandleCompareOperatorIsLessThan handles is less than
 
 <a name="HandleCompareOperatorIsLessThanOrEqualTo"></a>
-## func [HandleCompareOperatorIsLessThanOrEqualTo](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L123>)
+## func [HandleCompareOperatorIsLessThanOrEqualTo](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/openSearch/osquery/compareHandler.go#L127>)
 
 ```go
 func HandleCompareOperatorIsLessThanOrEqualTo(fieldName string, fieldValue any) (esquery.Mappable, error)

@@ -13,14 +13,13 @@ Package query facilitates the translation of a result selector into a PostgresSQ
 ## Index
 
 - [type Builder](<#Builder>)
-  - [func NewPostgresQueryBuilder\(querySetting \*Settings\) \*Builder](<#NewPostgresQueryBuilder>)
+  - [func NewPostgresQueryBuilder\(querySetting Settings\) \(\*Builder, error\)](<#NewPostgresQueryBuilder>)
   - [func \(qb \*Builder\) Build\(resultSelector query.ResultSelector\) \(query string, args \[\]any, err error\)](<#Builder.Build>)
-  - [func \(qb \*Builder\) BuildQueryConditions\(request \*filter.Request\) \(args \[\]any, err error\)](<#Builder.BuildQueryConditions>)
 - [type Settings](<#Settings>)
 
 
 <a name="Builder"></a>
-## type Builder
+## type [Builder](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L34-L37>)
 
 Builder represents a query builder used to construct PostgresSQL conditional query strings with sorting and paging functionalities.
 
@@ -31,42 +30,39 @@ type Builder struct {
 ```
 
 <a name="NewPostgresQueryBuilder"></a>
-### func NewPostgresQueryBuilder
+### func [NewPostgresQueryBuilder](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L40>)
 
 ```go
-func NewPostgresQueryBuilder(querySetting *Settings) *Builder
+func NewPostgresQueryBuilder(querySetting Settings) (*Builder, error)
 ```
 
 NewPostgresQueryBuilder creates a new instance of the query builder with the provided settings.
 
 <a name="Builder.Build"></a>
-### func \(\*Builder\) Build
+### func \(\*Builder\) [Build](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L178>)
 
 ```go
 func (qb *Builder) Build(resultSelector query.ResultSelector) (query string, args []any, err error)
 ```
 
-Build generates the complete SQL query based on the provided result selector. It constructs the query by adding filter, sorting, and paging conditions. It returns the constructed query string, and all the individual filter fields values \(args\) in a single list If any error occurs during the construction, it returns an empty string.
-
-<a name="Builder.BuildQueryConditions"></a>
-### func \(\*Builder\) BuildQueryConditions
-
-```go
-func (qb *Builder) BuildQueryConditions(request *filter.Request) (args []any, err error)
-```
-
-BuildQueryConditions builds and appends filter conditions to the query builder based on the provided filter request. It constructs conditional clauses using the logic operator specified in the request. It uses the \`?\` query placeholder, so you can pass your parameter separately It returns all individual field values in a single list BuildQueryConditions can be used as a standalone function with Gorm
+Build generates the complete postgres SQL query based on the provided result selector. It constructs the query by adding filter, sorting, and paging conditions. It returns the constructed query string, and all the individual filter fields values \(args\) in a single list
 
 <a name="Settings"></a>
-## type Settings
+## type [Settings](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/postgres/query/builder.go#L20-L30>)
 
 Settings is a configuration struct used to customize the behavior of the query builder.
 
 ```go
 type Settings struct {
-    // FilterFieldMapping is the mapping of filter fields for query customization
-    // also serves as safeguard against sql injection
+    // FilterFieldMapping is the mapping of filter (or sorting) fields to columns in the database.
+    // The columns will be part of the `WHERE` or `ORDER BY` clause, so depending on the query the entry
+    // needs to be prefixed with the table name or alias used in the query.
+    // It also serves as safeguard against sql injection.
     FilterFieldMapping map[string]string
+    // Column used as tie breaker when sorting results. It should have a unique value for each row.
+    // It will be part of the `ORDER BY` clause, so depending on the query the entry needs to be prefixed
+    // with the table name or alias used in the query.
+    SortingTieBreakerColumn string
 }
 ```
 
