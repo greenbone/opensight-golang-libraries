@@ -17,7 +17,7 @@ import "github.com/greenbone/opensight-golang-libraries/pkg/slices"
 
 
 <a name="Contains"></a>
-## func Contains
+## func [Contains](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/slices/slices.go#L31>)
 
 ```go
 func Contains[T comparable](elements []T, value T) bool
@@ -33,7 +33,7 @@ fmt.Println(Contains(names, "Bob")) // Output: true
 ```
 
 <a name="ContainsLambda"></a>
-## func ContainsLambda
+## func [ContainsLambda](<https://github.com/greenbone/opensight-golang-libraries/blob/main/pkg/slices/slices.go#L15>)
 
 ```go
 func ContainsLambda[T any](elements []T, filterFunction func(element T) bool) bool

@@ -6,6 +6,9 @@ services:
         - node.name=opensearch-test
         - discovery.type=single-node
         - bootstrap.memory_lock=true
+        - cluster.routing.allocation.disk.watermark.low=0.97 # set all watermarks very high, as the CI runners and some dev systems are very limited in disk space ...
+        - cluster.routing.allocation.disk.watermark.high=0.99 # ... but don't disable it completely, so that we still get proper warnings in the log
+        - cluster.routing.allocation.disk.watermark.flood_stage=0.995
         - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
         - OPENSEARCH_INITIAL_ADMIN_PASSWORD=secureTestPassword444!
       volumes:

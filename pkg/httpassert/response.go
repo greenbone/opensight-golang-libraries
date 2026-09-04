@@ -65,11 +65,18 @@ func (r *responseImpl) Header(name string, value any) Response {
 }
 
 func (r *responseImpl) StatusCode(expected int) Response {
+	if r.response == nil {
+		assert.Fail(r.t, "response is nil")
+		return r
+	}
+
 	if assert.Equal(r.t, expected, r.response.Code) {
 		return r
 	}
 	r.Log()
-	r.t.FailNow()
+	if r.failNow {
+		r.t.FailNow()
+	}
 	return r
 }
 
