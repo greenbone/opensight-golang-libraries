@@ -25,9 +25,9 @@ const (
 type LifecycleReason string
 
 const (
-	ReasonResourceDeleted   LifecycleReason = "resource_deleted"
-	ReasonScopeExcluded     LifecycleReason = "scope_excluded"
-	ReasonConnectionDeleted LifecycleReason = "connection_deleted"
+	ReasonResourceDeleted LifecycleReason = "resource_deleted"
+	ReasonScopeExcluded   LifecycleReason = "scope_excluded"
+	ReasonSourceDeleted   LifecycleReason = "source_deleted"
 	// ReasonAuthorizationLost keeps the claim: the producer lost read access, so
 	// coverage goes stale rather than the claim being retired.
 	ReasonAuthorizationLost LifecycleReason = "authorization_lost"
@@ -39,7 +39,7 @@ const (
 // scan, not as a retirement.
 func (r LifecycleReason) RetiresClaim() bool {
 	switch r {
-	case ReasonScopeExcluded, ReasonConnectionDeleted, ReasonTargetMoved, ReasonTargetClosed:
+	case ReasonScopeExcluded, ReasonSourceDeleted, ReasonTargetMoved, ReasonTargetClosed:
 		return true
 	case ReasonResourceDeleted, ReasonAuthorizationLost:
 		return false
@@ -51,29 +51,29 @@ func (r LifecycleReason) RetiresClaim() bool {
 func (r LifecycleReason) IsProviderDeletion() bool { return r == ReasonResourceDeleted }
 
 // Provenance travels intact through discovery -> asset management -> exposure.
-// ConnectionID is provenance, NOT identity: canonical identity is (provider,
-// canonicalResourceId), so two connections observing one resource yield two
+// SourceID is provenance, NOT identity: canonical identity is (provider,
+// canonicalResourceId), so two sources observing one resource yield two
 // source claims and one asset.
 type Provenance struct {
-	ConnectionID       string `json:"connection_id"`
-	ConnectionRevision int64  `json:"connection_revision"`
-	TargetScopeID      string `json:"target_scope_id"`
-	RunID              string `json:"run_id"`
-	ScopeRunID         string `json:"scope_run_id"`
-	Provider           string `json:"provider"`
+	SourceID       string `json:"source_id"`
+	SourceRevision int64  `json:"source_revision"`
+	TargetScopeID  string `json:"target_scope_id"`
+	RunID          string `json:"run_id"`
+	ScopeRunID     string `json:"scope_run_id"`
+	Provider       string `json:"provider"`
 }
 
 // PartitionKey is the event-stream identity of one target partition. Producers
 // must set events.Meta.EntityID to it: partitions are ordered independently and
 // must never gate each other.
 func (p *Provenance) PartitionKey() string {
-	return p.ConnectionID + "|" + p.TargetScopeID
+	return p.SourceID + "|" + p.TargetScopeID
 }
 
 func (p *Provenance) validate() error {
 	switch {
-	case p.ConnectionID == "":
-		return errors.New("discovery: provenance missing connection_id")
+	case p.SourceID == "":
+		return errors.New("discovery: provenance missing source_id")
 	case p.TargetScopeID == "":
 		return errors.New("discovery: provenance missing target_scope_id")
 	case p.Provider == "":

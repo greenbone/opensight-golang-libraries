@@ -14,7 +14,7 @@ import (
 
 func scan(target string, version int64, coverage CoverageStatus, resources ...ObservedResource) ScanCompleted {
 	p := Provenance{
-		ConnectionID: "conn-1", ConnectionRevision: 2,
+		SourceID: "src-1", SourceRevision: 2,
 		TargetScopeID: target, RunID: "10", ScopeRunID: "77", Provider: "aws",
 	}
 
@@ -30,7 +30,7 @@ func scan(target string, version int64, coverage CoverageStatus, resources ...Ob
 	}
 }
 
-// Two target partitions under one connection have independent ordering keys:
+// Two target partitions under one source have independent ordering keys:
 // neither event's (entity_id, version) guard can drop the other, in any
 // delivery order.
 func TestTargetPartitionsOrderIndependently(t *testing.T) {
@@ -84,7 +84,7 @@ func TestScanResourceIdentityRequired(t *testing.T) {
 // positive per-partition sequences.
 func TestScanOrderingContract(t *testing.T) {
 	e := scan("111111111111", 6, CoverageComplete)
-	e.EntityID = "conn-1" // adapter-wide stream: two targets would share it
+	e.EntityID = "src-1" // source-wide stream: two targets would share it
 	if err := e.Validate(); err == nil {
 		t.Fatal("non-partition entity id validated")
 	}
@@ -95,7 +95,7 @@ func TestScanOrderingContract(t *testing.T) {
 	}
 
 	for _, missing := range []func(*ScanCompleted){
-		func(e *ScanCompleted) { e.ConnectionID = "" },
+		func(e *ScanCompleted) { e.SourceID = "" },
 		func(e *ScanCompleted) { e.TargetScopeID = "" },
 		func(e *ScanCompleted) { e.Provider = "" },
 		func(e *ScanCompleted) { e.ScopeRunID = "" },
@@ -116,7 +116,7 @@ func TestLifecycleReasonSemantics(t *testing.T) {
 		t.Fatal("resource_deleted must assert provider deletion")
 	}
 	for _, r := range []LifecycleReason{
-		ReasonScopeExcluded, ReasonConnectionDeleted,
+		ReasonScopeExcluded, ReasonSourceDeleted,
 		ReasonAuthorizationLost, ReasonTargetMoved, ReasonTargetClosed,
 	} {
 		if r.IsProviderDeletion() {
@@ -124,7 +124,7 @@ func TestLifecycleReasonSemantics(t *testing.T) {
 		}
 	}
 	for _, r := range []LifecycleReason{
-		ReasonScopeExcluded, ReasonConnectionDeleted,
+		ReasonScopeExcluded, ReasonSourceDeleted,
 		ReasonTargetMoved, ReasonTargetClosed,
 	} {
 		if !r.RetiresClaim() {
@@ -141,7 +141,7 @@ func TestLifecycleReasonSemantics(t *testing.T) {
 // A scope retirement only carries claim-retiring reasons: provider deletion
 // travels per-resource in scans, and authorization loss keeps the claim.
 func TestScopeRetirementReasonGate(t *testing.T) {
-	p := Provenance{ConnectionID: "conn-1", TargetScopeID: "111111111111", Provider: "aws"}
+	p := Provenance{SourceID: "src-1", TargetScopeID: "111111111111", Provider: "aws"}
 
 	ok := ScopeRetired{
 		Meta:       events.Meta{EntityID: p.PartitionKey(), Version: 9},

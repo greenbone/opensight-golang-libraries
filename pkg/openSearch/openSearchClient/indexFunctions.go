@@ -162,7 +162,6 @@ func (i *IndexFunction) CreateOrPutAlias(aliasName string, indexNames ...string)
 		opensearchapi.AliasesReq{
 			Body: &buf,
 		})
-
 	if err != nil {
 		if resp.Inspect().Response != nil && resp.Inspect().Response.StatusCode == http.StatusConflict {
 			log.Debug().Msgf("alias %s already exists, nothing to create", aliasName)

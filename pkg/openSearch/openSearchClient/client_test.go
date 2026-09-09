@@ -246,8 +246,9 @@ func TestSerializeDocumentsForBulkUpdate(t *testing.T) {
 	assert.Equal(t, expectedString, string(bulkUpdate))
 }
 
-func createDataInIndex(t *testing.T, client *Client, indexName string, vulnerabilities []*Vulnerability, expectedDocumentCount uint) {
-
+func createDataInIndex(t *testing.T, client *Client, indexName string,
+	vulnerabilities []*Vulnerability, expectedDocumentCount uint,
+) {
 	bulkRequest, err := SerializeDocumentsForBulkUpdate(indexName, vulnerabilities)
 	require.NoError(t, err)
 

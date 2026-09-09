@@ -13,14 +13,14 @@ package computed
 
 // Common envelope (every node).
 const (
-	AdapterProvider = "adapterProvider"
-	ResourceType    = "resourceType"
-	ResourceID      = "resourceId"
-	AccountID       = "accountId"
-	AccountName     = "accountName"
-	OrganizationID  = "organizationId"
-	Region          = "region"
-	Zone            = "zone"
+	SourceProvider = "sourceProvider"
+	ResourceType   = "resourceType"
+	ResourceID     = "resourceId"
+	AccountID      = "accountId"
+	AccountName    = "accountName"
+	OrganizationID = "organizationId"
+	Region         = "region"
+	Zone           = "zone"
 )
 
 // Tenancy / Governance.
@@ -651,7 +651,7 @@ const (
 )
 
 var All = []string{
-	AdapterProvider,
+	SourceProvider,
 	ResourceType,
 	ResourceID,
 	AccountID,

@@ -28,6 +28,6 @@ func TestAllHasNoDuplicates(t *testing.T) {
 		seen[p] = struct{}{}
 	}
 	if len(All) != 5 {
-		t.Fatalf("All providers should be in list", len(All))
+		t.Fatal("All providers should be in list", len(All))
 	}
 }

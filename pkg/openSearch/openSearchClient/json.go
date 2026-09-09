@@ -23,7 +23,7 @@ func InitializeJson(timeFormats []string) {
 		for _, timeFormat := range timeFormats {
 			parsedTime, err = time.ParseInLocation(timeFormat, readString, time.UTC)
 			if err == nil {
-				*((*time.Time)(ptr)) = parsedTime
+				*(*time.Time)(ptr) = parsedTime
 				return
 			}
 		}
