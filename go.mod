@@ -27,7 +27,7 @@ require (
 	github.com/tidwall/sjson v1.2.5
 	github.com/yalp/jsonpath v0.0.0-20180802001716-5cc68e5049a0
 	golang.org/x/crypto v0.57.0
-	gorm.io/driver/postgres v1.6.2
+	gorm.io/driver/postgres v1.6.3
 	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.31.2
 	sigs.k8s.io/yaml v1.6.0
