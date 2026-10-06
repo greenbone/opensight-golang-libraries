@@ -50,7 +50,7 @@ func (c dbCipherGcmAes) Encrypt(plaintext []byte) ([]byte, error) {
 		return nil, fmt.Errorf("error encrypting plaintext: %w", err)
 	}
 
-	ciphertext := gcm.Seal(nil, nil, []byte(plaintext), nil)
+	ciphertext := gcm.Seal(nil, nil, []byte(plaintext), nil) //nolint:gosec // NewGCMWithRandomNonce generates and prepends a random nonce.
 	return ciphertext, nil
 }
 
